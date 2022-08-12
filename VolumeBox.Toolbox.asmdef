@@ -1,0 +1,17 @@
+{
+    "name": "VolumeBox.Toolbox",
+    "rootNamespace": "VolumeBox.Toolbox",
+    "references": [
+        "GUID:776d03a35f1b52c4a9aed9f56d7b4229",
+        "GUID:8cc0a9924e5856d4982b19af0e96ee02"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
