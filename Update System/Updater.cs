@@ -152,14 +152,6 @@ namespace VolumeBox.Toolbox
             AddMonoToProcess(mono);
         }
 
-        public void RemoveMono(MonoCached mono)
-        {
-            mono.Deactivate();
-            mono.OnRemove();
-
-            monos.Remove(mono);
-        }
-
         private void AddMonoToProcess(MonoCached mono)
         {
             if(!monos.Contains(mono))
@@ -174,7 +166,8 @@ namespace VolumeBox.Toolbox
             if(monos.Contains(mono))
             {
                 mono.Deactivate();
-                RemoveMono(mono);
+                mono.OnRemove();
+                monos.Remove(mono);
             }
         }
 
