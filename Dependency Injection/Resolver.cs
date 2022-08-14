@@ -43,7 +43,7 @@ namespace VolumeBox.Toolbox
 
         public void AddInstance(object instance)
         {
-            if(instances.Contains(instance)) 
+            if(instances.Where(x => x.GetType() == instance.GetType()).Any()) 
             {
                 Debug.LogWarning($"Resolver already contains {instance.GetType()}");
             }
