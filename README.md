@@ -80,12 +80,55 @@ public class Test: MonoCached
 ```
 
 All magic happens in `Resolver` class. First of all, you need to add instances of your class to container, you can do this in two ways:
-1. 
-2.
+1. Add component to "Instances" object under "[ENTRY]" object in the main scene.
+2. Call `Resolver.AddInstance(object instance)`, there you can add instances which not derived from `MonoBehaviour`.
+
+You can also remove instance from container by calling `Resolver.RemoveInstance(object instance)` and passing the instance.
+
+**You are not able to add instances of same type in the container**
+
+After adding all desired instances, you can use them from any place of your code, just add `[Inject]` attribute to the field, no matter is it public or private.
+
+You can manually inject objects, by calling `Resolver.Inject(object obj)`.
+
+All objects in loaded scene automatically injects, if you load scene by using `Traveler` class (see [Travel System](#travel-system)). By using `Pooler` class when instantiating objects you can achieve auto inject that instantiated object.
 
 ## Message System
 
+Message system allows you to reduce code cohesion by subscribing to messages and sending them.
 
+All messages contains in `Message` enum, to add new line in this enum with desired name. To subscribe to a message call `Messager.Subscribe(Message id, Action<object> next)`, where `id` is an desired message you want to subscribe, `next` is an action that invokes when message received.
+
+### Example
+```C#
+using VolumeBox.Toolbox;
+
+public class Test: MonoCached
+{
+  [Inject] private Messager msg;
+
+  public override void Rise()
+  {
+    msg.Subscribe(Message.PLAYER_DEAD, data => Debug.Log($"Level changed to {data.ToString()}");
+  }
+}
+```
+```C#
+public class GameManager: Singleton<GameManager>
+{
+  [Inject] private Messager msg;
+  private int currentScore;
+
+  //...
+  
+  public void KillPlayer()
+  {
+    msg.Send()
+  }
+  
+  //...
+}
+```
 
 ## Object Pooling
 
