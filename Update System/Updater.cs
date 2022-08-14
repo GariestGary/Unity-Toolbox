@@ -204,7 +204,8 @@ namespace VolumeBox.Toolbox
                     {    
                         foreach(var modifier in modifiers)
                         {
-                            delta = modifier?.Modify(delta, mono);
+                            float? modifiedDelta = modifier?.Modify(delta, mono);
+                            delta = modifiedDelta.Value;
                         }
                     }
 
