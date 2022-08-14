@@ -79,7 +79,9 @@ public class Test: MonoCached
 }
 ```
 
-All magic happens in `Resolver` class
+All magic happens in `Resolver` class. First of all, you need to add instances of your class to container, you can do this in two ways:
+1. 
+2.
 
 ## Message System
 
