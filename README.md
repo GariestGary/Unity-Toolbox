@@ -109,7 +109,7 @@ public class Test: MonoCached
 
   public override void Rise()
   {
-    msg.Subscribe(Message.PLAYER_DEAD, data => Debug.Log($"Level changed to {data.ToString()}");
+    msg.Subscribe(Message.PLAYER_DEAD, data => Debug.Log($"Game Over! Your score: {(int)data}");
   }
 }
 ```
@@ -123,12 +123,14 @@ public class GameManager: Singleton<GameManager>
   
   public void KillPlayer()
   {
-    msg.Send()
+    msg.Send(Message.PLAYER_DEAD, currentScore);
   }
   
   //...
 }
 ```
+
+To send additional data with a message, simply pass it after the message ID and cast it to the desired type in the callback method.
 
 ## Object Pooling
 
