@@ -27,7 +27,6 @@ namespace BeauRoutine
         /// <summary>
         /// Runs a routine.
         /// </summary>
-        [Obsolete("Use StartManual instead for use Toolbox's power of TimeScale")]
         static public Routine Start(IEnumerator inCoroutine)
         {
             Manager m = Manager.Get();
@@ -55,7 +54,6 @@ namespace BeauRoutine
         /// <summary>
         /// Runs a routine.
         /// </summary>
-        [Obsolete("Use StartManual instead for use Toolbox's power of TimeScale")]
         static public Routine Start(MonoBehaviour inHost, IEnumerator inCoroutine)
         {
             Manager m = Manager.Get();
