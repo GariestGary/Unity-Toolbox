@@ -93,6 +93,8 @@ You can manually inject objects, by calling `Resolver.Inject(object obj)`.
 
 All objects in loaded scene automatically injects, if you load scene by using `Traveler` class (see [Travel System](#travel-system)). By using `Pooler` class when instantiating objects you can achieve auto inject that instantiated object.
 
+If you want to use your own MonoBehaviour's components, you can add this component to 'Instances' GameObject under [ENTRY]. In this case all of the attached components will automatically added to IoC container, and you can initialize corresponding properties by just using [Inject] attribute.
+
 ## Message System
 
 Message system allows you to reduce code cohesion by subscribing to messages and sending them.
