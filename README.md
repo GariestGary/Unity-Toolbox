@@ -136,7 +136,79 @@ public class GameManager: Singleton<GameManager>
 
 ## Object Pooling
 
+Pooler class is the core of the GameObjects lifecycle management. It allows you to create object pools, instantiating prefabs, enabling and disabling GameObjects without losing functionality of the Toolbox.
 
+### Instantiating prefabs
+
+Simply use Pooler's method similiar to Unity's Instantiate method `Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)`, it returns an instantiated and automatically injected GameObject.
+
+### Creating pools
+
+#### From inspector
+In the [ENTRY] find Pooler component and add pool you want to the list. It has several properties:
+
+Name - pool name through which you access it.
+
+Pool Object - GameObject you want to pool.
+
+Initial Size - initial size of the pool.
+
+Destroy On Level Change - check this if your pool is level-specific and you don't want you it on other levels. It will automatically disposed at level change.
+
+![Toolbox_Pool_Create](https://user-images.githubusercontent.com/38670681/195032819-01098d8c-f07f-4476-b512-34dbf23c47dc.png)
+
+#### From code
+
+To create pool from code use Pooler's method Called `AddPool(...)`
+
+```C#
+
+public class Test : MonoCached
+{
+  [SerializeField]private GameObject enemy;
+    
+  [Inject] private Pooler pool;
+
+  public override void Rise()
+  {
+    pool.AddPool("Enemy", enemy, 10, false);
+  }
+}
+
+```
+
+### Spawning objects
+
+To spawn object from pool use following syntax:
+
+```C#
+public class Test : MonoCached
+{
+  [Inject] private Pooler pool;
+
+  private string someData;
+    
+  public override void Rise()
+  {
+    pool.Spawn("Enemy", Vector3.zero, Quaternion.identity, transform, someData);
+  }
+}
+```
+
+You need to pass pool name, spawn position, rotation. Additionally you can pass parent object and data, which passes to spawned object if it has component which implents IPooled interface. Data provides as basic object type, which means that in `OnSpawn(object data)` method you need to cast data into desired type.
+
+```C#
+
+public class PooledObject : MonoCached, IPooled
+{
+  public void OnSpawn(object data)
+  {
+    string message = (string) data;
+    Debug.Log(message);
+  }
+}
+
+```
 
 ## Save System
 
@@ -147,3 +219,6 @@ public class GameManager: Singleton<GameManager>
 
 
 ## Routine System
+
+
+Toolbox uses a third-party coroutine and tweening system called [BeauRoutine](https://github.com/BeauPrime/BeauRoutine)
