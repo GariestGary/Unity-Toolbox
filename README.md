@@ -212,7 +212,42 @@ public class PooledObject : MonoCached, IPooled
 
 ## Save System
 
+Saver class allows you to write your own way to saving game progress in easy way. All you need is to write custom state provider scriptable object and pass it to Saver component in the inspector. To write your state provider create new C# class and inherit it from `StateProvider` abstract class, then implement `CaptureCurrentState()` and `RestoreCurrentState(object data)` methods. First method required for collecting all data you need and returns object, that contains it, second method use that object and data in it, to restore all variables in game, e.g.:
 
+```C#
+
+public class MyGameStateProvider: StateProvider
+{
+  private GameData gameData = new GameData();
+
+  public object CaptureCurrentState()
+  {
+    gameData.currentLevel = GameManager.CurrentLevel;
+    gameData.currentScore = GameManager.Score;
+    gameData.playerWaypoints = GameManager.GetWaypoints();
+    
+    return data;
+  }
+  
+  public void RestoreCurrentState(object data)
+  {
+    gameData = (GameData)data;
+    
+    GameManager.LoadLevel(gameData.currentLevel);
+    GameManager.Score = gameData.currentScore;
+    GameManager.SetWaypoints(gameData.playerWaypoints);
+  }
+}
+
+[System.Serializable]
+public class GameData
+{
+  public string currentLevel;
+  public int currentScore;
+  public List<Vector3> playerWaypoints;
+}
+
+```
 
 ## Travel System
 
