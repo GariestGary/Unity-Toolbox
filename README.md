@@ -249,6 +249,8 @@ public class GameData
 
 ```
 
+Here you can see that StateProvider uses GameData class to store variables and resoring GameManager class's values.
+
 ## Travel System
 
 
