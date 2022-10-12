@@ -8,7 +8,7 @@ Set of architectural solutions for Unity
 * [Object Pooling](#object-pooling)
 * [Save System](#save-system)
 * [Travel System](#travel-system)
-* [BeauRoutine](#beauroutine)
+* [Routine System](#routine-system)
 
 ## Basics
 
@@ -93,11 +93,15 @@ You can manually inject objects, by calling `Resolver.Inject(object obj)`.
 
 All objects in loaded scene automatically injects, if you load scene by using `Traveler` class (see [Travel System](#travel-system)). By using `Pooler` class when instantiating objects you can achieve auto inject that instantiated object.
 
+If you want to use your own MonoBehaviour's components, you can add this components to 'Instances' GameObject under [ENTRY]. In this case all of the attached components will automatically added to IoC container, and you can initialize corresponding properties by just using [Inject] attribute.
+
 ## Message System
 
 Message system allows you to reduce code cohesion by subscribing to messages and sending them.
 
 All messages contains in `Message` enum, to add new line in this enum with desired name. To subscribe to a message call `Messager.Subscribe(Message id, Action<object> next)`, where `id` is an desired message you want to subscribe, `next` is an action that invokes when message received.
+
+To send additional data with a message, simply pass it after the message ID and cast it to the desired type in the callback method.
 
 ### Example
 ```C#
@@ -130,14 +134,126 @@ public class GameManager: Singleton<GameManager>
 }
 ```
 
-To send additional data with a message, simply pass it after the message ID and cast it to the desired type in the callback method.
-
 ## Object Pooling
 
+Pooler class is the core of the GameObjects lifecycle management. It allows you to create object pools, instantiating prefabs, enabling and disabling GameObjects without losing functionality of the Toolbox.
 
+### Instantiating prefabs
+
+Simply use Pooler's method similiar to Unity's Instantiate method `Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)`, it returns an instantiated and automatically injected GameObject.
+
+### Creating pools
+
+#### From inspector
+In the [ENTRY] find Pooler component and add pool you want to the list. It has several properties:
+
+Name - pool name through which you access it.
+
+Pool Object - GameObject you want to pool.
+
+Initial Size - initial size of the pool.
+
+Destroy On Level Change - check this if your pool is level-specific and you don't want you it on other levels. It will automatically disposed at level change.
+
+![Toolbox_Pool_Create](https://user-images.githubusercontent.com/38670681/195032819-01098d8c-f07f-4476-b512-34dbf23c47dc.png)
+
+#### From code
+
+To create pool from code use Pooler's method Called `AddPool(...)`
+
+```C#
+
+public class Test : MonoCached
+{
+  [SerializeField]private GameObject enemy;
+    
+  [Inject] private Pooler pool;
+
+  public override void Rise()
+  {
+    pool.AddPool("Enemy", enemy, 10, false);
+  }
+}
+
+```
+
+### Spawning objects
+
+To spawn object from pool use following syntax:
+
+```C#
+public class Test : MonoCached
+{
+  [Inject] private Pooler pool;
+
+  private string someData;
+    
+  public override void Rise()
+  {
+    pool.Spawn("Enemy", Vector3.zero, Quaternion.identity, transform, someData);
+  }
+}
+```
+
+You need to pass pool name, spawn position, rotation. Additionally you can pass parent object and data, which passes to spawned object if it has component which implents IPooled interface. Data provides as basic object type, which means that in `OnSpawn(object data)` method you need to cast data into desired type.
+
+```C#
+
+public class PooledObject : MonoCached, IPooled
+{
+  public void OnSpawn(object data)
+  {
+    string message = (string) data;
+    Debug.Log(message);
+  }
+}
+
+```
 
 ## Save System
 
+Saver class allows you to write your own way to saving game progress in easy way. All you need is to write custom state provider scriptable object and pass it to Saver component in the inspector. To write your state provider create new C# class and inherit it from `StateProvider` abstract class, then implement `CaptureCurrentState()` and `RestoreCurrentState(object data)` methods. First method required for collecting all data you need and returns object, that contains it, second method use that object and data in it, to restore all variables in game, e.g.:
 
+```C#
+
+public class MyGameStateProvider: StateProvider
+{
+  private GameData gameData = new GameData();
+
+  public object CaptureCurrentState()
+  {
+    gameData.currentLevel = GameManager.CurrentLevel;
+    gameData.currentScore = GameManager.Score;
+    gameData.playerWaypoints = GameManager.GetWaypoints();
+    
+    return data;
+  }
+  
+  public void RestoreCurrentState(object data)
+  {
+    gameData = (GameData)data;
+    
+    GameManager.LoadLevel(gameData.currentLevel);
+    GameManager.Score = gameData.currentScore;
+    GameManager.SetWaypoints(gameData.playerWaypoints);
+  }
+}
+
+[System.Serializable]
+public class GameData
+{
+  public string currentLevel;
+  public int currentScore;
+  public List<Vector3> playerWaypoints;
+}
+
+```
 
 ## Travel System
+
+
+
+## Routine System
+
+
+Toolbox uses a third-party coroutine and tweening system called [BeauRoutine](https://github.com/BeauPrime/BeauRoutine)
