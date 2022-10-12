@@ -40,7 +40,7 @@ namespace VolumeBox.Toolbox
 
             LinkedList<GameObject> objectPoolList = new LinkedList<GameObject>();
 
-            for (int j = 0; j < poolToAdd.size; j++)
+            for (int j = 0; j < poolToAdd.initialSize; j++)
             {
                 CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
             }
@@ -51,7 +51,7 @@ namespace VolumeBox.Toolbox
 
         public void AddPool(string tag, GameObject obj, int size, bool destroyOnLevelChange = true)
         {
-            PoolData pool = new PoolData() { tag = tag, pooledObject = obj, size = size, destroyOnLevelChange = destroyOnLevelChange };
+            PoolData pool = new PoolData() { tag = tag, pooledObject = obj, initialSize = size, destroyOnLevelChange = destroyOnLevelChange };
 
             AddPool(pool);
         }
@@ -270,7 +270,7 @@ public class PoolData
 {
     public string tag;
     public GameObject pooledObject;
-    public int size;
+    public int initialSize;
     public bool destroyOnLevelChange;
 }
 

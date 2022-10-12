@@ -120,13 +120,6 @@ namespace VolumeBox.Toolbox
 
             if (currentSlot == null) return;
 
-            RestoreCurrentState();
-        }
-
-        public void RestoreCurrentState()
-        {
-            if (!useSaves) return;
-
             stateProvider.RestoreCurrentState(currentSlot.state);
         }
 
