@@ -14,9 +14,12 @@ namespace VolumeBox.Toolbox
 
         [Inject] private Updater updater;
         [Inject] private Resolver resolver;
+        [Inject] private Messager msg;
 
         public void Run()
         {
+            msg.Subscribe(Message.SCENE_UNLOADING, _ => ClearPools());
+            
             pools = new List<Pool>();
 
             objectPoolParent = new GameObject().transform;
@@ -47,6 +50,17 @@ namespace VolumeBox.Toolbox
 
             pools.Add(new Pool(poolToAdd.tag, poolToAdd.destroyOnLevelChange, objectPoolList));
 
+        }
+
+        public void ClearPools()
+        {
+            foreach (var pool in pools)
+            {
+                foreach (var obj in pool.objects)
+                {
+                    Despawn(obj);
+                }
+            }
         }
 
         public void AddPool(string tag, GameObject obj, int size, bool destroyOnLevelChange = true)
