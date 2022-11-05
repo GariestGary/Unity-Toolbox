@@ -47,7 +47,7 @@ namespace VolumeBox.Toolbox
             }
             else
             {
-                messager.Send(Message.SCENE_UNLOADING);
+                messager.Send(Message.SCENE_UNLOADING, currentLevelName);
                 updater.RemoveObjectsFromUpdate(SceneManager.GetSceneByName(CurrentLevelName).GetRootGameObjects());
                 //unloading scene async operation set
                 yield return StartCoroutine(WaitForSceneUnloadCoroutine());
@@ -68,7 +68,7 @@ namespace VolumeBox.Toolbox
                 yield return null;
             }
 
-            messager.Send(Message.SCENE_LOADED);
+            messager.Send(Message.SCENE_LOADED, loadingLevelName);
 
             yield return OpenScene(loadingLevelName);
         }
@@ -97,16 +97,17 @@ namespace VolumeBox.Toolbox
 
             currentLevelHandler.SetupLevel();
 
+            messager.Send(Message.SCENE_OPENED, openLevelName);
+            
             //open UI if it is gameplay level
             if(currentLevelHandler.IsGameplayLevel)
             {
                 yield return StartCoroutine(OpenUI());
-                messager.Send(Message.GAMEPLAY_SCENE_OPENED);
+                messager.Send(Message.GAMEPLAY_SCENE_OPENED, openLevelName);
             }
             else
             {
                 yield return StartCoroutine(CloseUI());
-                messager.Send(Message.SCENE_OPENED);
             }
         }
 

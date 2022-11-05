@@ -14,8 +14,8 @@ public class MessagerTests
     {
         message = "null";
 
-        Messager.Instance.Subscribe(Message.HIT_PLAYER, _ => React());
-        Messager.Instance.Send(Message.HIT_PLAYER);
+        Messager.Instance.Subscribe(Message.MOCK, _ => React());
+        Messager.Instance.Send(Message.MOCK);
 
         Assert.AreEqual("Reacted", message);
 
