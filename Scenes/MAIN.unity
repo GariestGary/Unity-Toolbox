@@ -437,11 +437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36e3a2d80f49df4a8c84293155d14aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolsList:
-  - tag: Enemy
-    pooledObject: {fileID: 7574071476115136438, guid: 2882f1650019ca24e9f374295f28d823, type: 3}
-    initialSize: 10
-    destroyOnLevelChange: 0
+  poolsList: []
 --- !u!114 &365161802
 MonoBehaviour:
   m_ObjectHideFlags: 0
