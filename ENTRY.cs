@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -10,6 +11,8 @@ namespace VolumeBox.Toolbox
     public class ENTRY : MonoBehaviour
     {
         [SerializeField] [Range(0, 1)] private float timeScale;
+        [SerializeField] [MinValue(0)] [MaxValue(420)]
+        private int targetFrameRate;
         [SerializeField] private string initialSceneName;
         public UnityEvent onLoadEvent;
         private Resolver resolver;
@@ -29,6 +32,8 @@ namespace VolumeBox.Toolbox
 
         private void Awake()
         {
+            Application.targetFrameRate = targetFrameRate;
+            
             resolver = GetComponent<Resolver>();
             messager = GetComponent<Messager>();
             traveler = GetComponent<Traveler>();
