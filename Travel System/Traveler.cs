@@ -50,7 +50,7 @@ namespace VolumeBox.Toolbox
                 messager.Send(Message.SCENE_UNLOADING);
                 updater.RemoveObjectsFromUpdate(SceneManager.GetSceneByName(CurrentLevelName).GetRootGameObjects());
                 //unloading scene async operation set
-                unloadingLevel = SceneManager.UnloadSceneAsync(currentLevelName);
+                yield return StartCoroutine(WaitForSceneUnloadCoroutine());
             }
 
             //loading scene async operation set
@@ -61,7 +61,9 @@ namespace VolumeBox.Toolbox
 
         private IEnumerator WaitForLoadCoroutine(string loadingLevelName)
         {
-            while(!IsScenesReady())
+            loadingLevel = SceneManager.LoadSceneAsync(loadingLevelName, LoadSceneMode.Additive);
+
+            while(!loadingLevel.isDone)
             {
                 yield return null;
             }
@@ -69,8 +71,18 @@ namespace VolumeBox.Toolbox
             messager.Send(Message.SCENE_LOADED);
 
             yield return OpenScene(loadingLevelName);
+        }
+        
+        private IEnumerator WaitForSceneUnloadCoroutine()
+        {
+            unloadingLevel = SceneManager.UnloadSceneAsync(currentLevelName);
 
-            yield break;
+            while (!unloadingLevel.isDone)
+            {
+                yield return null;
+            }
+            
+            messager.Send(Message.SCENE_UNLOADED, currentLevelName);
         }
 
         private IEnumerator OpenScene(string openLevelName)
@@ -145,18 +157,6 @@ namespace VolumeBox.Toolbox
 
                 uiOpened = false;
                 messager.Send(Message.UI_CLOSED);
-            }
-        }
-
-        private bool IsScenesReady()
-        {
-            if(unloadingLevel == null)
-            {
-                return loadingLevel.isDone;
-            }
-            else
-            {
-                return loadingLevel.isDone && unloadingLevel.isDone;
             }
         }
     }
