@@ -4,19 +4,16 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.Serialization;
 using System;
-
+using static UnityEngine.GraphicsBuffer;
+using UnityEngine.SceneManagement;
 namespace VolumeBox.Toolbox
 {
-	public class LevelHandler : Singleton<LevelHandler>
-	{
-		[SerializeField] private bool _skipSetup;
-		[SerializeField] private bool _isGameplayLevel;
+	public class LevelHandler<THandler, TArgs>: MonoCached 
+        where THandler : LevelHandler<THandler, TArgs> 
+        where TArgs : LevelArgs, new()
+    {
+        protected TArgs Args { get; private set; }
 
-		public bool IsGameplayLevel {get{return _isGameplayLevel;} private set{}}
-
-        public virtual void SetupLevel()
-        {
-            
-        }
+        
     }
 }
