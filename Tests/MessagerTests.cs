@@ -14,16 +14,21 @@ public class MessagerTests
     {
         message = "null";
 
-        Messager.Instance.Subscribe(Message.MOCK, _ => React());
-        Messager.Instance.Send(Message.MOCK);
+        Messager.Instance.Subscribe<MockMessage>(x => React(x.message));
+        Messager.Instance.Send<MockMessage>();// (new MockMessage() { message = "FFFFFFFF"});
 
         Assert.AreEqual("Reacted", message);
 
         yield return null;
     }
 
-    private void React()
+    private void React(string test)
     {
-        message = "Reacted";
+        message = test;
+    }
+
+    public class MockMessage 
+    {
+        public string message = "Reacted";
     }
 }
