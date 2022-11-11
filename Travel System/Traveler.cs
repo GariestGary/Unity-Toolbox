@@ -28,7 +28,7 @@ namespace VolumeBox.Toolbox
         public void Run()
         {
             mainScene = SceneManager.GetActiveScene();
-            messager.Subscribe(Message.LOAD_SCENE, x => LoadScene(x as string));
+            //TODO: messager.Subscribe(Message.LOAD_SCENE, x => LoadScene(x as string));
         }
 
         
@@ -47,7 +47,7 @@ namespace VolumeBox.Toolbox
             }
             else
             {
-                messager.Send(Message.SCENE_UNLOADING, currentLevelName);
+                //TODO: messager.Send(Message.SCENE_UNLOADING, currentLevelName);
                 updater.RemoveObjectsFromUpdate(SceneManager.GetSceneByName(CurrentLevelName).GetRootGameObjects());
                 //unloading scene async operation set
                 yield return StartCoroutine(WaitForSceneUnloadCoroutine());
@@ -68,7 +68,7 @@ namespace VolumeBox.Toolbox
                 yield return null;
             }
 
-            messager.Send(Message.SCENE_LOADED, loadingLevelName);
+            //TODO: messager.Send(Message.SCENE_LOADED, loadingLevelName);
 
             yield return OpenScene(loadingLevelName);
         }
@@ -82,7 +82,7 @@ namespace VolumeBox.Toolbox
                 yield return null;
             }
             
-            messager.Send(Message.SCENE_UNLOADED, currentLevelName);
+            //TODO: messager.Send(Message.SCENE_UNLOADED, currentLevelName);
         }
 
         private IEnumerator OpenScene(string openLevelName)
@@ -97,13 +97,13 @@ namespace VolumeBox.Toolbox
 
             currentLevelHandler.SetupLevel();
 
-            messager.Send(Message.SCENE_OPENED, openLevelName);
+            //TODO: messager.Send(Message.SCENE_OPENED, openLevelName);
             
             //open UI if it is gameplay level
             if(currentLevelHandler.IsGameplayLevel)
             {
                 yield return StartCoroutine(OpenUI());
-                messager.Send(Message.GAMEPLAY_SCENE_OPENED, openLevelName);
+                //TODO: messager.Send(Message.GAMEPLAY_SCENE_OPENED, openLevelName);
             }
             else
             {
@@ -130,7 +130,7 @@ namespace VolumeBox.Toolbox
 
                 uiOpened = true;
 
-                messager.Send(Message.UI_OPENED);
+                //TODO: messager.Send(Message.UI_OPENED);
             }
         }
 
@@ -157,7 +157,7 @@ namespace VolumeBox.Toolbox
                 }
 
                 uiOpened = false;
-                messager.Send(Message.UI_CLOSED);
+                //TODO: messager.Send(Message.UI_CLOSED);
             }
         }
     }
