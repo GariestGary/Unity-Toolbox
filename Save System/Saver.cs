@@ -62,7 +62,7 @@ namespace VolumeBox.Toolbox
 
             fileHandler.Run();
             ResolveSlots();
-            msg.Subscribe(Message.SAVE_GAME, _ => Save());
+            //TODO: msg.Subscribe(Message.SAVE_GAME, _ => Save());
         }
 
         public void SetFileHandler(PlatformFileHandler handler)
