@@ -1,19 +1,22 @@
 using System;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace VolumeBox.Toolbox
 {
     public class Subscriber
     {
-        private Message msg;
-        private Action<object> next;
+        private Type type;
+        private Action<object> callback;
 
-        public Message id {get{return msg;} private set{}}
-        public Action<object> react {get{return next;} private set{}}
+        public Type Type => type;
+        public Action<object> Callback => callback;
 
-        public Subscriber(Message msg, Action<object> next)
+        public Subscriber(Type type, Action<object> callback)
         {
-            this.msg = msg;
-            this.next = next;
+            this.callback = callback;
+            this.type = type;
         }
+
     }
 }
