@@ -8,33 +8,41 @@ namespace VolumeBox.Toolbox
 {
 	public class Messager: Singleton<Messager>, IRunner
 	{
-		private List<Subscriber> subs = new List<Subscriber>();
-		private List<Subscriber> levelSubs = new List<Subscriber>();
+		private List<Subscriber> subscribers = new List<Subscriber>();
 
 		public void Run()
-		{
-			Subscribe(Message.SCENE_UNLOADED, _ => levelSubs.Clear());
-		}
+        {
+            
+        }
 		
-		public void Subscribe(Message id, Action<object> next)
-		{
-			subs.Add(new Subscriber(id, next));
+		public void Subscribe<T>(Action<T> next)
+        {
+			Action<object> callback = args => next((T)args);
+
+			subscribers.Add(new Subscriber(typeof(T), callback));
 		}
 
-		public void SubscribeForLevel(Message id, Action<object> next)
+		public void Send<T>()
 		{
-			levelSubs.Add(new Subscriber(id, next));
-		}
+			var message = (T)Activator.CreateInstance(typeof(T));
 
-		public void Send(Message id, object data = null)
+			Send(message);
+        }
+
+		public void Send<T>(T message)
 		{
-			List<Subscriber> listeners = subs.Where(x => x.id == id).ToList();
-			listeners.Concat(levelSubs.Where(x => x.id == id));
-
-			for (var i = 0; i < listeners.Count; i++)
+			if(message == null)
 			{
-				listeners[i].react.Invoke(data);	
+				message = (T)Activator.CreateInstance(typeof(T));
 			}
-		}
-	}
+
+			var receivers = subscribers.Where(x => x.Type == message.GetType()).ToList();
+
+			receivers.ForEach(x =>
+			{
+				x.Callback.Invoke(message);
+			});
+        }
+
+    }
 }

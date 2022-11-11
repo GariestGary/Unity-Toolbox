@@ -18,7 +18,7 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            msg.Subscribe(Message.SCENE_UNLOADING, _ => ClearPools());
+            //TODO: msg.Subscribe(Message.SCENE_UNLOADING, _ => ClearPools());
             
             pools = new List<Pool>();
 
