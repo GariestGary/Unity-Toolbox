@@ -374,7 +374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeScale: 1
-  targetFrameRate: 0
+  targetFrameRate: 60
   initialSceneName: 
   onLoadEvent:
     m_PersistentCalls:
@@ -448,8 +448,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ef3565177c6c1459d0c5e5ab6dd734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelsFolderPath: Scenes
-  uiLevelName: Gameplay UI
+  scenesFolderPath: Scenes
+  uiSceneName: 
 --- !u!114 &365161803
 MonoBehaviour:
   m_ObjectHideFlags: 0

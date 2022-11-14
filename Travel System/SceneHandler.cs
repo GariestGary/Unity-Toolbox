@@ -7,16 +7,21 @@ using System;
 
 namespace VolumeBox.Toolbox
 {
-	public class LevelHandler : Singleton<LevelHandler>
+	public class SceneHandler: MonoCached
 	{
 		[SerializeField] private bool _skipSetup;
 		[SerializeField] private bool _isGameplayLevel;
 
-		public bool IsGameplayLevel {get{return _isGameplayLevel;} private set{}}
+		public bool IsGameplayScene => _isGameplayLevel;
 
-        public virtual void SetupLevel()
+        public virtual void SetupLevel(SceneArgs args)
         {
             
         }
+    }
+
+    public class SceneArgs
+    {
+
     }
 }
