@@ -8,12 +8,9 @@ using static UnityEngine.GraphicsBuffer;
 using UnityEngine.SceneManagement;
 namespace VolumeBox.Toolbox
 {
-	public class LevelHandler<THandler, TArgs>: MonoCached 
-        where THandler : LevelHandler<THandler, TArgs> 
+	public class LevelHandler<TArgs>: MonoCached 
         where TArgs : LevelArgs, new()
     {
         protected TArgs Args { get; private set; }
-
-        
     }
 }

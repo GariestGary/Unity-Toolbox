@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using static UnityEngine.GraphicsBuffer;
 
 namespace VolumeBox.Toolbox
 {
@@ -28,12 +29,27 @@ namespace VolumeBox.Toolbox
         public void Run()
         {
             mainScene = SceneManager.GetActiveScene();
-            messager.Subscribe<LoadSceneMessage>(x => LoadScene(x.name));
+            messager.Subscribe<LoadSceneMessage<LevelHandler<LevelArgs>, LevelArgs>>(x => LoadScene(x.name));
         }
 
         public void LoadScene(string name)
         {
-            
+            if(true)//if (currentLevelHandler == null)
+            {   //skip unloading level if current level is null
+                unloadingLevel = null;
+            }
+            else
+            {
+                //TODO: messager.Send(Message.SCENE_UNLOADING, currentLevelName);
+                updater.RemoveObjectsFromUpdate(SceneManager.GetSceneByName(CurrentLevelName).GetRootGameObjects());
+                //unloading scene async operation set
+                //yield return StartCoroutine(WaitForSceneUnloadCoroutine());
+            }
+
+            //loading scene async operation set
+            //loadingLevel = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
+            //yield return StartCoroutine(WaitForLoadCoroutine(sceneName));
         }
 
         private IEnumerator OpenUI()
@@ -85,11 +101,11 @@ namespace VolumeBox.Toolbox
                 //TODO: messager.Send(Message.UI_CLOSED);
             }
         }
-
-
     }
 
-    public class LoadSceneMessage
+    public class LoadSceneMessage<THandler, TArgs> 
+        where THandler : LevelHandler<TArgs>
+        where TArgs : LevelArgs, new()
     {
         public string name;
     }
