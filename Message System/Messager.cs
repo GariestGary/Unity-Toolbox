@@ -53,9 +53,10 @@ namespace VolumeBox.Toolbox
 				message = (T)Activator.CreateInstance(typeof(T));
 			}
 
-			var receivers = subscribers.Where(x => x.Type == message.GetType()).ToList();
+			var receivers = subscribers.Where(x => x.Type == message.GetType());
+			receivers = receivers.Concat(sceneSubscribers.Where(x => x.Type == message.GetType()));
 
-			receivers.ForEach(x =>
+			receivers.ToList().ForEach(x =>
 			{
 				x.Callback.Invoke(message);
 			});

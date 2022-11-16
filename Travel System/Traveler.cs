@@ -43,13 +43,14 @@ namespace VolumeBox.Toolbox
             return args;
         }
 
-        public void LoadScene(string name)
+        public void LoadScene(string name, SceneArgs args = null)
         {
             if (loadingLevel)
             {
-                currentOpeningSceneArgs = null;
                 return;
             }
+
+            currentOpeningSceneArgs = args;
 
             StartCoroutine(LoadSceneCoroutine(name));
         }
