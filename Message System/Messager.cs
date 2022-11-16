@@ -9,18 +9,34 @@ namespace VolumeBox.Toolbox
 	public class Messager: Singleton<Messager>, IRunner
 	{
 		private List<Subscriber> subscribers = new List<Subscriber>();
+		private List<Subscriber> sceneSubscribers = new List<Subscriber>();
 
-		public void Run()
+        public void Run()
         {
-            
+            Instance.SubscribeKeeping<SceneUnloadedMessage>(_ => ClearNullSubscribers());
         }
-		
-		public void Subscribe<T>(Action<T> next)
+
+        private void ClearNullSubscribers()
+        {
+            sceneSubscribers.Clear();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        public void SubscribeKeeping<T>(Action<T> next)
         {
 			Action<object> callback = args => next((T)args);
 
 			subscribers.Add(new Subscriber(typeof(T), callback));
 		}
+
+		public void Subscribe<T>(Action<T> next)
+		{
+			Action<object> callback = args => next((T)args);
+
+            sceneSubscribers.Add(new Subscriber(typeof(T), callback));
+        }
 
 		public void Send<T>()
 		{
