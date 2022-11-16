@@ -124,4 +124,15 @@ namespace VolumeBox.Toolbox
             }
         }
     }
+
+    public class SceneBinding
+    {
+        public object instance;
+        public string id;
+    }
+
+    public class SceneBindingMessage
+    {
+        public List<SceneBinding> instances = new List<SceneBinding>();
+    }
 }
