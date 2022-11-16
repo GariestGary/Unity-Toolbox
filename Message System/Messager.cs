@@ -9,6 +9,8 @@ namespace VolumeBox.Toolbox
 	public class Messager: Singleton<Messager>, IRunner
 	{
 		private List<Subscriber> subscribers = new List<Subscriber>();
+        private List<Subscriber> sceneSubscribers = new List<Subscriber>();
+
 
 		public void Run()
         {

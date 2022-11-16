@@ -230,6 +230,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1820c5edee64644ba4ae47d8ed4fd15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useFade: 0
+  fadeDuration: 0
   image: {fileID: 24511167}
 --- !u!114 &154522373
 MonoBehaviour:
@@ -374,8 +376,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeScale: 1
-  targetFrameRate: 0
-  initialSceneName: 
+  targetFrameRate: 60
+  initialSceneName: TestScene
   onLoadEvent:
     m_PersistentCalls:
       m_Calls:
@@ -448,8 +450,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ef3565177c6c1459d0c5e5ab6dd734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelsFolderPath: Scenes
-  uiLevelName: Gameplay UI
+  pauseable: 1
+  IntervalTimer: 0
+  TimeStack: 0
+  FixedTimeStack: 0
+  scenesFolderPath: 
+  uiSceneName: 
 --- !u!114 &365161803
 MonoBehaviour:
   m_ObjectHideFlags: 0
