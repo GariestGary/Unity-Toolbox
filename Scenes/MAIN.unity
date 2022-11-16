@@ -189,7 +189,6 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 154522376}
   m_RootOrder: 0
@@ -231,6 +230,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1820c5edee64644ba4ae47d8ed4fd15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useFade: 0
+  fadeDuration: 0
   image: {fileID: 24511167}
 --- !u!114 &154522373
 MonoBehaviour:
@@ -303,7 +304,6 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
-  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 24511169}
   m_Father: {fileID: 0}
@@ -376,7 +376,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeScale: 1
-  initialSceneName: 
+  targetFrameRate: 60
+  initialSceneName: TestScene
   onLoadEvent:
     m_PersistentCalls:
       m_Calls:
@@ -402,7 +403,6 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1124052203}
   m_Father: {fileID: 0}
@@ -452,6 +452,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelsFolderPath: Scenes
   uiLevelName: Gameplay UI
+  pauseable: 1
+  IntervalTimer: 0
+  TimeStack: 0
+  FixedTimeStack: 0
+  scenesFolderPath: 
+  uiSceneName: 
 --- !u!114 &365161803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -543,7 +549,6 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -587,7 +592,6 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -618,7 +622,6 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 365161799}
   m_RootOrder: 0
@@ -666,7 +669,6 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -683,7 +685,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SendPointerHoverToParent: 1
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
   m_SubmitButton: Submit

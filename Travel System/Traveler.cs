@@ -3,51 +3,66 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Linq;
-using VolumeBox.Toolbox;
+using System;
 
 namespace VolumeBox.Toolbox
 {
-    public class Traveler : MonoBehaviour, IRunner
+    public class Traveler : CachedSingleton<Traveler>, IRunner
     {
         [SerializeField] private string scenesFolderPath;
         [SerializeField] private string uiSceneName;
 
-        private SceneHandler currentSceneHandler;
-        private SceneArgs currentOpeningSceneArgs;
-        private string currentSceneName;
-        private bool uiOpened;
-
-        private AsyncOperation unloadingScene;
-        private AsyncOperation loadingScene;
-
-        public string CurrentSceneName => currentSceneName;
-        public SceneHandler CurrentSceneHandler => currentSceneHandler;
-
         [Inject] private Updater updater;
         [Inject] private Messager messager;
 
+        public string CurrentSceneName => currentSceneName;
+
+        private SceneArgs currentOpeningSceneArgs;
+        private AsyncOperation unloadingScene;
+        private AsyncOperation loadingScene;
+        private string currentSceneName;
+        private bool uiOpened;
+        private bool loadingLevel;
+
         public void Run()
         {
-            messager.Subscribe<LoadSceneMessage>(x => 
-            {
-                currentOpeningSceneArgs = x.Args;
-                LoadScene(x.SceneName);
-            });
-        }
-        
-        public bool LoadScene(string sceneName)
-	    {
-            StartCoroutine(LoadSceneCoroutine(sceneName));
 
-            return true;
         }
 
-        public IEnumerator LoadSceneCoroutine(string sceneName)
+        public TArgs GetCurrentSceneArgs<TArgs>() where TArgs : SceneArgs
         {
+            if (currentOpeningSceneArgs == null) return null;
+
+            if (!(currentOpeningSceneArgs is TArgs))
+            {
+                Debug.LogError($"Current loading scene args is {currentOpeningSceneArgs.GetType()}, but scene requires {typeof(TArgs)}");
+            }
+
+            TArgs args = (TArgs)currentOpeningSceneArgs;
+            currentOpeningSceneArgs = null;
+            return args;
+        }
+
+        public void LoadScene(string name)
+        {
+            if (loadingLevel)
+            {
+                currentOpeningSceneArgs = null;
+                return;
+            }
+
+            StartCoroutine(LoadSceneCoroutine(name));
+        }
+
+        private IEnumerator LoadSceneCoroutine(string name)
+        {
+            loadingLevel = true;
+
+            yield return StartCoroutine(Fader.Instance.FadeInCoroutine());
+
             //skip unloading level if current level is null
-            if (currentSceneHandler == null)
-            { 
+            if (string.IsNullOrEmpty(currentSceneName))
+            {
                 unloadingScene = null;
             }
             else
@@ -55,23 +70,72 @@ namespace VolumeBox.Toolbox
                 yield return StartCoroutine(WaitForSceneUnloadCoroutine());
             }
 
-            yield return StartCoroutine(WaitForLoadCoroutine(sceneName));
-        }
+            loadingScene = SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
 
-        private IEnumerator WaitForLoadCoroutine(string loadingSceneName)
-        {
-            loadingScene = SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
-
-            while(!loadingScene.isDone)
+            while (!loadingScene.isDone)
             {
                 yield return null;
             }
 
-            messager.Send(new SceneLoadedMessage(loadingSceneName));
+            currentSceneName = name;
 
-            yield return OpenScene(loadingSceneName);
+            messager.Send(new SceneLoadedMessage(name));
+
+            GameObject[] rootObjs = SceneManager.GetSceneByName(name).GetRootGameObjects();
+
+            SearchSceneBindings(rootObjs);
+
+            SceneHandlerBase sceneHandler = null;
+
+            foreach (var obj in rootObjs)
+            {
+                sceneHandler = obj.GetComponent<SceneHandlerBase>();
+
+                if (sceneHandler != null)
+                {
+                    break;
+                }
+            }
+
+            if (sceneHandler == null)
+            {
+                Debug.Log("There is no SceneHandler in scene, skipping scene setup");
+            }
+            else
+            {
+                updater.InitializeMono(sceneHandler);
+                sceneHandler.OnLoadCallback();
+            }
+
+
+            updater.InitializeObjects(rootObjs);
+            currentOpeningSceneArgs = null;
+            messager.Send(new SceneOpenedMessage(name));
+            messager.Send(new GameplaySceneOpenedMessage(name));
+
+            yield return StartCoroutine(Fader.Instance.FadeOutCoroutine());
+
+            loadingLevel = false;
         }
-        
+
+        private void SearchSceneBindings(GameObject[] objs)
+        {
+            List<SceneBinding> bindings = new List<SceneBinding>();
+
+            foreach (var obj in objs)
+            {
+                foreach (var cb in obj.GetComponentsInChildren<ComponentBinding>())
+                {
+                    if (cb.Context != null)
+                    {
+                        bindings.Add(new SceneBinding() { instance = cb.Context, id = cb.Id });
+                    }
+                }
+            }
+
+            messager.Send(new SceneBindingMessage() { instances = bindings });
+        }
+
         private IEnumerator WaitForSceneUnloadCoroutine()
         {
             messager.Send(new SceneUnloadingMessage(currentSceneName));
@@ -85,45 +149,14 @@ namespace VolumeBox.Toolbox
             {
                 yield return null;
             }
-            
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
             messager.Send(new SceneUnloadedMessage(unloadingSceneName));
         }
 
-        private IEnumerator OpenScene(string openingSceneName)
-        {
-            GameObject[] rootObjs = SceneManager.GetSceneByName(openingSceneName).GetRootGameObjects();
-
-            SceneHandler openedSceneHandler = null;
-
-            rootObjs.FirstOrDefault(x => x.TryGetComponent(out openedSceneHandler));
-
-            if(openedSceneHandler == null)
-            {
-                Debug.LogWarning("There is no SceneHandler in opened scene, creating a new one");
-                GameObject sceneHandlerGameObject = new GameObject("Scene Handler", typeof(SceneHandler));
-                SceneManager.MoveGameObjectToScene(sceneHandlerGameObject, SceneManager.GetSceneByName(openingSceneName));
-                openedSceneHandler = sceneHandlerGameObject.GetComponent<SceneHandler>();
-                currentSceneHandler = openedSceneHandler;
-            }    
-            
-            if(currentSceneHandler.IsGameplayScene)
-            {
-                yield return StartCoroutine(OpenUI());
-            }
-            else
-            {
-                yield return StartCoroutine(CloseUI());
-            }
-
-            updater.InitializeObject(openedSceneHandler.gameObject);
-            updater.InitializeObjects(rootObjs);
-            currentSceneHandler.SetupLevel(currentOpeningSceneArgs);
-            currentOpeningSceneArgs = null;
-            messager.Send(new SceneOpenedMessage(openingSceneName));
-            messager.Send(new GameplaySceneOpenedMessage(openingSceneName));
-        }
-
-        #region UI
+        #region UI_Handle
         private IEnumerator OpenUI()
         {
             if(string.IsNullOrEmpty(uiSceneName)) yield break;
@@ -143,7 +176,7 @@ namespace VolumeBox.Toolbox
 
                 uiOpened = true;
 
-                messager.Send(new UIOpenedMessage());
+                //TODO: messager.Send(Message.UI_OPENED);
             }
         }
 
@@ -170,83 +203,71 @@ namespace VolumeBox.Toolbox
                 }
 
                 uiOpened = false;
-                messager.Send(new UIClosedMessage());
+
+                //TODO: messager.Send(Message.UI_CLOSED);
             }
         }
         #endregion
     }
-}
 
-#region Traveler's class messages
-
-public class SceneMessage
-{
-    public string SceneName => _sceneName;
-
-    private string _sceneName;
-
-    public SceneMessage(string sceneName)
+ #region Traveler's class messages
+    public class SceneMessage
     {
-        _sceneName = sceneName;
+        public string SceneName => _sceneName;
+
+        private string _sceneName;
+
+        public SceneMessage(string sceneName)
+        {
+            _sceneName = sceneName;
+        }
     }
-}
 
-public class LoadSceneMessage : SceneMessage
-{
-    public SceneArgs Args => _args;
-
-    private SceneArgs _args;
-
-    public LoadSceneMessage(string sceneName, SceneArgs args) : base(sceneName)
+    public class SceneUnloadingMessage : SceneMessage
     {
-        _args = args;
+        public SceneUnloadingMessage(string sceneName) : base(sceneName)
+        {
+        }
     }
-}
 
-public class SceneUnloadingMessage : SceneMessage
-{
-    public SceneUnloadingMessage(string sceneName) : base(sceneName)
+    public class SceneUnloadedMessage : SceneMessage
     {
+        public SceneUnloadedMessage(string sceneName) : base(sceneName)
+        {
+        }
     }
-}
 
-public class SceneUnloadedMessage : SceneMessage
-{
-    public SceneUnloadedMessage(string sceneName) : base(sceneName)
+    public class SceneLoadingMessage : SceneMessage
     {
+        public SceneLoadingMessage(string sceneName) : base(sceneName)
+        {
+        }
     }
-}
 
-public class SceneLoadingMessage : SceneMessage
-{
-    public SceneLoadingMessage(string sceneName) : base(sceneName)
+    public class SceneLoadedMessage : SceneMessage
     {
+        public SceneLoadedMessage(string sceneName) : base(sceneName)
+        {
+        }
     }
-}
 
-public class SceneLoadedMessage : SceneMessage
-{
-    public SceneLoadedMessage(string sceneName) : base(sceneName)
+    public class SceneOpenedMessage : SceneMessage
     {
+        public SceneOpenedMessage(string sceneName) : base(sceneName)
+        {
+        }
     }
-}
 
-public class SceneOpenedMessage : SceneMessage
-{
-    public SceneOpenedMessage(string sceneName) : base(sceneName)
+    public class GameplaySceneOpenedMessage : SceneMessage
     {
+        public GameplaySceneOpenedMessage(string sceneName) : base(sceneName)
+        {
+        }
     }
+
+    public class UIOpenedMessage { }
+
+    public class UIClosedMessage { }
+
+    #endregion
 }
-
-public class GameplaySceneOpenedMessage : SceneMessage
-{
-    public GameplaySceneOpenedMessage(string sceneName) : base(sceneName)
-    {
-    }
-}
-
-public class UIOpenedMessage { }
-
-public class UIClosedMessage { }
-
-#endregion

@@ -7,21 +7,33 @@ using System;
 
 namespace VolumeBox.Toolbox
 {
-	public class SceneHandler: MonoCached
-	{
-		[SerializeField] private bool _skipSetup;
-		[SerializeField] private bool _isGameplayLevel;
+    public abstract class SceneHandler<TArgs> : SceneHandlerBase where TArgs : SceneArgs
+    {
+        [SerializeField] private bool _skipSetup;
+        [SerializeField] private bool _isGameplayLevel;
 
-		public bool IsGameplayScene => _isGameplayLevel;
+        public bool IsGameplayScene => _isGameplayLevel;
 
-        public virtual void SetupLevel(SceneArgs args)
+        sealed public override void OnLoadCallback()
         {
-            
+            TArgs args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
+
+            if (args == null)
+            {
+                Debug.LogWarning("Current scene args is null");
+            }
+
+            SetupScene(args);
         }
+
+        public abstract void SetupScene(TArgs args);
     }
 
-    public class SceneArgs
+    public class SceneHandlerBase : MonoCached
     {
+        public virtual void OnLoadCallback()
+        {
 
+        }
     }
 }

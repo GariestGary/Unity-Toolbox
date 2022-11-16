@@ -14,7 +14,8 @@ public class MessagerTests
     {
         message = "null";
 
-        Messager.Instance.Subscribe<MockMessage>(x => React(x.message));
+
+        Messager.Instance.SubscribeKeeping<MockMessage>(x => React(x.message));
         Messager.Instance.Send<MockMessage>();// (new MockMessage() { message = "FFFFFFFF"});
 
         Assert.AreEqual("Reacted", message);
