@@ -33,7 +33,7 @@ namespace VolumeBox.Toolbox
                 }
             }
 
-            Messager.Instance.Subscribe<SceneBindingMessage>(x => currentSceneInstances = x.instances.ToList());
+            Messager.Instance.SubscribeKeeping<SceneBindingMessage>(x => currentSceneInstances = x.instances.ToList());
         }
 
         public void InjectInstances()
