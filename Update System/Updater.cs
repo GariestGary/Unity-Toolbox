@@ -102,6 +102,11 @@ namespace VolumeBox.Toolbox
 
             foreach(var obj in objs)
             {
+                if(obj == null)
+                {
+                    continue;
+                }
+
                 Resolver.Instance.Inject(obj); 
                 objsMonos = objsMonos.Concat(obj.GetComponentsInChildren<MonoCached>(true)).ToArray();
             }
@@ -128,6 +133,8 @@ namespace VolumeBox.Toolbox
         /// <param name="obj"></param>
         public void InitializeObject(GameObject obj)
         {
+            if (obj == null) return;
+
             Resolver.Instance.Inject(obj);
 
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
@@ -146,6 +153,8 @@ namespace VolumeBox.Toolbox
 
         public void InitializeMono(MonoCached mono)
         {
+            if (mono == null) return;
+
             Resolver.Instance.Inject(mono);
             mono.Rise();
             mono.Ready();
@@ -154,6 +163,8 @@ namespace VolumeBox.Toolbox
 
         private void AddMonoToProcess(MonoCached mono)
         {
+            if (mono == null) return;
+
             if(!monos.Contains(mono))
             {
                 mono.Activate();
@@ -163,6 +174,8 @@ namespace VolumeBox.Toolbox
 
         private void RemoveMonoFromProcess(MonoCached mono)
         {
+            if (mono == null) return;
+
             if(monos.Contains(mono))
             {
                 mono.Deactivate();
@@ -173,6 +186,8 @@ namespace VolumeBox.Toolbox
 
         public void RemoveObjectFromUpdate(GameObject obj)
         {
+            if(obj == null) return;
+
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
             foreach (var mono in objMonos)

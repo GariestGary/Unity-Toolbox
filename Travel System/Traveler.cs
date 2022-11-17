@@ -109,6 +109,11 @@ namespace VolumeBox.Toolbox
             }
 
 
+            if(sceneHandler != null)
+            {
+                updater.InitializeMono(sceneHandler);
+            }
+
             updater.InitializeObjects(rootObjs);
             currentOpeningSceneArgs = null;
             messager.Send(new SceneOpenedMessage(name));
