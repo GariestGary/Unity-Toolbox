@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace VolumeBox.Toolbox
 {
+    [System.Serializable]
     public class Subscriber
     {
         private Type type;

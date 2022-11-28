@@ -71,7 +71,7 @@ namespace VolumeBox.Toolbox
         public void Inject(GameObject obj)
         {
             //Getting all monos from gameobject
-            MonoBehaviour[] monosToInject = obj.GetComponentsInChildren<MonoBehaviour>(true);
+            Component[] monosToInject = obj.GetComponentsInChildren<Component>(true);
 
             foreach(var mono in monosToInject)
             {

@@ -46,7 +46,7 @@ public class UpdaterTests
         public float Delta => delta;
         public float counter = 0;
 
-        public override void Tick()
+        protected override void Tick()
         {
             counter += delta;
         }

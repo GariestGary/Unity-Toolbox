@@ -13,6 +13,10 @@ namespace VolumeBox.Toolbox
         protected bool paused;
         protected bool active;
         protected float interval;
+
+        private bool raised;
+        private bool ready;
+
         [HideInInspector] public float IntervalTimer;
         [HideInInspector] public float TimeStack;
         [HideInInspector] public float FixedTimeStack;
@@ -39,15 +43,32 @@ namespace VolumeBox.Toolbox
         public bool Pauseable => pauseable;
         public bool Active => active;
 
+        public void OnRise()
+        {
+            if (raised) return;
 
-        public virtual void Rise(){}
-        public virtual void Ready(){}
-        public virtual void Tick(){}
-        public virtual void FixedTick(){}
-        public virtual void LateTick(){}
-        public virtual void OnRemove(){}
+            Rise();
+
+            raised = true;
+        }
+
+        public void OnReady()
+        {
+            if (ready) return;
+
+            Ready();
+
+            ready = true;
+        }
+
+        protected virtual void Rise(){}
+        protected virtual void Ready(){}
+        protected virtual void Tick(){}
+        protected virtual void FixedTick(){}
+        protected virtual void LateTick(){}
         protected virtual void OnPause(){}
         protected virtual void OnResume(){}
+        public virtual void OnRemove(){}
         
         public void Process(float delta)
         {

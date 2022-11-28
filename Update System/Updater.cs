@@ -113,12 +113,12 @@ namespace VolumeBox.Toolbox
 
             foreach(var mono in objsMonos)
             {
-                mono.Rise();
+                mono.OnRise();
             }
 
             foreach (var mono in objsMonos)
             {
-                mono.Ready();
+                mono.OnReady();
             }
 
             foreach(var mono in objsMonos)
@@ -141,12 +141,12 @@ namespace VolumeBox.Toolbox
 
             foreach (var mono in objMonos)
             {
-                mono.Rise();
+                mono.OnRise();
             }
 
             foreach (var mono in objMonos)
             {
-                mono.Ready();
+                mono.OnReady();
                 AddMonoToProcess(mono);
             }
         }
@@ -156,8 +156,8 @@ namespace VolumeBox.Toolbox
             if (mono == null) return;
 
             Resolver.Instance.Inject(mono);
-            mono.Rise();
-            mono.Ready();
+            mono.OnRise();
+            mono.OnReady();
             AddMonoToProcess(mono);
         }
 
