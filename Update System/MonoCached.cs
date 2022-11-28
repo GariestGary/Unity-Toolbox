@@ -21,6 +21,26 @@ namespace VolumeBox.Toolbox
         [HideInInspector] public float TimeStack;
         [HideInInspector] public float FixedTimeStack;
 
+        private RectTransform _rect;
+
+        public RectTransform rect
+        {
+            get 
+            {
+                if(_rect != null) return _rect;
+
+                if(transform is RectTransform)
+                {
+                    _rect = transform as RectTransform;
+                    return _rect;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         public float Interval
         {
             get
