@@ -12,11 +12,13 @@ namespace VolumeBox.Toolbox
         [SerializeField] private bool _skipSetup;
         [SerializeField] private bool _isGameplayLevel;
 
+        protected TArgs args;
+
         public bool IsGameplayScene => _isGameplayLevel;
 
         sealed public override void OnLoadCallback()
         {
-            TArgs args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
+            args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
 
             if (args == null)
             {

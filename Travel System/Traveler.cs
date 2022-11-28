@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using UnityEngine.UI;
 
 namespace VolumeBox.Toolbox
 {
-    public class Traveler : CachedSingleton<Traveler>, IRunner
+    public class Traveler: CachedSingleton<Traveler>, IRunner
     {
         [SerializeField] private string scenesFolderPath;
         [SerializeField] private string uiSceneName;
+        [SerializeField] private bool manualSceneUnload;
+        [SerializeField] private bool manualSceneOpening;
 
         [Inject] private Updater updater;
         [Inject] private Messager messager;
@@ -21,6 +24,7 @@ namespace VolumeBox.Toolbox
         private AsyncOperation unloadingScene;
         private AsyncOperation loadingScene;
         private string currentSceneName;
+        private string sceneToManualUnload;
         private bool uiOpened;
         private bool loadingLevel;
 
@@ -36,6 +40,7 @@ namespace VolumeBox.Toolbox
             if (!(currentOpeningSceneArgs is TArgs))
             {
                 Debug.LogError($"Current loading scene args is {currentOpeningSceneArgs.GetType()}, but scene requires {typeof(TArgs)}");
+                return null;
             }
 
             TArgs args = (TArgs)currentOpeningSceneArgs;
@@ -45,8 +50,11 @@ namespace VolumeBox.Toolbox
 
         public void LoadScene(string name, SceneArgs args = null)
         {
-            if (loadingLevel)
+            if (loadingLevel) return;
+
+            if (!string.IsNullOrEmpty(sceneToManualUnload))
             {
+                Debug.LogError("Firstly unload previous scene");
                 return;
             }
 
@@ -62,22 +70,35 @@ namespace VolumeBox.Toolbox
             yield return StartCoroutine(Fader.Instance.FadeInCoroutine());
 
             //skip unloading level if current level is null
-            if (string.IsNullOrEmpty(currentSceneName))
+            if (string.IsNullOrEmpty(currentSceneName) || manualSceneUnload)
             {
+                sceneToManualUnload = currentSceneName;
                 unloadingScene = null;
             }
             else
             {
-                yield return StartCoroutine(WaitForSceneUnloadCoroutine());
+                yield return StartCoroutine(WaitForSceneUnloadCoroutine(currentSceneName));
             }
 
             loadingScene = SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+
+            //loadingScene.allowSceneActivation = false;
 
             while (!loadingScene.isDone)
             {
                 yield return null;
             }
 
+            if (!manualSceneOpening)
+            {
+                loadingScene.allowSceneActivation = true;
+
+                OpenLoadedScene(name);
+            }
+        }
+
+        public void OpenLoadedScene(string name)
+        {
             currentSceneName = name;
 
             messager.Send(new SceneLoadedMessage(name));
@@ -108,18 +129,11 @@ namespace VolumeBox.Toolbox
                 sceneHandler.OnLoadCallback();
             }
 
-
-            if(sceneHandler != null)
-            {
-                updater.InitializeMono(sceneHandler);
-            }
-
+            updater.InitializeMono(sceneHandler);
             updater.InitializeObjects(rootObjs);
-            currentOpeningSceneArgs = null;
+            Fader.Instance.FadeOut();
             messager.Send(new SceneOpenedMessage(name));
             messager.Send(new GameplaySceneOpenedMessage(name));
-
-            yield return StartCoroutine(Fader.Instance.FadeOutCoroutine());
 
             loadingLevel = false;
         }
@@ -130,6 +144,13 @@ namespace VolumeBox.Toolbox
 
             foreach (var obj in objs)
             {
+                var canvas = obj.GetComponent<Canvas>();
+
+                if (canvas != null)
+                {
+
+                }
+
                 foreach (var cb in obj.GetComponentsInChildren<ComponentBinding>())
                 {
                     if (cb.Context != null)
@@ -142,9 +163,23 @@ namespace VolumeBox.Toolbox
             messager.Send(new SceneBindingMessage() { instances = bindings });
         }
 
-        private IEnumerator WaitForSceneUnloadCoroutine()
+        public void AllowSceneOpen()
         {
-            messager.Send(new SceneUnloadingMessage(currentSceneName));
+            if (loadingScene == null) return;
+
+            loadingScene.allowSceneActivation = true;
+        }
+
+        public void UnloadPreviousScene()
+        {
+            StartCoroutine(WaitForSceneUnloadCoroutine(sceneToManualUnload));
+        }
+
+        private IEnumerator WaitForSceneUnloadCoroutine(string name)
+        {
+            if (string.IsNullOrEmpty(name)) yield break;
+
+            messager.Send(new SceneUnloadingMessage(name));
             updater.RemoveObjectsFromUpdate(SceneManager.GetSceneByName(CurrentSceneName).GetRootGameObjects());
 
             string unloadingSceneName = currentSceneName;
@@ -156,18 +191,17 @@ namespace VolumeBox.Toolbox
                 yield return null;
             }
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
             messager.Send(new SceneUnloadedMessage(unloadingSceneName));
+
+            sceneToManualUnload = string.Empty;
         }
 
         #region UI_Handle
         private IEnumerator OpenUI()
         {
-            if(string.IsNullOrEmpty(uiSceneName)) yield break;
+            if (string.IsNullOrEmpty(uiSceneName)) yield break;
 
-            if(!uiOpened)
+            if (!uiOpened)
             {
                 AsyncOperation loadingUi = SceneManager.LoadSceneAsync(uiSceneName, LoadSceneMode.Additive);
 
@@ -188,17 +222,17 @@ namespace VolumeBox.Toolbox
 
         private IEnumerator CloseUI()
         {
-            if(string.IsNullOrEmpty(uiSceneName)) yield break;
+            if (string.IsNullOrEmpty(uiSceneName)) yield break;
 
-            if(uiOpened)
+            if (uiOpened)
             {
                 Scene ui = SceneManager.GetSceneByName(uiSceneName);
 
-                if(!ui.isLoaded)
+                if (!ui.isLoaded)
                 {
                     yield break;
                 }
-                
+
                 updater.RemoveObjectsFromUpdate(ui.GetRootGameObjects());
 
                 AsyncOperation unloadingUi = SceneManager.UnloadSceneAsync(uiSceneName);
@@ -216,7 +250,9 @@ namespace VolumeBox.Toolbox
         #endregion
     }
 
- #region Traveler's class messages
+    #region Traveler's class messages
+    public class UnloadScene { }
+
     public class SceneMessage
     {
         public string SceneName => _sceneName;
@@ -229,42 +265,42 @@ namespace VolumeBox.Toolbox
         }
     }
 
-    public class SceneUnloadingMessage : SceneMessage
+    public class SceneUnloadingMessage: SceneMessage
     {
         public SceneUnloadingMessage(string sceneName) : base(sceneName)
         {
         }
     }
 
-    public class SceneUnloadedMessage : SceneMessage
+    public class SceneUnloadedMessage: SceneMessage
     {
         public SceneUnloadedMessage(string sceneName) : base(sceneName)
         {
         }
     }
 
-    public class SceneLoadingMessage : SceneMessage
+    public class SceneLoadingMessage: SceneMessage
     {
         public SceneLoadingMessage(string sceneName) : base(sceneName)
         {
         }
     }
 
-    public class SceneLoadedMessage : SceneMessage
+    public class SceneLoadedMessage: SceneMessage
     {
         public SceneLoadedMessage(string sceneName) : base(sceneName)
         {
         }
     }
 
-    public class SceneOpenedMessage : SceneMessage
+    public class SceneOpenedMessage: SceneMessage
     {
         public SceneOpenedMessage(string sceneName) : base(sceneName)
         {
         }
     }
 
-    public class GameplaySceneOpenedMessage : SceneMessage
+    public class GameplaySceneOpenedMessage: SceneMessage
     {
         public GameplaySceneOpenedMessage(string sceneName) : base(sceneName)
         {

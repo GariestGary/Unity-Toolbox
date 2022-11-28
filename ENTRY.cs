@@ -13,7 +13,7 @@ namespace VolumeBox.Toolbox
         [SerializeField] [Range(0, 1)] private float timeScale;
         [SerializeField] [MinValue(0)] [MaxValue(420)]
         private int targetFrameRate;
-        [SerializeField] private string initialSceneName;
+        [SerializeField] [Scene] private string initialSceneName;
         public UnityEvent onLoadEvent;
         private Resolver resolver;
         private Messager messager;
