@@ -1,17 +1,16 @@
-using System.Threading;
+using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
-using UnityEngine.UI;
 
 namespace VolumeBox.Toolbox
 {
     public class Traveler: CachedSingleton<Traveler>, IRunner
     {
         [SerializeField] private string scenesFolderPath;
-        [SerializeField] private string uiSceneName;
+        [SerializeField] [Scene] private string uiSceneName;
         [SerializeField] private bool manualSceneUnload;
         [SerializeField] private bool manualSceneOpening;
 
@@ -30,7 +29,6 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-
         }
 
         public TArgs GetCurrentSceneArgs<TArgs>() where TArgs : SceneArgs
@@ -148,7 +146,6 @@ namespace VolumeBox.Toolbox
 
                 if (canvas != null)
                 {
-
                 }
 
                 foreach (var cb in obj.GetComponentsInChildren<ComponentBinding>())
@@ -197,6 +194,7 @@ namespace VolumeBox.Toolbox
         }
 
         #region UI_Handle
+
         private IEnumerator OpenUI()
         {
             if (string.IsNullOrEmpty(uiSceneName)) yield break;
@@ -247,13 +245,14 @@ namespace VolumeBox.Toolbox
                 //TODO: messager.Send(Message.UI_CLOSED);
             }
         }
-        #endregion
+
+        #endregion UI_Handle
     }
 
     #region Traveler's class messages
-    public class UnloadScene { }
 
-    public class SceneMessage
+    [Serializable]
+    public abstract class SceneMessage: Message
     {
         public string SceneName => _sceneName;
 
@@ -263,53 +262,78 @@ namespace VolumeBox.Toolbox
         {
             _sceneName = sceneName;
         }
+
+        public SceneMessage()
+        {
+
+        }
     }
 
+    [Serializable]
     public class SceneUnloadingMessage: SceneMessage
     {
         public SceneUnloadingMessage(string sceneName) : base(sceneName)
         {
         }
+
+        public SceneUnloadingMessage(): base() { }
     }
 
+    [Serializable]
     public class SceneUnloadedMessage: SceneMessage
     {
         public SceneUnloadedMessage(string sceneName) : base(sceneName)
         {
         }
+
+        public SceneUnloadedMessage(): base() { }
     }
 
+    [Serializable]
     public class SceneLoadingMessage: SceneMessage
     {
         public SceneLoadingMessage(string sceneName) : base(sceneName)
         {
         }
+
+        public SceneLoadingMessage(): base() { }
     }
 
+    [Serializable]
     public class SceneLoadedMessage: SceneMessage
     {
         public SceneLoadedMessage(string sceneName) : base(sceneName)
         {
         }
+        
+        public SceneLoadedMessage(): base() { }
     }
 
+    [Serializable]
     public class SceneOpenedMessage: SceneMessage
     {
         public SceneOpenedMessage(string sceneName) : base(sceneName)
         {
         }
+
+        public SceneOpenedMessage(): base() { }
     }
 
+    [Serializable]
     public class GameplaySceneOpenedMessage: SceneMessage
     {
         public GameplaySceneOpenedMessage(string sceneName) : base(sceneName)
         {
         }
+
+        public GameplaySceneOpenedMessage(): base() { }
     }
 
-    public class UIOpenedMessage { }
+    public class UIOpenedMessage
+    { }
 
-    public class UIClosedMessage { }
+    public class UIClosedMessage
+    { }
 
-    #endregion
+    #endregion Traveler's class messages
 }

@@ -1,14 +1,15 @@
-using System.Globalization;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Singleton<T> : MonoBehaviour where T: MonoBehaviour
+    public class Singleton<T>: MonoBehaviour where T : MonoBehaviour
     {
         private static T instance;
         private static object lockObject = new object();
 
-        public static T Instance { get 
+        public static T Instance
+        {
+            get
             {
                 lock (lockObject)
                 {
@@ -24,7 +25,7 @@ namespace VolumeBox.Toolbox
                     }
                     return instance;
                 }
-            } 
+            }
         }
 
         public static void DontDestroy()
@@ -33,12 +34,14 @@ namespace VolumeBox.Toolbox
         }
     }
 
-    public class CachedSingleton<T>: MonoCached where T: MonoCached
+    public class CachedSingleton<T>: MonoCached where T : MonoCached
     {
         private static T instance;
         private static object lockObject = new object();
 
-        public static T Instance { get 
+        public static T Instance
+        {
+            get
             {
                 lock (lockObject)
                 {
@@ -54,7 +57,7 @@ namespace VolumeBox.Toolbox
                     }
                     return instance;
                 }
-            } 
+            }
         }
 
         public static void DontDestroy()

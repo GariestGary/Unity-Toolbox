@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
     [CreateAssetMenu(fileName = "Mock State Provider", menuName = "VolumeBox/Toolbox/State Providers/Mock")]
-    public class MockStateProvider : StateProvider
+    public class MockStateProvider: StateProvider
     {
         public string data = "Mock";
 
@@ -16,7 +14,6 @@ namespace VolumeBox.Toolbox
 
         public override void RestoreCurrentState(object data)
         {
-            
         }
     }
 }

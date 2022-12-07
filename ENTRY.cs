@@ -1,19 +1,21 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using NaughtyAttributes;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace VolumeBox.Toolbox
-{   
-    public class ENTRY : MonoBehaviour
+{
+    public class ENTRY: MonoBehaviour
     {
-        [SerializeField] [Range(0, 1)] private float timeScale;
-        [SerializeField] [MinValue(0)] [MaxValue(420)]
+        [SerializeField][Range(0, 1)] private float timeScale;
+
+        [SerializeField]
+        [MinValue(0)]
+        [MaxValue(420)]
         private int targetFrameRate;
-        [SerializeField] [Scene] private string initialSceneName;
+
+        [SerializeField][Scene] private string initialSceneName;
         public UnityEvent onLoadEvent;
         private Resolver resolver;
         private Messager messager;
@@ -22,18 +24,18 @@ namespace VolumeBox.Toolbox
         private Pooler pooler;
         private Saver saver;
 
-        private void OnValidate() 
+        private void OnValidate()
         {
-            if(updater != null)
+            if (updater != null)
             {
                 updater.TimeScale = timeScale;
-            }          
+            }
         }
 
         private void Awake()
         {
             Application.targetFrameRate = targetFrameRate;
-            
+
             resolver = GetComponent<Resolver>();
             messager = GetComponent<Messager>();
             traveler = GetComponent<Traveler>();
@@ -60,13 +62,13 @@ namespace VolumeBox.Toolbox
 
             updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 
-            if(!string.IsNullOrEmpty(initialSceneName))
+            if (!string.IsNullOrEmpty(initialSceneName))
             {
                 traveler.LoadScene(initialSceneName);
             }
         }
 
-        private void Start() 
+        private void Start()
         {
             onLoadEvent?.Invoke();
         }

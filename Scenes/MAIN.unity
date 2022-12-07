@@ -189,6 +189,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 154522376}
   m_RootOrder: 0
@@ -210,7 +211,7 @@ GameObject:
   - component: {fileID: 154522375}
   - component: {fileID: 154522374}
   - component: {fileID: 154522373}
-  - component: {fileID: 154522372}
+  - component: {fileID: 154522377}
   m_Layer: 5
   m_Name: Fader
   m_TagString: Untagged
@@ -218,21 +219,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &154522372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 154522371}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1820c5edee64644ba4ae47d8ed4fd15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  useFade: 0
-  fadeDuration: 0
-  image: {fileID: 24511167}
 --- !u!114 &154522373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,6 +290,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 24511169}
   m_Father: {fileID: 0}
@@ -314,6 +301,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &154522377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154522371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baf2b0119c7bd7943995944d5d007250, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeDuration: 0.5
+  image: {fileID: 24511167}
 --- !u!1 &365161795
 GameObject:
   m_ObjectHideFlags: 0
@@ -377,7 +378,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeScale: 1
   targetFrameRate: 60
-  initialSceneName: 
+  initialSceneName: TestScene
   onLoadEvent:
     m_PersistentCalls:
       m_Calls:
@@ -403,6 +404,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1124052203}
   m_Father: {fileID: 0}
@@ -455,7 +457,9 @@ MonoBehaviour:
   TimeStack: 0
   FixedTimeStack: 0
   scenesFolderPath: 
-  uiSceneName: 
+  uiSceneName: MAIN
+  manualSceneUnload: 0
+  manualSceneOpening: 0
 --- !u!114 &365161803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -547,6 +551,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -590,6 +595,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -620,6 +626,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 365161799}
   m_RootOrder: 0
@@ -667,6 +674,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -683,6 +691,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
   m_SubmitButton: Submit

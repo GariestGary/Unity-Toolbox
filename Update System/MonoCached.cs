@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class MonoCached : MonoBehaviour
+    public class MonoCached: MonoBehaviour
     {
         [SerializeField] protected bool pauseable = true;
 
@@ -25,11 +23,11 @@ namespace VolumeBox.Toolbox
 
         public RectTransform rect
         {
-            get 
+            get
             {
-                if(_rect != null) return _rect;
+                if (_rect != null) return _rect;
 
-                if(transform is RectTransform)
+                if (transform is RectTransform)
                 {
                     _rect = transform as RectTransform;
                     return _rect;
@@ -49,7 +47,7 @@ namespace VolumeBox.Toolbox
             }
             set
             {
-                if(value < 0) 
+                if (value < 0)
                 {
                     interval = 0;
                 }
@@ -59,6 +57,7 @@ namespace VolumeBox.Toolbox
                 }
             }
         }
+
         public bool Paused => paused;
         public bool Pauseable => pauseable;
         public bool Active => active;
@@ -81,20 +80,35 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
-        protected virtual void Rise(){}
-        protected virtual void Ready(){}
-        protected virtual void Tick(){}
-        protected virtual void FixedTick(){}
-        protected virtual void LateTick(){}
-        protected virtual void OnPause(){}
-        protected virtual void OnResume(){}
-        public virtual void OnRemove(){}
-        
+        protected virtual void Rise()
+        { }
+
+        protected virtual void Ready()
+        { }
+
+        protected virtual void Tick()
+        { }
+
+        protected virtual void FixedTick()
+        { }
+
+        protected virtual void LateTick()
+        { }
+
+        protected virtual void OnPause()
+        { }
+
+        protected virtual void OnResume()
+        { }
+
+        public virtual void OnRemove()
+        { }
+
         public void Process(float delta)
         {
             this.delta = delta;
 
-            if(!active || paused) return;
+            if (!active || paused) return;
 
             Tick();
         }
@@ -103,45 +117,44 @@ namespace VolumeBox.Toolbox
         {
             this.fixedDelta = fixedDelta;
 
-            if(!active || paused) return;
+            if (!active || paused) return;
 
             FixedTick();
         }
 
         public void LateProcess(float delta)
         {
-            if(!active || paused) return;
+            if (!active || paused) return;
 
             LateTick();
         }
 
         public void Pause()
         {
-            if(paused || !pauseable) return;
+            if (paused || !pauseable) return;
             paused = true;
             OnPause();
         }
 
         public void Resume()
         {
-            if(!paused) return;
+            if (!paused) return;
             paused = false;
             OnResume();
         }
 
         public void Activate()
         {
-            if(active) return;
+            if (active) return;
             active = true;
             Resume();
         }
 
         public void Deactivate()
         {
-            if(!active) return;
+            if (!active) return;
             active = false;
             Pause();
         }
-
     }
 }

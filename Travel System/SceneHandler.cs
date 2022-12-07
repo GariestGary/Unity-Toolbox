@@ -1,13 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using UnityEngine.Serialization;
-using System;
 
 namespace VolumeBox.Toolbox
 {
-    public abstract class SceneHandler<TArgs> : SceneHandlerBase where TArgs : SceneArgs
+    public abstract class SceneHandler<TArgs>: SceneHandlerBase where TArgs : SceneArgs
     {
         [SerializeField] private bool _skipSetup;
         [SerializeField] private bool _isGameplayLevel;
@@ -16,7 +11,7 @@ namespace VolumeBox.Toolbox
 
         public bool IsGameplayScene => _isGameplayLevel;
 
-        sealed public override void OnLoadCallback()
+        public override sealed void OnLoadCallback()
         {
             args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
 
@@ -31,11 +26,10 @@ namespace VolumeBox.Toolbox
         public abstract void SetupScene(TArgs args);
     }
 
-    public class SceneHandlerBase : MonoCached
+    public class SceneHandlerBase: MonoCached
     {
         public virtual void OnLoadCallback()
         {
-
         }
     }
 }

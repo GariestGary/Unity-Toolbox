@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace VolumeBox.Toolbox
 {
@@ -18,6 +16,5 @@ namespace VolumeBox.Toolbox
             this.callback = callback;
             this.type = type;
         }
-
     }
 }

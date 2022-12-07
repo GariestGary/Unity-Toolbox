@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Pooler : Singleton<Pooler>, IRunner
+    public class Pooler: Singleton<Pooler>, IRunner
     {
         [SerializeField] private List<PoolData> poolsList;
 
@@ -18,8 +18,8 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            //TODO: msg.Subscribe(Message.SCENE_UNLOADING, _ => ClearPools());
-            
+            msg.Subscribe<SceneUnloadingMessage>(_ => ClearPools());
+
             pools = new List<Pool>();
 
             objectPoolParent = new GameObject().transform;
@@ -49,7 +49,6 @@ namespace VolumeBox.Toolbox
             }
 
             pools.Add(new Pool(poolToAdd.tag, poolToAdd.destroyOnLevelChange, objectPoolList));
-
         }
 
         public void ClearPools()
@@ -126,7 +125,7 @@ namespace VolumeBox.Toolbox
         public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             GameObject inst = GameObject.Instantiate(prefab, position, rotation, parent);
- 
+
             updater.InitializeObject(inst);
             EnableGameObject(inst);
 
@@ -139,7 +138,7 @@ namespace VolumeBox.Toolbox
 
             foreach (var t in pooled)
             {
-                if(t != null)
+                if (t != null)
                 {
                     t.OnSpawn(data);
                 }
@@ -252,7 +251,7 @@ namespace VolumeBox.Toolbox
             {
                 foreach (var obj in pool.objects)
                 {
-                    Despawn(obj);    
+                    Despawn(obj);
                 }
             }
         }
@@ -298,7 +297,7 @@ public class Pool
     {
         this.tag = tag;
         this.destroyOnLevelChange = destroyOnLevelChange;
-        if(objects == null)
+        if (objects == null)
         {
             this.objects = new LinkedList<GameObject>();
         }

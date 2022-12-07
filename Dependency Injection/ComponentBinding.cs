@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class ComponentBinding : MonoBehaviour
+    public class ComponentBinding: MonoBehaviour
     {
         [SerializeField] private Component context;
         [SerializeField] private string _id;

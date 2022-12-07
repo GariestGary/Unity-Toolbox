@@ -28,7 +28,7 @@ public class MessagerTests
         message = test;
     }
 
-    public class MockMessage 
+    public class MockMessage: Message
     {
         public string message = "Reacted";
     }
