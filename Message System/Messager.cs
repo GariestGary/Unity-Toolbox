@@ -32,6 +32,13 @@ namespace VolumeBox.Toolbox
 
             sceneSubscribers.Add(new Subscriber(typeof(T), callback));
         }
+        
+        public void Subscribe(Type type, Action next)
+        {
+            Action<object> callback = args => next();
+
+            sceneSubscribers.Add(new Subscriber(type, callback));
+        }
 
         public void Send<T>()
         {

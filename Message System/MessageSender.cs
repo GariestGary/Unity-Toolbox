@@ -4,54 +4,52 @@ using VolumeBox.Toolbox;
 using System;
 using System.Collections.Generic;
 
-namespace VolumeBox.Toolbox
+public class MessageSender : MonoCached
 {
-    public class MessageSender : MonoCached
+    [SerializeField] private List<MessageToSend> _messages;
+
+    public void Send()
     {
-        [SerializeField] [Inherits(typeof(Message))] private TypeReference messageType;
-
-        [SerializeReference] private Message currentTypeInstance;
-
-        [SerializeField] public Message CurrentTypeInstance => currentTypeInstance;
-
-        [SerializeField] private MessagesContainer container = new MessagesContainer();
-
-        public void InitContainer()
+        foreach (var message in _messages)
         {
-            if(container == null)
-            {
-                container = new MessagesContainer();
-            }
+            Messager.Instance.Send(message.CurrentTypeInstance);
         }
+    }
 
-        public void Send()
+    private void OnValidate()
+    {
+        foreach (var message in _messages)
         {
-            object message = container.GetType().GetField(currentTypeInstance.GetType().Name).GetValue(container);
-            Messager.Instance.Send(message as Message);
-        }
-
-        private void OnValidate()
-        {
-
-            if (currentTypeInstance == null || currentTypeInstance.GetType() != messageType.Type)
+            if (message.CurrentTypeInstance == null || message.CurrentTypeInstance.GetType() != message.MessageType.Type)
             {
-                if(messageType == null || messageType.Type == null)
+                if(message.MessageType.Type == null)
                 {
-                    currentTypeInstance = null;
+                    message.CurrentTypeInstance = null;
                 }
                 else
                 {
-                    currentTypeInstance = Activator.CreateInstance(messageType.Type) as Message;
+                    message.CurrentTypeInstance = Activator.CreateInstance(message.MessageType.Type) as Message;
                 }
             }
+        }
+        
+        
+    }
+
+    [Serializable]
+    private class MessageToSend
+    {
+        [SerializeField] [Inherits(typeof(Message), IncludeAdditionalAssemblies = new[] { "Assembly-CSharp" })] private TypeReference messageType;
+
+        [SerializeReference] private Message currentTypeInstance;
+
+        public TypeReference MessageType => messageType;
+        public Message CurrentTypeInstance
+        {
+            get { return currentTypeInstance; }
+            set { currentTypeInstance = value; }
         }
     }
 }
 
-public class TestMessage: Message
-{
-    public GameObject obj;
-    public float a;
-    public Vector3 s;
-    public List<SceneBindingMessage> msg;
-}
+

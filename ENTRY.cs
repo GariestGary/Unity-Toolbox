@@ -8,6 +8,7 @@ namespace VolumeBox.Toolbox
 {
     public class ENTRY: MonoBehaviour
     {
+        [InfoBox("Install 'openupm install com.solidalloy.type-references'")]
         [SerializeField][Range(0, 1)] private float timeScale;
 
         [SerializeField]
