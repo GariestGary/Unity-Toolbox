@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -54,7 +55,7 @@ namespace VolumeBox.Toolbox
             StartCoroutine(nameof(FadeOutForCoroutine));
         }
 
-        public abstract Task FadeInForCoroutine(float duration);
-        public abstract Task FadeOutForCoroutine(float duration);
+        public abstract UniTask FadeInForCoroutine(float duration);
+        public abstract UniTask FadeOutForCoroutine(float duration);
     }
 }
