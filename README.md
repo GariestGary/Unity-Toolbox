@@ -1,4 +1,4 @@
-[![openupm](https://img.shields.io/npm/v/com.volumebox.toolbox?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.volumebox.toolbox/)
+[![openupm](https://img.shields.io/npm/v/com.volumebox.toolbox?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.volumebox.toolbox/) ![GitHub](https://img.shields.io/github/license/GariestGary/Unity-Toolbox)
 
 # Unity Toolbox
 Set of architectural solutions for Unity
