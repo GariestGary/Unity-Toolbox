@@ -10,15 +10,6 @@ namespace VolumeBox.Toolbox
     public abstract class Fader : Singleton<Fader>
     {
         [SerializeField] protected bool useFade;
-        [SerializeField] protected Image fillingImage;
-
-        public virtual void SetFillImage(Sprite sprite)
-        {
-            if (!useFade) return;
-            
-            fillingImage.color = Color.white;
-            fillingImage.sprite = sprite;
-        }
 
         public virtual void FadeInInstantly()
         {

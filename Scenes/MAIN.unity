@@ -688,6 +688,7 @@ GameObject:
   - component: {fileID: 154522374}
   - component: {fileID: 154522373}
   - component: {fileID: 154522377}
+  - component: {fileID: 154522378}
   m_Layer: 5
   m_Name: Fader
   m_TagString: Untagged
@@ -792,7 +793,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useFade: 1
   fillingImage: {fileID: 24511167}
-  canvasGroup: {fileID: 0}
+  canvasGroup: {fileID: 154522378}
+--- !u!225 &154522378
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154522371}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &155358598
 GameObject:
   m_ObjectHideFlags: 0
