@@ -31,14 +31,14 @@ Or if you don't have it, add the scoped registry to manifest.json with the desir
       "name": "package.openupm.com",
       "url": "https://package.openupm.com",
       "scopes": [
-        "com.solidalloy",
+        "com.volumebox",
         "com.openupm",
         "org.nuget"
       ]
     }
   ],
   "dependencies": {
-    "com.solidalloy.type-references": "2.15.1"
+    "com.volumebox.toolbox": "0.0.1"
   },
 
 ```
@@ -53,12 +53,12 @@ Project supports Unity Package Manager. To install the project as a Git package 
    - **URL**: https://package.openupm.com
    - Scope(s):
      - com.openupm
-     - com.solidalloy
+     - com.volumebox
      - org.nuget
 3. Hit **Apply**.
 4. Go to **Window** -> **Package Manager**.
 5. Press the **+** button, *Add package from git URL*.
-6. Enter **com.solidalloy.type-references**, press **Add**.
+6. Enter **com.volumebox.toolbox**, press **Add**.
 
 ## Basics
 
