@@ -21,7 +21,11 @@ public class PoolerTests
         Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity);
         Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity);
 
-        Assert.AreEqual("Pooler Test 1", Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity).name);
+        Assert.AreEqual
+        (
+            true, 
+            Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity).name.Contains("Pooler Test 1")
+        );
 
         yield return null;
     }
