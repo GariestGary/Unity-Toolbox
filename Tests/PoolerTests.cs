@@ -17,7 +17,7 @@ public class PoolerTests
 
         GameObject sp = Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity);
         sp.name = "Pooler Test 1";
-        Pooler.Instance.Despawn(sp);
+        Pooler.Instance.TryDespawn(sp);
         Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity);
         Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity);
 

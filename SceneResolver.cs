@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,8 +7,7 @@ namespace VolumeBox.Toolbox
 {
     public class SceneResolver: MonoBehaviour
     {
-#if UNITY_EDITOR
-
+        #if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         public static void ResolveScene()
         {
@@ -19,12 +19,11 @@ namespace VolumeBox.Toolbox
         {
             Scene scene = SceneManager.GetActiveScene();
 
-            switch (scene.buildIndex)
+            switch(scene.buildIndex)
             {
                 case 0:
                     Debug.Log("Main opened");
                     break;
-
                 default:
                     SceneManager.LoadScene(0);
                     yield return SceneManager.UnloadSceneAsync(scene);
@@ -33,7 +32,6 @@ namespace VolumeBox.Toolbox
 
             yield return null;
         }
-
-#endif
+        #endif
     }
 }

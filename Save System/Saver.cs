@@ -1,29 +1,36 @@
-using NaughtyAttributes;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using NaughtyAttributes;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Saver: Singleton<Saver>, IRunner
+    public class Saver : Singleton<Saver>, IRunner
     {
-        public bool useSaves;
-
+        [SerializeField] private bool useSaves;
         [Required]
-        [EnableIf("useSaves")]
+        [ShowIf(nameof(useSaves))]
         [SerializeField] private StateProvider stateProvider;
-
         [Required]
-        [EnableIf("useSaves")]
+        [ShowIf(nameof(useSaves))]
         [SerializeField] private PlatformFileHandler fileHandler;
-
-        [EnableIf("useSaves")]
-        [MinValue(1)][MaxValue(10)][SerializeField] private int saveSlotsCount = 1;
+        
+        [ShowIf(nameof(useSaves))]
+        [MinValue(1)] [MaxValue(10)] [SerializeField] private int saveSlotsCount = 1;
 
         public StateProvider StateProvider => stateProvider;
         public PlatformFileHandler FileHandler => fileHandler;
-
-        public int SaveSlotsCount
+        
+        public bool UseSaves
+        {
+            get { return useSaves; }
+            set { useSaves = value; }
+        }
+        public int SaveSlotsCount 
         {
             get
             {
@@ -31,11 +38,11 @@ namespace VolumeBox.Toolbox
             }
             set
             {
-                if (value < 1)
+                if(value < 1)
                 {
                     saveSlotsCount = 1;
                 }
-                else if (value > 10)
+                else if(value > 10)
                 {
                     saveSlotsCount = 10;
                 }
@@ -46,10 +53,12 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        [ReadOnly][SerializeField] private List<SaveSlot> saveSlots;
+        [ShowIf(nameof(useSaves))][ReadOnly] [SerializeField] private List<SaveSlot> saveSlots;
+
+        [Inject] private Messager msg;
 
         private SaveSlot currentSlot;
-
+        
         public SaveSlot CurrentSlot => currentSlot;
 
         public void Run()
@@ -58,7 +67,7 @@ namespace VolumeBox.Toolbox
 
             fileHandler.Run();
             ResolveSlots();
-            Messager.Instance.Subscribe<SaveGameMessage>(_ => Save());
+            //TODO: msg.Subscribe(Message.SAVE_GAME, _ => Save());
         }
 
         public void SetFileHandler(PlatformFileHandler handler)
@@ -81,7 +90,7 @@ namespace VolumeBox.Toolbox
             {
                 SaveSlot slot = fileHandler.LoadGameSlot(i);
 
-                if (slot == null)
+                if(slot == null)
                 {
                     slot = new SaveSlot(null, i);
                     fileHandler.SaveGameSlot(slot);
@@ -121,17 +130,17 @@ namespace VolumeBox.Toolbox
 
         public SaveSlot GetSlot(int id)
         {
-            if (id >= saveSlotsCount || id < 0) return null;
-
-            SaveSlot slot = saveSlots.FirstOrDefault(x => x.id == id);
+            if(id >= saveSlotsCount || id < 0) return null;
+            
+            SaveSlot slot = saveSlots.Where(x => x.id == id).FirstOrDefault();
             return slot;
-        }
+        }   
 
         public SaveSlot SelectSlot(int id)
         {
             SaveSlot s = GetSlot(id);
 
-            if (s != null)
+            if(s != null)
             {
                 currentSlot = s;
             }
@@ -139,6 +148,4 @@ namespace VolumeBox.Toolbox
             return s;
         }
     }
-
-    public class SaveGameMessage: Message { }
 }

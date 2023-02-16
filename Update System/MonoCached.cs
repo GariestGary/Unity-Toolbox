@@ -1,17 +1,21 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class MonoCached: MonoBehaviour
+    public class MonoCached : MonoBehaviour
     {
         [SerializeField] protected bool pauseable = true;
 
         protected float delta;
         protected float fixedDelta;
         protected bool paused;
-        protected bool active;
         protected float interval;
 
+        private bool active;
         private bool raised;
         private bool ready;
 
@@ -19,32 +23,9 @@ namespace VolumeBox.Toolbox
         [HideInInspector] public float TimeStack;
         [HideInInspector] public float FixedTimeStack;
 
-        private RectTransform _rect;
-
-        public RectTransform rect
-        {
-            get
-            {
-                if (_rect != null) return _rect;
-
-                if (transform is RectTransform)
-                {
-                    _rect = transform as RectTransform;
-                    return _rect;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
         public float Interval
         {
-            get
-            {
-                return interval;
-            }
+            get { return interval; }
             set
             {
                 if (value < 0)
@@ -56,6 +37,22 @@ namespace VolumeBox.Toolbox
                     interval = value;
                 }
             }
+        }
+
+        public RectTransform rect
+        {
+            get
+            {
+                if (transform is RectTransform)
+                {
+                    return transform as RectTransform;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            private set { }
         }
 
         public bool Paused => paused;
@@ -81,34 +78,48 @@ namespace VolumeBox.Toolbox
         }
 
         protected virtual void Rise()
-        { }
+        {
+        }
 
         protected virtual void Ready()
-        { }
+        {
+        }
 
         protected virtual void Tick()
-        { }
+        {
+        }
 
         protected virtual void FixedTick()
-        { }
+        {
+        }
 
         protected virtual void LateTick()
-        { }
+        {
+        }
 
         protected virtual void OnPause()
-        { }
+        {
+        }
 
         protected virtual void OnResume()
-        { }
+        {
+        }
 
-        public virtual void OnRemove()
-        { }
+        protected virtual void Destroyed()
+        {
+            
+        }
 
+    public virtual void OnRemove(){}
+        public virtual void OnAdd(){}
+        public virtual void OnActivate(){}
+        public virtual void OnDeactivate(){}
+        
         public void Process(float delta)
         {
             this.delta = delta;
 
-            if (!active || paused) return;
+            if(!active || paused) return;
 
             Tick();
         }
@@ -117,44 +128,84 @@ namespace VolumeBox.Toolbox
         {
             this.fixedDelta = fixedDelta;
 
-            if (!active || paused) return;
+            if(!active || paused) return;
 
             FixedTick();
         }
 
         public void LateProcess(float delta)
         {
-            if (!active || paused) return;
+            if(!active || paused) return;
 
             LateTick();
         }
 
-        public void Pause()
+        private void Pause()
         {
-            if (paused || !pauseable) return;
+            if(paused || !pauseable) return;
             paused = true;
             OnPause();
         }
 
-        public void Resume()
+        private void Resume()
         {
-            if (!paused) return;
+            if(!paused) return;
             paused = false;
             OnResume();
         }
-
-        public void Activate()
+        
+        public void EnableGameObject()
         {
-            if (active) return;
+            if(gameObject.activeSelf) return;
+            
+            gameObject.SetActive(true);
+        }
+
+        public void DisableGameObject()
+        {
+            if (!gameObject.activeSelf) return;
+            
+            gameObject.SetActive(false);
+        }
+
+        private void OnEnable()
+        {
+            if(active) return;
             active = true;
+            OnActivate();
             Resume();
         }
 
-        public void Deactivate()
+        private void OnDisable()
         {
-            if (!active) return;
+            if(!active) return;
             active = false;
+            OnDeactivate();
             Pause();
+        }
+
+        private void OnDestroy()
+        {
+            Updater upd = Updater.Instance;
+            
+            if(upd == null) return;
+            
+            upd.RemoveMonoFromProcess(this);
+            
+            Destroyed();
+        }
+    }
+
+    public static class GameObjectExtensions
+    {
+        public static void Enable(this GameObject gameObject)
+        {
+            gameObject.SetActive(true);
+        }
+
+        public static void Disable(this GameObject gameObject)
+        {
+            gameObject.SetActive(false);
         }
     }
 }

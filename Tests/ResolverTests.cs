@@ -18,9 +18,9 @@ public class ResolverTests
         GameObject test = new GameObject("Resolver Test");
         Dependency dep = test.AddComponent<Dependency>();
 
-        Resolver.Instance.Inject(test);
+        test.Resolve();
 
-        Assert.AreEqual(inst, dep.Check);
+        Assert.AreEqual(inst, dep.Instance);
         
         yield return null;
     }
@@ -32,8 +32,6 @@ public class ResolverTests
 
     private class Dependency: MonoBehaviour
     {
-        [Inject] private Instance instance; 
-
-        public Instance Check => instance;
+        [Inject] public Instance Instance;
     }
 }

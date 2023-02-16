@@ -1,28 +1,26 @@
-using BeauRoutine;
-using NaughtyAttributes;
 using System;
+using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
+using NaughtyAttributes;
+using BeauRoutine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Updater: Singleton<Updater>, IRunner
+    public class Updater : Singleton<Updater>, IRunner
     {
         //TODO: modifiers clears at start, try to consistent set to list, maybe cancel inherit from scriptableobjects
         [SerializeField] protected List<UpdateModifier> modifiers;
-
         private List<MonoCached> monos = new List<MonoCached>();
 
         private float timeScale = 1;
         private float delta;
-
+        
         public float UnscaledDelta => Time.deltaTime;
         public float Delta => delta;
-
         public event Action<float> deltaTick;
-
         public event Action<float> fixedDeltaTick;
 
         public float TimeScale
@@ -30,19 +28,19 @@ namespace VolumeBox.Toolbox
             get
             {
                 return timeScale;
-            }
+            } 
             set
             {
-                if (value < 0)
+                if(value < 0)
                 {
                     Routine.TimeScale = 0f;
                     timeScale = 0f;
-                }
-                else if (value > 1)
+                } 
+                else if(value > 1)
                 {
                     Routine.TimeScale = 1f;
                     timeScale = 1f;
-                }
+                } 
                 else
                 {
                     Routine.TimeScale = value;
@@ -54,7 +52,7 @@ namespace VolumeBox.Toolbox
         [Button("Refresh Modifiers")]
         public void RefreshModifiers()
         {
-            if (modifiers == null)
+            if(modifiers == null)
             {
                 modifiers = new List<UpdateModifier>();
             }
@@ -68,7 +66,7 @@ namespace VolumeBox.Toolbox
             {
                 UpdateModifier newModifier = ScriptableObject.CreateInstance(modifierType) as UpdateModifier;
 
-                if (!modifiers.Any(x => x.GetType() == newModifier.GetType()))
+                if(!modifiers.Any(x => x.GetType() == newModifier.GetType()))
                 {
                     modifiers.Add(newModifier);
                 }
@@ -78,7 +76,7 @@ namespace VolumeBox.Toolbox
         [Button("Clear Modifiers")]
         public void ClearModifiers()
         {
-            if (modifiers != null)
+            if(modifiers != null)
             {
                 modifiers.Clear();
             }
@@ -100,32 +98,9 @@ namespace VolumeBox.Toolbox
         /// <param name="objs">Array of GameObjects</param>
         public void InitializeObjects(GameObject[] objs)
         {
-            MonoCached[] objsMonos = new MonoCached[] { };
-
-            foreach (var obj in objs)
+            foreach(var obj in objs)
             {
-                if (obj == null)
-                {
-                    continue;
-                }
-
-                Resolver.Instance.Inject(obj);
-                objsMonos = objsMonos.Concat(obj.GetComponentsInChildren<MonoCached>(true)).ToArray();
-            }
-
-            foreach (var mono in objsMonos)
-            {
-                mono.OnRise();
-            }
-
-            foreach (var mono in objsMonos)
-            {
-                mono.OnReady();
-            }
-
-            foreach (var mono in objsMonos)
-            {
-                AddMonoToProcess(mono);
+                InitializeObject(obj);
             }
         }
 
@@ -149,6 +124,10 @@ namespace VolumeBox.Toolbox
             foreach (var mono in objMonos)
             {
                 mono.OnReady();
+            }
+
+            foreach(var mono in objMonos)
+            {
                 AddMonoToProcess(mono);
             }
         }
@@ -163,33 +142,39 @@ namespace VolumeBox.Toolbox
             AddMonoToProcess(mono);
         }
 
-        private void AddMonoToProcess(MonoCached mono)
+        public void AddMonoToProcess(MonoCached mono)
         {
-            if (mono == null) return;
-
-            if (!monos.Contains(mono))
+            if(!monos.Contains(mono))
             {
-                mono.Activate();
                 monos.Add(mono);
             }
         }
 
-        private void RemoveMonoFromProcess(MonoCached mono)
+        public void RemoveMonoFromProcess(MonoCached mono)
         {
-            if (mono == null) return;
-
-            if (monos.Contains(mono))
+            if(monos.Contains(mono))
             {
-                mono.Deactivate();
-                mono.OnRemove();
                 monos.Remove(mono);
             }
         }
 
+        public void AddObjectToUpdate(GameObject obj)
+        {
+            if(obj == null) return;
+
+            MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
+
+            foreach (var mono in objMonos)
+            {
+                AddMonoToProcess(mono);
+            }
+        }
+        
+
         public void RemoveObjectFromUpdate(GameObject obj)
         {
-            if (obj == null) return;
-
+            if(obj == null) return;
+            
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
             foreach (var mono in objMonos)
@@ -205,30 +190,82 @@ namespace VolumeBox.Toolbox
                 RemoveObjectFromUpdate(objs[i]);
             }
         }
+        
+        public void AddObjectsToUpdate(GameObject[] objs)
+        {
+            for (var i = 0; i < objs.Length; i++)
+            {
+                AddObjectToUpdate(objs[i]);
+            }
+        }
 
-        private void Update()
+        public void OnSceneObjectsRemoved(GameObject[] objs)
+        {
+            if(objs == null) return;
+
+            foreach (var obj in objs)
+            {
+                OnSceneObjectRemoved(obj);
+            }
+        }
+
+        private void OnSceneObjectRemoved(GameObject obj)
+        {
+            if(obj == null) return;
+
+            MonoCached[] monos = obj.GetComponentsInChildren<MonoCached>(true);
+
+            foreach (var mono in monos)
+            {
+                mono.OnRemove();
+            }
+        }
+        
+        public void OnSceneObjectsAdded(GameObject[] objs)
+        {
+            if(objs == null) return;
+
+            foreach (var obj in objs)
+            {
+                OnSceneObjectAdded(obj);
+            }
+        }
+
+        private void OnSceneObjectAdded(GameObject obj)
+        {
+            if(obj == null) return;
+
+            MonoCached[] monos = obj.GetComponentsInChildren<MonoCached>(true);
+
+            foreach (var mono in monos)
+            {
+                mono.OnAdd();
+            }
+        }
+        
+        void Update()
         {
             delta = Time.deltaTime * TimeScale;
             deltaTick?.Invoke(delta);
 
-            if (monos != null && monos.Count > 0)
+            if(monos != null && monos.Count > 0)
             {
                 for (var i = 0; i < monos.Count; i++)
                 {
                     var mono = monos[i];
 
-                    if (modifiers != null && modifiers.Count > 0)
-                    {
-                        foreach (var modifier in modifiers)
+                    if(modifiers != null && modifiers.Count > 0)
+                    {    
+                        foreach(var modifier in modifiers)
                         {
                             float? modifiedDelta = modifier?.Modify(delta, mono);
                             delta = modifiedDelta.Value;
                         }
                     }
 
-                    if (mono.Interval > 0)
+                    if(mono.Interval > 0)
                     {
-                        if (mono.IntervalTimer >= mono.Interval)
+                        if(mono.IntervalTimer >= mono.Interval)
                         {
                             mono.Process(mono.TimeStack);
                             mono.TimeStack = 0;
@@ -241,26 +278,27 @@ namespace VolumeBox.Toolbox
                     {
                         mono.Process(delta);
                     }
+
                 }
             }
 
             Routine.ManualUpdate();
         }
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             float fixedDelta = Time.fixedDeltaTime * timeScale;
             fixedDeltaTick?.Invoke(fixedDelta);
 
-            if (monos != null && monos.Count > 0)
+            if(monos != null && monos.Count > 0)
             {
                 for (var i = 0; i < monos.Count; i++)
                 {
                     var mono = monos[i];
 
-                    if (mono.Interval > 0)
+                    if(mono.Interval > 0)
                     {
-                        if (mono.IntervalTimer >= mono.Interval)
+                        if(mono.IntervalTimer >= mono.Interval)
                         {
                             mono.FixedProcess(mono.FixedTimeStack);
                             mono.FixedTimeStack = 0;
@@ -272,28 +310,30 @@ namespace VolumeBox.Toolbox
                         mono.FixedProcess(fixedDelta);
                     }
                 }
+
+                
             }
         }
 
-        private void LateUpdate()
+        void LateUpdate()
         {
-            if (monos != null && monos.Count > 0)
+            if(monos != null && monos.Count > 0)
             {
                 for (var i = 0; i < monos.Count; i++)
                 {
                     var mono = monos[i];
 
-                    if (modifiers != null && modifiers.Count > 0)
+                    if(modifiers != null && modifiers.Count > 0)
                     {
-                        foreach (var modifier in modifiers)
+                        foreach(var modifier in modifiers)
                         {
                             modifier.Modify(delta, mono);
                         }
                     }
 
-                    if (mono.Interval > 0)
+                    if(mono.Interval > 0)
                     {
-                        if (mono.IntervalTimer >= mono.Interval)
+                        if(mono.IntervalTimer >= mono.Interval)
                         {
                             //Time stack counting in Process method
                             mono.LateProcess(mono.TimeStack);

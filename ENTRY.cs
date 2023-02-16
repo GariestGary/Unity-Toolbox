@@ -1,37 +1,60 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using NaughtyAttributes;
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace VolumeBox.Toolbox
-{
-    public class ENTRY: MonoBehaviour
+{   
+    public class ENTRY : MonoBehaviour
     {
-        [InfoBox("Install 'openupm install com.solidalloy.type-references'")]
-        [SerializeField][Range(0, 1)] private float timeScale;
-
+        [Foldout("Time and Framerate")] 
+        [SerializeField] [Range(0, 1)] 
+        private float timeScale;
+        
+        [Foldout("Time and Framerate")] 
         [SerializeField]
-        [MinValue(0)]
-        [MaxValue(420)]
+        [Range(1, 900)]
         private int targetFrameRate;
-
-        [SerializeField][Scene] private string initialSceneName;
+        
+        [Scene]
+        [Foldout("Initial Scene")]
+        [SerializeField] 
+        private string initialSceneName;
+        [Foldout("Initial Scene")]
+        [SerializeField] 
+        private SceneArgs initialSceneArgs;
+        
+        [DisableIf(nameof(_autocompile))] public bool Autocompile;
         public UnityEvent onLoadEvent;
+        
         private Resolver resolver;
         private Messager messager;
         private Traveler traveler;
         private Updater updater;
         private Pooler pooler;
         private Saver saver;
+        private AudioPlayer audioPlayer;
+        private bool _autocompile = true;
 
-        private void OnValidate()
+        private void OnValidate() 
         {
-            if (updater != null)
+            if(updater != null)
             {
                 updater.TimeScale = timeScale;
-            }
+            }          
         }
+        
+#if UNITY_EDITOR
+        [Button("Switch Autocompile")]
+        public void SwitchAutocompile()
+        {
+            Autocompile = !Autocompile;
+            EditorPrefs.SetBool("kAutoRefresh", Autocompile);
+        }
+#endif
 
         private void Awake()
         {
@@ -43,6 +66,7 @@ namespace VolumeBox.Toolbox
             updater = GetComponent<Updater>();
             pooler = GetComponent<Pooler>();
             saver = GetComponent<Saver>();
+            audioPlayer = GetComponent<AudioPlayer>();
 
             resolver.Run();
 
@@ -52,6 +76,7 @@ namespace VolumeBox.Toolbox
             resolver.AddInstance(updater);
             resolver.AddInstance(pooler);
             resolver.AddInstance(saver);
+            resolver.AddInstance(audioPlayer);
 
             resolver.InjectInstances();
 
@@ -60,16 +85,17 @@ namespace VolumeBox.Toolbox
             updater.Run();
             pooler.Run();
             saver.Run();
+            audioPlayer.Run();
 
             updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 
-            if (!string.IsNullOrEmpty(initialSceneName))
+            if(!string.IsNullOrEmpty(initialSceneName) || initialSceneName != "MAIN")
             {
-                traveler.LoadScene(initialSceneName);
+                traveler.LoadScene(initialSceneName, initialSceneArgs, 0, 1.5f);
             }
         }
 
-        private void Start()
+        private void Start() 
         {
             onLoadEvent?.Invoke();
         }

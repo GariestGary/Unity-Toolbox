@@ -18,6 +18,8 @@ public class MessageSender : MonoCached
 
     private void OnValidate()
     {
+        if(_messages == null) return;
+        
         foreach (var message in _messages)
         {
             if (message.CurrentTypeInstance == null || message.CurrentTypeInstance.GetType() != message.MessageType.Type)

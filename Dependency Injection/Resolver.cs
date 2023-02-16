@@ -1,13 +1,14 @@
-using NaughtyAttributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using NaughtyAttributes;
 
 namespace VolumeBox.Toolbox
 {
-    public class Resolver: Singleton<Resolver>, IRunner
+    public class Resolver : Singleton<Resolver>, IRunner
     {
         [Required]
         [SerializeField] private GameObject instancesRoot;
@@ -22,10 +23,10 @@ namespace VolumeBox.Toolbox
 
             instances = new List<object>();
 
-            if (instancesRoot != null)
+            if(instancesRoot != null)
             {
                 var newInstances = instancesRoot.GetComponents<MonoBehaviour>().ToList();
-
+                
                 foreach (var instance in newInstances)
                 {
                     instances.Add(instance);
@@ -33,11 +34,33 @@ namespace VolumeBox.Toolbox
             }
 
             Messager.Instance.SubscribeKeeping<SceneBindingMessage>(x => currentSceneInstances = x.instances.ToList());
+            Messager.Instance.SubscribeKeeping<SceneUnloadedMessage>(_ => currentSceneInstances.Clear());
+        }
+
+        public void SearchObjectBindings(GameObject obj)
+        {
+            foreach (var cb in obj.GetComponentsInChildren<ComponentBinding>(true))
+            {
+                if (cb.Context != null)
+                {
+                    SceneBinding newBind = new SceneBinding() { instance = cb.Context, id = cb.Id };
+                    
+                    if (cb.ThisSceneOnly)
+                    {
+                        currentSceneInstances.Add(newBind);
+                    }
+                    else
+                    {
+                        instances.Add(newBind);
+                    }
+                    
+                }
+            }
         }
 
         public void InjectInstances()
         {
-            foreach (var instance in instances)
+            foreach(var instance in instances)
             {
                 Inject(instance);
             }
@@ -45,7 +68,7 @@ namespace VolumeBox.Toolbox
 
         public void AddInstance(object instance)
         {
-            if (instances.Where(x => x.GetType() == instance.GetType()).Any())
+            if(instances.Where(x => x.GetType() == instance.GetType()).Any()) 
             {
                 Debug.LogWarning($"Resolver already contains {instance.GetType()}");
             }
@@ -57,7 +80,7 @@ namespace VolumeBox.Toolbox
 
         public void RemoveInstance(object instance)
         {
-            if (instances.Contains(instance))
+            if(instances.Contains(instance))
             {
                 instances.Remove(instance);
             }
@@ -66,13 +89,13 @@ namespace VolumeBox.Toolbox
                 Debug.LogWarning($"Resolver doesn't contain {instance.GetType()}");
             }
         }
-
+    
         public void Inject(GameObject obj)
         {
             //Getting all monos from gameobject
             Component[] monosToInject = obj.GetComponentsInChildren<Component>(true);
 
-            foreach (var mono in monosToInject)
+            foreach(var mono in monosToInject)
             {
                 Inject(mono);
             }
@@ -80,21 +103,27 @@ namespace VolumeBox.Toolbox
 
         public void Inject(object obj)
         {
-            if (obj == null) return;
+            if(obj == null) return;
+
+            if (obj is GameObject)
+            {
+                Inject(obj as GameObject);
+                return;
+            }
 
             var c = obj.GetType();
 
-            if (c.IsClass)
+            if(c.IsClass)
             {
                 var fields = c.GetRuntimeFields();
-
-                if (fields.Count() > 0)
+            
+                if(fields.Count() > 0)
                 {
                     fields = fields
                     .Where(f => f.GetCustomAttributes(injectAttributeType, true).Any());
                 }
 
-                foreach (var field in fields)
+                foreach(var field in fields)
                 {
                     string id = "";
 
@@ -118,13 +147,18 @@ namespace VolumeBox.Toolbox
             //getting instance which type equals to required
             var instance = instances.Where(x => x.GetType() == fieldInfo.FieldType).FirstOrDefault();
 
-            if (string.IsNullOrEmpty(id))
+            if (instance == null)
             {
-                instance = instances.Where(x => x.GetType() == fieldInfo.FieldType).FirstOrDefault();
-            }
-            else
-            {
-                var binding = currentSceneInstances.Where(x => x.id == id && x.instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
+                SceneBinding binding;
+                
+                if (string.IsNullOrEmpty(id))
+                {
+                    binding = currentSceneInstances.Where(x => x.instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
+                }
+                else
+                {
+                    binding = currentSceneInstances.Where(x => x.id == id && x.instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
+                }
 
                 if (binding != null)
                 {
@@ -134,7 +168,10 @@ namespace VolumeBox.Toolbox
 
             if (instance == null)
             {
-                Debug.LogError($"Instance of {fieldInfo.FieldType} doesn't binded");
+                string message = $"Instance of {fieldInfo.FieldType}";
+                message += string.IsNullOrEmpty(id) ? "" : $" with tag '{id}'";
+                Debug.LogError( message + " doesn't binded");
+                return;
             }
 
             try

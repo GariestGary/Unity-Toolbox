@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,7 +6,7 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Pooler: Singleton<Pooler>, IRunner
+    public class Pooler : Singleton<Pooler>, IRunner
     {
         [SerializeField] private List<PoolData> poolsList;
 
@@ -18,8 +19,8 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            msg.Subscribe<SceneUnloadingMessage>(_ => ClearPools());
-
+            //TODO: msg.Subscribe(Message.SCENE_UNLOADING, _ => ClearPools());
+            
             pools = new List<Pool>();
 
             objectPoolParent = new GameObject().transform;
@@ -41,7 +42,7 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            LinkedList<GameObject> objectPoolList = new LinkedList<GameObject>();
+            LinkedList<PooledGameObject> objectPoolList = new LinkedList<PooledGameObject>();
 
             for (int j = 0; j < poolToAdd.initialSize; j++)
             {
@@ -49,6 +50,7 @@ namespace VolumeBox.Toolbox
             }
 
             pools.Add(new Pool(poolToAdd.tag, poolToAdd.destroyOnLevelChange, objectPoolList));
+
         }
 
         public void ClearPools()
@@ -57,7 +59,7 @@ namespace VolumeBox.Toolbox
             {
                 foreach (var obj in pool.objects)
                 {
-                    Despawn(obj);
+                    TryDespawn(obj);
                 }
             }
         }
@@ -78,7 +80,7 @@ namespace VolumeBox.Toolbox
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
         /// <returns>GameObject from pool</returns>
-        public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
+        public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
         {
             //Returns null if object pool with specified tag doesn't exists
             if (!pools.Any(x => x.tag == poolTag))
@@ -90,13 +92,13 @@ namespace VolumeBox.Toolbox
             Pool p = pools.Where(x => x.tag == poolTag).First();
 
             //Create new object if last in list is active
-            if (p.objects.Last.Value.activeSelf)
+            if (p.objects.Last.Value.Used)
             {
-                CreateNewPoolObject(p.objects.Last.Value, p.objects);
+                CreateNewPoolObject(p.objects.Last.Value.gameObject, p.objects);
             }
 
             //Take last object
-            GameObject obj = p.objects.Last.Value;
+            PooledGameObject obj = p.objects.Last.Value;
             p.objects.RemoveLast();
 
             //Return null if last object is null;
@@ -109,25 +111,38 @@ namespace VolumeBox.Toolbox
             resolver?.Inject(obj);
 
             //Setting transform
-            obj.transform.position = position;
-            obj.transform.rotation = rotation;
-            obj.transform.SetParent(parent);
-            EnableGameObject(obj);
+            obj.gameObject.transform.position = position;
+            obj.gameObject.transform.rotation = rotation;
+            obj.gameObject.transform.SetParent(parent);
+            obj.gameObject.Enable();
 
             //Call all spawn methods in gameobject
-            CallSpawns(obj, data);
+            CallSpawns(obj.gameObject, data);
 
             //Add object back to start
             p.objects.AddFirst(obj);
-            return obj;
+
+            if (spawnAction != null)
+            {
+                spawnAction.Invoke(obj.gameObject);
+            }
+
+            obj.Used = true;
+            
+            return obj.gameObject;
         }
 
-        public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+        public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, bool addToProcess = true)
         {
             GameObject inst = GameObject.Instantiate(prefab, position, rotation, parent);
+        
+            Resolver.Instance.SearchObjectBindings(inst);
 
-            updater.InitializeObject(inst);
-            EnableGameObject(inst);
+            if (addToProcess)
+            {
+                updater.InitializeObject(inst);
+                inst.Enable();
+            }
 
             return inst;
         }
@@ -138,7 +153,7 @@ namespace VolumeBox.Toolbox
 
             foreach (var t in pooled)
             {
-                if (t != null)
+                if(t != null)
                 {
                     t.OnSpawn(data);
                 }
@@ -147,15 +162,13 @@ namespace VolumeBox.Toolbox
 
         public GameObject ManualSpawn(GameObject obj, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
         {
-            EnableGameObject(obj);
-
             resolver.Inject(obj);
 
             //Setting transform
             obj.transform.position = position;
             obj.transform.rotation = rotation;
             obj.transform.SetParent(parent);
-            EnableGameObject(obj);
+            obj.Enable();
 
             //Call all spawn methods in gameobject
             CallSpawns(obj, data);
@@ -168,60 +181,90 @@ namespace VolumeBox.Toolbox
         /// </summary>
         /// <param name="objectToDespawn">object to despawn</param>
         /// <param name="delay">delay before despawning</param>
-        public void Despawn(GameObject objectToDespawn, float delay = 0)
+        public bool TryDespawn(GameObject objectToDespawn, float delay = 0)
         {
             if (objectToDespawn == null)
             {
-                return;
+                return false;
+            }
+
+            Pool p = pools.FirstOrDefault(x => x.objects.Any(g => g.gameObject == objectToDespawn));
+
+            PooledGameObject pgo = null;
+            
+            if (p == null)
+            {
+                return false;
+            }
+            else
+            {
+                pgo = p.objects.FirstOrDefault(x => x.gameObject == objectToDespawn);
+            }
+
+            return TryDespawn(pgo, delay);
+        }
+
+        private bool TryDespawn(PooledGameObject pgo, float delay = 0)
+        {
+            if (pgo == null || !pgo.Used)
+            {
+                return true;
             }
 
             if (delay < 0) delay = 0;
 
             if (delay == 0)
             {
-                ReturnToPool(objectToDespawn);
+                ReturnToPool(pgo.gameObject);
             }
             else
             {
-                StartCoroutine(DespawnCoroutine(objectToDespawn, delay));
+                StartCoroutine(DespawnCoroutine(pgo.gameObject, delay));
+            }
+
+            return true;
+        }
+
+        public void DespawnOrDestroy(GameObject obj, float delay = 0)
+        {
+            if (!TryDespawn(obj, delay))
+            {
+                if (delay > 0)
+                {
+                    StartCoroutine(DestroyCoroutine(obj, delay));
+                }
+                else
+                {
+                    Destroy(obj);
+                }
             }
         }
 
-        /// <summary>
-        /// Analogue to Unity's GameObject disable
-        /// </summary>
-        /// <param name="obj"></param>
-        public void DisableGameObject(GameObject obj)
-        {
-            obj.GetComponentsInChildren<MonoCached>()
-            .ToList()
-            .ForEach(x => x.Deactivate());
-            obj.SetActive(false);
-        }
-
-        /// <summary>
-        /// Analogue to Unity's GameObject enable
-        /// </summary>
-        /// <param name="obj"></param>
-        public void EnableGameObject(GameObject obj)
-        {
-            obj.GetComponentsInChildren<MonoCached>()
-            .ToList()
-            .ForEach(x => x.Activate());
-            obj.SetActive(true);
-        }
-
-        private GameObject CreateNewPoolObject(GameObject obj, LinkedList<GameObject> pool)
+        private GameObject CreateNewPoolObject(GameObject obj, LinkedList<PooledGameObject> pool)
         {
             GameObject poolObj = Instantiate(obj, objectPoolParent);
 
             updater?.InitializeObject(poolObj);
             resolver?.Inject(poolObj);
 
-            DisableGameObject(poolObj);
-            pool.AddLast(poolObj);
+            poolObj.Disable();
+
+            PooledGameObject pgo = new PooledGameObject()
+            {
+                gameObject = poolObj,
+                Used = false
+            };
+            
+            pool.AddLast(pgo);
 
             return poolObj;
+        }
+
+        private IEnumerator DestroyCoroutine(GameObject obj, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            Destroy(obj);
         }
 
         private IEnumerator DespawnCoroutine(GameObject objectToDespawn, float delay)
@@ -233,7 +276,7 @@ namespace VolumeBox.Toolbox
 
         private void ReturnToPool(GameObject obj)
         {
-            DisableGameObject(obj);
+            obj.Disable();
 
             obj.transform.SetParent(objectPoolParent);
         }
@@ -251,7 +294,7 @@ namespace VolumeBox.Toolbox
             {
                 foreach (var obj in pool.objects)
                 {
-                    Despawn(obj);
+                    TryDespawn(obj.gameObject);    
                 }
             }
         }
@@ -268,8 +311,8 @@ namespace VolumeBox.Toolbox
             {
                 foreach (var obj in pool.objects)
                 {
-                    Despawn(obj);
-                    Destroy(obj);
+                    TryDespawn(obj.gameObject);
+                    Destroy(obj.gameObject);
                 }
 
                 pools.Remove(pool);
@@ -291,19 +334,25 @@ public class Pool
 {
     public string tag;
     public bool destroyOnLevelChange;
-    public LinkedList<GameObject> objects;
+    public LinkedList<PooledGameObject> objects;
 
-    public Pool(string tag, bool destroyOnLevelChange, LinkedList<GameObject> objects = null)
+    public Pool(string tag, bool destroyOnLevelChange, LinkedList<PooledGameObject> objects = null)
     {
         this.tag = tag;
         this.destroyOnLevelChange = destroyOnLevelChange;
-        if (objects == null)
+        if(objects == null)
         {
-            this.objects = new LinkedList<GameObject>();
+            this.objects = new LinkedList<PooledGameObject>();
         }
         else
         {
             this.objects = objects;
         }
     }
+}
+
+public class PooledGameObject
+{
+    public GameObject gameObject;
+    public bool Used;
 }

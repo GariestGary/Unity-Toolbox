@@ -1,35 +1,46 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using UnityEngine.Serialization;
+using System;
 
 namespace VolumeBox.Toolbox
 {
-    public abstract class SceneHandler<TArgs>: SceneHandlerBase where TArgs : SceneArgs
+    public abstract class SceneHandler<TArgs> : SceneHandlerBase where TArgs : SceneArgs
     {
         [SerializeField] private bool _skipSetup;
         [SerializeField] private bool _isGameplayLevel;
 
-        protected TArgs args;
-
         public bool IsGameplayScene => _isGameplayLevel;
 
-        public override sealed void OnLoadCallback()
-        {
-            args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
+        protected TArgs Args;
 
-            if (args == null)
+        sealed public override void OnLoadCallback()
+        {
+            Args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
+
+            if (Args == null)
             {
                 Debug.LogWarning("Current scene args is null");
             }
 
-            SetupScene(args);
+            SetupScene(Args);
         }
 
         public abstract void SetupScene(TArgs args);
     }
 
-    public class SceneHandlerBase: MonoCached
+    public class SceneHandlerBase : MonoCached
     {
         public virtual void OnLoadCallback()
         {
+
+        }
+
+        public virtual void OnSceneUnload()
+        {
+
         }
     }
 }

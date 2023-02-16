@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -16,9 +17,15 @@ public class MessagerTests
 
 
         Messager.Instance.SubscribeKeeping<MockMessage>(x => React(x.message));
-        Messager.Instance.Send<MockMessage>();// (new MockMessage() { message = "FFFFFFFF"});
-
+        Messager.Instance.Send<MockMessage>();
         Assert.AreEqual("Reacted", message);
+
+        bool test = false;
+        
+        Messager.Instance.ClearKeepingSubscribers();
+        Messager.Instance.SubscribeKeeping(typeof(MockMessage), () => test = true);
+        Messager.Instance.Send<MockMessage>();
+        Assert.AreEqual(true, test);
 
         yield return null;
     }
@@ -28,7 +35,8 @@ public class MessagerTests
         message = test;
     }
 
-    public class MockMessage: Message
+    [Serializable]
+    public class MockMessage : Message
     {
         public string message = "Reacted";
     }

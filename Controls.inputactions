@@ -6,24 +6,35 @@
             "id": "fd65ad10-3bf4-4586-b5f9-41f607bc8677",
             "actions": [
                 {
-                    "name": "Mouse Position",
-                    "type": "PassThrough",
-                    "id": "af5a2e8d-f17e-4936-bcbc-65fb16265070",
+                    "name": "Click",
+                    "type": "Value",
+                    "id": "2710c008-a4e2-409d-8b40-709de1dfc6dd",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
                 {
                     "name": "",
-                    "id": "ca4eceb7-0548-448c-849e-f0fa91f41816",
-                    "path": "<Pointer>/position",
-                    "interactions": "",
+                    "id": "835bd79e-6865-4a1f-bc8a-b593077d890a",
+                    "path": "<Touchscreen>/Press",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "Touchscreen",
+                    "action": "Click",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "302e635a-d275-4368-a2ba-7943b813746a",
+                    "path": "<Mouse>/position",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "Mouse & Keyboard",
-                    "action": "Mouse Position",
+                    "action": "Click",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -567,6 +578,17 @@
             "name": "Gamepad",
             "bindingGroup": "Gamepad",
             "devices": []
+        },
+        {
+            "name": "Touchscreen",
+            "bindingGroup": "Touchscreen",
+            "devices": [
+                {
+                    "devicePath": "<Touchscreen>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
         }
     ]
 }

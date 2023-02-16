@@ -1,13 +1,16 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
     [CreateAssetMenu(fileName = "Windows File Handler", menuName = "VolumeBox/Toolbox/File Handlers/Windows")]
-    public class WindowsFileHandler: PlatformFileHandler
-    {
+    public class WindowsFileHandler : PlatformFileHandler
+    {   
         public override object LoadBinary(string path)
         {
             if (!File.Exists(path))
@@ -29,7 +32,7 @@ namespace VolumeBox.Toolbox
                 fs.Dispose();
                 return data;
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 Debug.LogError("File at " + path + " deserialize failed, Message: " + e.Message);
                 return null;
@@ -43,9 +46,9 @@ namespace VolumeBox.Toolbox
             try
             {
                 FileStream fs = new FileStream(
-                    path,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
+                    path, 
+                    FileMode.OpenOrCreate, 
+                    FileAccess.ReadWrite, 
                     FileShare.None
                 );
                 bf.Serialize(fs, data);
@@ -53,7 +56,7 @@ namespace VolumeBox.Toolbox
 
                 return true;
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 Debug.LogError("Failed to save file at " + path + " Message: " + e.Message);
                 return false;

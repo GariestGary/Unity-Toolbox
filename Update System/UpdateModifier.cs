@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -6,6 +8,7 @@ namespace VolumeBox.Toolbox
     {
         public virtual void Initialize()
         {
+
         }
 
         public abstract float Modify(float delta, MonoCached mono);
