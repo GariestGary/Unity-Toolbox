@@ -21,7 +21,7 @@ Set of architectural solutions for Unity
 
 Once you have the [OpenUPM cli](https://github.com/openupm/openupm-cli#installation), run the following command:
 
-```openupm install com.solidalloy.type-references```
+```openupm add com.volumebox.toolbox```
 
 Or if you don't have it, add the scoped registry to manifest.json with the desired dependency semantic version: 
 
