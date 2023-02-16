@@ -15,50 +15,54 @@ Set of architectural solutions for Unity
 
 ## Installation
 
-:heavy_exclamation_mark: Before installing the package, please disable the **Assembly Version Validation** option in **Player Settings**.
-
 ### Install with OpenUPM
 
 Once you have the [OpenUPM cli](https://github.com/openupm/openupm-cli#installation), run the following command:
 
+* Go to your Unity project directory
+
+```cd YOUR_UNITY_PROJECT_DIR```
+
+* Install package: com.volumebox.toolbox
+
 ```openupm add com.volumebox.toolbox```
 
-Or if you don't have it, add the scoped registry to manifest.json with the desired dependency semantic version: 
+Alternatively, merge the snippet to Packages/manifest.json 
 
 ```json
-  "scopedRegistries": [
-    {
-      "name": "package.openupm.com",
-      "url": "https://package.openupm.com",
-      "scopes": [
-        "com.volumebox",
-        "com.openupm",
-        "org.nuget"
-      ]
+{
+    "scopedRegistries": [
+        {
+            "name": "package.openupm.com",
+            "url": "https://package.openupm.com",
+            "scopes": [
+              "com.volumebox"
+              "com.openupm"
+            ]
+        }
+    ],
+    "dependencies": {
+        "com.volumebox.toolbox": "0.0.1"
     }
-  ],
-  "dependencies": {
-    "com.volumebox.toolbox": "0.0.1"
-  },
-
+}
 ```
 
 ### Install via Package Manager
 
-Project supports Unity Package Manager. To install the project as a Git package do the following:
+* open Edit/Project Settings/Package Manager
+* add a new Scoped Registry (or edit the existing OpenUPM entry)
 
-1. In Unity, open **Project Settings** -> **Package Manager**.
-2. Add a new scoped registry with the following details:
-   - **Name**: package.openupm.com
-   - **URL**: https://package.openupm.com
-   - Scope(s):
-     - com.openupm
-     - com.volumebox
-     - org.nuget
-3. Hit **Apply**.
-4. Go to **Window** -> **Package Manager**.
-5. Press the **+** button, *Add package from git URL*.
-6. Enter **com.volumebox.toolbox**, press **Add**.
+Name: `package.openupm.com`
+
+URL: `https://package.openupm.com`
+
+* click `Save` (or `Apply`)
+* open **Window/Package Manager**
+* click `+`
+* select `Add package by name...` or `Add package from git URL...`
+* paste `com.volumebox.toolbox` into name
+* paste `0.0.1` into version
+* click `Add`
 
 ## Basics
 
