@@ -1,8 +1,9 @@
-[![openupm](https://img.shields.io/npm/v/com.volumebox.toolbox?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.volumebox.toolbox/)
+[![openupm](https://img.shields.io/npm/v/com.volumebox.toolbox?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.volumebox.toolbox/) ![GitHub](https://img.shields.io/github/license/GariestGary/Unity-Toolbox)
 
 # Unity Toolbox
 Set of architectural solutions for Unity
 ## Table of contents
+* [Installation](#installation)
 * [Basics](#basics)
 * [Update System](#update-system)
 * [Dependency Injection](#dependency-injection)
@@ -11,6 +12,57 @@ Set of architectural solutions for Unity
 * [Save System](#save-system)
 * [Travel System](#travel-system)
 * [Routine System](#routine-system)
+
+## Installation
+
+### Install with OpenUPM
+
+Once you have the [OpenUPM cli](https://github.com/openupm/openupm-cli#installation), run the following command:
+
+* Go to your Unity project directory
+
+```cd YOUR_UNITY_PROJECT_DIR```
+
+* Install package: com.volumebox.toolbox
+
+```openupm add com.volumebox.toolbox```
+
+Alternatively, merge the snippet to Packages/manifest.json 
+
+```json
+{
+    "scopedRegistries": [
+        {
+            "name": "package.openupm.com",
+            "url": "https://package.openupm.com",
+            "scopes": [
+              "com.volumebox"
+              "com.openupm"
+            ]
+        }
+    ],
+    "dependencies": {
+        "com.volumebox.toolbox": "0.0.1"
+    }
+}
+```
+
+### Install via Package Manager
+
+* open Edit/Project Settings/Package Manager
+* add a new Scoped Registry (or edit the existing OpenUPM entry)
+
+Name: `package.openupm.com`
+
+URL: `https://package.openupm.com`
+
+* click `Save` (or `Apply`)
+* open **Window/Package Manager**
+* click `+`
+* select `Add package by name...` or `Add package from git URL...`
+* paste `com.volumebox.toolbox` into name
+* paste `0.0.1` into version
+* click `Add`
 
 ## Basics
 
