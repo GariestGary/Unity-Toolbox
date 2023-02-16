@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine.UI;
 using NaughtyAttributes;
 
@@ -49,7 +50,7 @@ namespace VolumeBox.Toolbox
             return args;
         }
 
-        public async Task LoadScene(string name, SceneArgs args = null, float fadeInDuration = 0.5f, float fadeOutDuration = 0.5f)
+        public async UniTask LoadScene(string name, SceneArgs args = null, float fadeInDuration = 0.5f, float fadeOutDuration = 0.5f)
         {
             if (loadingLevel) return;
 
@@ -58,7 +59,7 @@ namespace VolumeBox.Toolbox
             await LoadSceneCoroutine(name, fadeInDuration, fadeOutDuration);
         }
 
-        private async Task LoadSceneCoroutine(string name, float fadeInDuration, float fadeOutDuration)
+        private async UniTask LoadSceneCoroutine(string name, float fadeInDuration, float fadeOutDuration)
         {
             loadingLevel = true;
 
@@ -109,7 +110,7 @@ namespace VolumeBox.Toolbox
             await OpenLoadedScene(name, fadeOutDuration);
         }
 
-        public async Task OpenLoadedScene(string name, float fadeOutDuration)
+        public async UniTask OpenLoadedScene(string name, float fadeOutDuration)
         {
             currentSceneName = name;
 
@@ -162,18 +163,11 @@ namespace VolumeBox.Toolbox
             //messager.Send(new SceneBindingMessage() { instances = bindings });
         }
 
-        public void AllowSceneOpen()
+        private async UniTask WaitForSceneUnloadCoroutine(string sceneName)
         {
-            if (loadingScene == null) return;
+            if (string.IsNullOrEmpty(sceneName)) return;
 
-            loadingScene.allowSceneActivation = true;
-        }
-
-        private async Task WaitForSceneUnloadCoroutine(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return;
-
-            messager.Send(new SceneUnloadingMessage(name));
+            messager.Send(new SceneUnloadingMessage(sceneName));
             currentSceneHandler?.OnSceneUnload();
 
             GameObject[] rootObjs = SceneManager.GetSceneByName(CurrentSceneName).GetRootGameObjects();
@@ -194,7 +188,7 @@ namespace VolumeBox.Toolbox
         }
 
         #region UI_Handle
-        private async Task OpenUI()
+        private async UniTask OpenUI()
         {
             if(string.IsNullOrEmpty(uiScene) || uiOpened) return;
 
@@ -212,7 +206,7 @@ namespace VolumeBox.Toolbox
             uiOpened = true;
         }
 
-        private async Task CloseUI()
+        private async UniTask CloseUI()
         {
             if(string.IsNullOrEmpty(uiScene)) return;
 

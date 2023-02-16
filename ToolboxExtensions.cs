@@ -19,7 +19,9 @@ namespace VolumeBox.Toolbox
 
         public static Routine StartManual(this IEnumerator coroutine)
         {
-            return Routine.StartManual(coroutine);
+            var routine = Routine.Start(coroutine);
+            routine.SetPhase(RoutinePhase.Manual);
+            return routine;
         }
 
         /// <summary>
@@ -48,7 +50,7 @@ namespace VolumeBox.Toolbox
             
             restrictChars.ToList().ForEach(c =>
             {
-                format.Replace(c.ToString(), "");
+                format = format.Replace(c.ToString(), "");
             });
 
             return format;
