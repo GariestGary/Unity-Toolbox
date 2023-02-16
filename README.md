@@ -1,3 +1,5 @@
+[![openupm](https://img.shields.io/npm/v/com.volumebox.toolbox?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.volumebox.toolbox/)
+
 # Unity Toolbox
 Set of architectural solutions for Unity
 ## Table of contents
