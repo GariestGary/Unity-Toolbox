@@ -1,34 +1,28 @@
-using System.Threading;
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
-using UnityEngine.UI;
-using NaughtyAttributes;
 
 namespace VolumeBox.Toolbox
 {
     public class Traveler : CachedSingleton<Traveler>, IRunner
     {
-        [SerializeField] private bool useUiScene;
-        [ShowIf(nameof(useUiScene))]
         [SerializeField] [Scene] private string uiScene;
 
-        [Inject] private Updater updater;
-        [Inject] private Messager messager;
+        [Inject] private Updater _updater;
+        [Inject] private Messager _messager;
 
-        public string CurrentSceneName => currentSceneName;
+        public string CurrentSceneName => _currentSceneName;
 
-        private SceneArgs currentOpeningSceneArgs;
-        private AsyncOperation unloadingScene;
-        private AsyncOperation loadingScene;
-        private SceneHandlerBase currentSceneHandler;
-        private string currentSceneName;
-        private bool uiOpened;
-        private bool loadingLevel;
+        private SceneArgs _currentOpeningSceneArgs;
+        private AsyncOperation _unloadingScene;
+        private AsyncOperation _loadingScene;
+        private SceneHandlerBase _currentSceneHandler;
+        private string _currentSceneName;
+        private bool _uiOpened;
+        private bool _loadingLevel;
 
         public void Run()
         {
@@ -37,118 +31,99 @@ namespace VolumeBox.Toolbox
 
         public TArgs GetCurrentSceneArgs<TArgs>() where TArgs : SceneArgs
         {
-            if (currentOpeningSceneArgs == null) return null;
+            if (_currentOpeningSceneArgs == null) return null;
 
-            if (!(currentOpeningSceneArgs is TArgs))
+            if (!(_currentOpeningSceneArgs is TArgs))
             {
-                Debug.LogError($"Current loading scene args is {currentOpeningSceneArgs.GetType()}, but scene requires {typeof(TArgs)}");
+                Debug.LogError($"Current loading scene args is {_currentOpeningSceneArgs.GetType()}, but scene requires {typeof(TArgs)}");
                 return null;
             }
 
-            TArgs args = (TArgs)currentOpeningSceneArgs;
-            currentOpeningSceneArgs = null;
+            TArgs args = (TArgs)_currentOpeningSceneArgs;
+            _currentOpeningSceneArgs = null;
             return args;
         }
 
-        public async UniTask LoadScene(string name, SceneArgs args = null, float fadeInDuration = 0.5f, float fadeOutDuration = 0.5f)
+        public async Task LoadScene(string sceneName, SceneArgs args = null, float fadeInDuration = 0.5f, float fadeOutDuration = 0.5f)
         {
-            if (loadingLevel) return;
+            if (_loadingLevel) return;
 
-            currentOpeningSceneArgs = args;
+            _currentOpeningSceneArgs = args;
 
-            await LoadSceneCoroutine(name, fadeInDuration, fadeOutDuration);
-        }
-
-        private async UniTask LoadSceneCoroutine(string name, float fadeInDuration, float fadeOutDuration)
-        {
-            loadingLevel = true;
-
-            //if(currentOpeningSceneArgs != null)
-            //{
-            //    Fader.Instance.SetFillImage(currentOpeningSceneArgs.backgroundSprite);
-            //}
-            //else
-            //{
-            //    Fader.Instance.SetFillImage(null);
-            //}
+            _loadingLevel = true;
 
             await Fader.Instance.FadeInForCoroutine(fadeInDuration);
 
-            if (useUiScene)
-            {
-                await OpenUI();
-            }
-
             //skip unloading level if current level is null
-            if (string.IsNullOrEmpty(currentSceneName))
+            if (string.IsNullOrEmpty(_currentSceneName))
             {
-                unloadingScene = null;
+                _unloadingScene = null;
             }
             else
             {
-                if (currentSceneHandler != null)
+                if (_currentSceneHandler != null)
                 {
-                    currentSceneHandler.OnSceneUnload();
+                    _currentSceneHandler.OnSceneUnload();
                 }
                 
-                await WaitForSceneUnloadCoroutine(currentSceneName);
+                await WaitForSceneUnloadCoroutine(_currentSceneName);
             }
 
-            loadingScene = SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+            _loadingScene = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
             //loadingScene.allowSceneActivation = false;
 
-            while (!loadingScene.isDone)
+            while (!_loadingScene.isDone)
             {
                 await Task.Yield();
             }
 
-            loadingScene.allowSceneActivation = true;
+            _loadingScene.allowSceneActivation = true;
 
             await Task.Yield();
 
-            await OpenLoadedScene(name, fadeOutDuration);
+            await OpenLoadedScene(sceneName, fadeOutDuration);
         }
 
-        public async UniTask OpenLoadedScene(string name, float fadeOutDuration)
+        private async Task OpenLoadedScene(string sceneName, float fadeOutDuration)
         {
-            currentSceneName = name;
+            _currentSceneName = sceneName;
 
-            GameObject[] rootObjs = SceneManager.GetSceneByName(name).GetRootGameObjects();
+            GameObject[] rootObjs = SceneManager.GetSceneByName(sceneName).GetRootGameObjects();
 
             SearchSceneBindings(rootObjs);
 
-            messager.Send(new SceneLoadedMessage(name));
+            _messager.Send(new SceneLoadedMessage(sceneName));
             
-            currentSceneHandler = null;
+            _currentSceneHandler = null;
 
             foreach (var obj in rootObjs)
             {
-                currentSceneHandler = obj.GetComponent<SceneHandlerBase>();
+                _currentSceneHandler = obj.GetComponent<SceneHandlerBase>();
 
-                if (currentSceneHandler != null)
+                if (_currentSceneHandler != null)
                 {
                     break;
                 }
             }
 
-            if (currentSceneHandler == null)
+            if (_currentSceneHandler == null)
             {
                 Debug.Log("There is no SceneHandler in scene, skipping scene setup");
             }
             else
             {
-                updater.InitializeMono(currentSceneHandler);
-                currentSceneHandler.OnLoadCallback();
+                _updater.InitializeMono(_currentSceneHandler);
+                _currentSceneHandler.OnLoadCallback();
             }
 
-            updater.InitializeObjects(rootObjs);
-            updater.OnSceneObjectsAdded(rootObjs);
+            _updater.InitializeObjects(rootObjs);
+            _updater.OnSceneObjectsAdded(rootObjs);
             await Fader.Instance.FadeOutForCoroutine(fadeOutDuration);
-            messager.Send(new SceneOpenedMessage(name));
-            messager.Send(new GameplaySceneOpenedMessage(name));
+            _messager.Send(new SceneOpenedMessage(sceneName));
+            _messager.Send(new GameplaySceneOpenedMessage(sceneName));
 
-            loadingLevel = false;
+            _loadingLevel = false;
         }
 
         private void SearchSceneBindings(GameObject[] objs)
@@ -163,34 +138,34 @@ namespace VolumeBox.Toolbox
             //messager.Send(new SceneBindingMessage() { instances = bindings });
         }
 
-        private async UniTask WaitForSceneUnloadCoroutine(string sceneName)
+        private async Task WaitForSceneUnloadCoroutine(string sceneName)
         {
             if (string.IsNullOrEmpty(sceneName)) return;
 
-            messager.Send(new SceneUnloadingMessage(sceneName));
-            currentSceneHandler?.OnSceneUnload();
+            _messager.Send(new SceneUnloadingMessage(sceneName));
+            _currentSceneHandler?.OnSceneUnload();
 
             GameObject[] rootObjs = SceneManager.GetSceneByName(CurrentSceneName).GetRootGameObjects();
 
-            updater.OnSceneObjectsRemoved(rootObjs);
-            updater.RemoveObjectsFromUpdate(rootObjs);
+            _updater.OnSceneObjectsRemoved(rootObjs);
+            _updater.RemoveObjectsFromUpdate(rootObjs);
 
-            string unloadingSceneName = currentSceneName;
+            string unloadingSceneName = _currentSceneName;
 
-            unloadingScene = SceneManager.UnloadSceneAsync(unloadingSceneName);
+            _unloadingScene = SceneManager.UnloadSceneAsync(unloadingSceneName);
 
-            while (!unloadingScene.isDone)
+            while (!_unloadingScene.isDone)
             {
                 await Task.Yield();
             }
 
-            messager.Send(new SceneUnloadedMessage(unloadingSceneName));
+            _messager.Send(new SceneUnloadedMessage(unloadingSceneName));
         }
 
         #region UI_Handle
-        private async UniTask OpenUI()
+        public async Task OpenUI()
         {
-            if(string.IsNullOrEmpty(uiScene) || uiOpened) return;
+            if(string.IsNullOrEmpty(uiScene) || _uiOpened) return;
 
             AsyncOperation loadingUi = SceneManager.LoadSceneAsync(uiScene, LoadSceneMode.Additive);
 
@@ -201,16 +176,16 @@ namespace VolumeBox.Toolbox
 
             GameObject[] uiObjs = SceneManager.GetSceneByName(uiScene).GetRootGameObjects();
 
-            updater.InitializeObjects(uiObjs);
+            _updater.InitializeObjects(uiObjs);
 
-            uiOpened = true;
+            _uiOpened = true;
         }
 
-        private async UniTask CloseUI()
+        public async Task CloseUI()
         {
             if(string.IsNullOrEmpty(uiScene)) return;
 
-            if(uiOpened)
+            if(_uiOpened)
             {
                 Scene ui = SceneManager.GetSceneByName(uiScene);
 
@@ -219,7 +194,7 @@ namespace VolumeBox.Toolbox
                     return;
                 }
                 
-                updater.RemoveObjectsFromUpdate(ui.GetRootGameObjects());
+                _updater.RemoveObjectsFromUpdate(ui.GetRootGameObjects());
 
                 AsyncOperation unloadingUi = SceneManager.UnloadSceneAsync(uiScene);
 
@@ -228,7 +203,7 @@ namespace VolumeBox.Toolbox
                     await Task.Yield();
                 }
 
-                uiOpened = false;
+                _uiOpened = false;
 
                 //TODO: messager.Send(Message.UI_CLOSED);
             }
@@ -264,7 +239,7 @@ namespace VolumeBox.Toolbox
         {
         }
 
-        public SceneUnloadingMessage() : base()
+        public SceneUnloadingMessage()
         {
 
         }
@@ -277,7 +252,7 @@ namespace VolumeBox.Toolbox
         {
         }
 
-        public SceneUnloadedMessage() : base()
+        public SceneUnloadedMessage()
         {
             
         }
@@ -290,7 +265,7 @@ namespace VolumeBox.Toolbox
         {
         }
 
-        public SceneLoadingMessage() : base()
+        public SceneLoadingMessage()
         {
 
         }
@@ -303,7 +278,7 @@ namespace VolumeBox.Toolbox
         {
         }
 
-        public SceneLoadedMessage() : base()
+        public SceneLoadedMessage()
         {
 
         }
@@ -316,7 +291,7 @@ namespace VolumeBox.Toolbox
         {
         }
 
-        public SceneOpenedMessage() : base()
+        public SceneOpenedMessage()
         {
 
         }
@@ -329,7 +304,7 @@ namespace VolumeBox.Toolbox
         {
         }
 
-        public GameplaySceneOpenedMessage() : base()
+        public GameplaySceneOpenedMessage()
         {
 
         }

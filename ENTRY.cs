@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Threading.Tasks;
 using UnityEditor;
 #endif
 using NaughtyAttributes;
@@ -27,7 +28,7 @@ namespace VolumeBox.Toolbox
         [SerializeField] 
         private SceneArgs initialSceneArgs;
         
-        [DisableIf(nameof(_autocompile))] public bool Autocompile;
+        [ReadOnly] public bool Autocompile;
         public UnityEvent onLoadEvent;
         
         private Resolver resolver;
@@ -37,7 +38,6 @@ namespace VolumeBox.Toolbox
         private Pooler pooler;
         private Saver saver;
         private AudioPlayer audioPlayer;
-        private bool _autocompile = true;
 
         private void OnValidate() 
         {
@@ -56,8 +56,15 @@ namespace VolumeBox.Toolbox
         }
 #endif
 
-        private void Awake()
+        private async void Awake()
         {
+            #if UNITY_EDITOR
+            while (!EditorPlayStateHandler.EditorReady)
+            {
+                await Task.Yield();
+            }
+            #endif
+            
             Application.targetFrameRate = targetFrameRate;
 
             resolver = GetComponent<Resolver>();
@@ -91,7 +98,7 @@ namespace VolumeBox.Toolbox
 
             if(!string.IsNullOrEmpty(initialSceneName) || initialSceneName != "MAIN")
             {
-                traveler.LoadScene(initialSceneName, initialSceneArgs, 0, 1.5f);
+                await traveler.LoadScene(initialSceneName, initialSceneArgs, 0, 1.5f);
             }
         }
 

@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -25,7 +24,7 @@ namespace VolumeBox.Toolbox
             canvasGroup.SetInteractions(false);
         }
 
-        public async override UniTask FadeInForCoroutine(float fadeInDuration)
+        public async override Task FadeInForCoroutine(float fadeInDuration)
         {
             if (!useFade)
             {
@@ -47,7 +46,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public async override UniTask FadeOutForCoroutine(float fadeOutDuration)
+        public async override Task FadeOutForCoroutine(float fadeOutDuration)
         {
             if (!useFade)
             {

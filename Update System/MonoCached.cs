@@ -110,7 +110,7 @@ namespace VolumeBox.Toolbox
             
         }
 
-    public virtual void OnRemove(){}
+        public virtual void OnRemove(){}
         public virtual void OnAdd(){}
         public virtual void OnActivate(){}
         public virtual void OnDeactivate(){}
@@ -186,6 +186,9 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
+            //
+            if(!Updater.HasInstance) return;
+
             Updater upd = Updater.Instance;
             
             if(upd == null) return;

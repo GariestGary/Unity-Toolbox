@@ -10,6 +10,8 @@ namespace VolumeBox.Toolbox
         private static object lockObject = new object();
         private static bool destroyed = false;
 
+        public static bool HasInstance => instance != null;
+
         public static T Instance 
         { 
             get
@@ -48,6 +50,8 @@ namespace VolumeBox.Toolbox
     {
         private static T instance;
         private static object lockObject = new object();
+        
+        public static bool HasInstance => instance != null;
 
         public static T Instance { get 
             {
