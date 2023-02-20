@@ -11,7 +11,6 @@ Set of architectural solutions for Unity
 * [Object Pooling](#object-pooling)
 * [Save System](#save-system)
 * [Travel System](#travel-system)
-* [Routine System](#routine-system)
 
 ## Installation
 
@@ -42,7 +41,7 @@ Alternatively, merge the snippet to Packages/manifest.json
         }
     ],
     "dependencies": {
-        "com.volumebox.toolbox": "0.0.1"
+        "com.volumebox.toolbox": "0.0.4"
     }
 }
 ```
@@ -52,17 +51,21 @@ Alternatively, merge the snippet to Packages/manifest.json
 * open Edit/Project Settings/Package Manager
 * add a new Scoped Registry (or edit the existing OpenUPM entry)
 
-Name: `package.openupm.com`
+    Name: `package.openupm.com`
 
-URL: `https://package.openupm.com`
+    URL: `https://package.openupm.com`
 
+* add following scopes:
+
+    `com.volumebox.toolbox`
+  
+    `com.dbrizov`
+  
+    `com.solidalloy`
+  
 * click `Save` (or `Apply`)
-* open **Window/Package Manager**
-* click `+`
-* select `Add package by name...` or `Add package from git URL...`
-* paste `com.volumebox.toolbox` into name
-* paste `0.0.1` into version
-* click `Add`
+* open `My Registries` packages in package manager window
+* install `VolumeBox Toolbox`
 
 ## Basics
 
