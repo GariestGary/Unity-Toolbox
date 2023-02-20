@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using NaughtyAttributes;
-using BeauRoutine;
 
 namespace VolumeBox.Toolbox
 {
@@ -33,17 +32,14 @@ namespace VolumeBox.Toolbox
             {
                 if(value < 0)
                 {
-                    Routine.TimeScale = 0f;
                     timeScale = 0f;
                 } 
                 else if(value > 1)
                 {
-                    Routine.TimeScale = 1f;
                     timeScale = 1f;
                 } 
                 else
                 {
-                    Routine.TimeScale = value;
                     timeScale = value;
                 }
             }
@@ -281,8 +277,6 @@ namespace VolumeBox.Toolbox
 
                 }
             }
-
-            Routine.ManualUpdate();
         }
 
         void FixedUpdate()
