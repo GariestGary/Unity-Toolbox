@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using BeauRoutine;
 using UnityEngine;
 using UnityEngine.UI;
 using VolumeBox.Toolbox;
@@ -15,13 +14,6 @@ namespace VolumeBox.Toolbox
         public static void Resolve(this object mono)
         {
             Resolver.Instance.Inject(mono);
-        }
-
-        public static Routine StartManual(this IEnumerator coroutine)
-        {
-            var routine = Routine.Start(coroutine);
-            routine.SetPhase(RoutinePhase.Manual);
-            return routine;
         }
 
         /// <summary>
