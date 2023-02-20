@@ -62,6 +62,8 @@ Alternatively, merge the snippet to Packages/manifest.json
     `com.dbrizov`
   
     `com.solidalloy`
+    
+    `org.nuget`
   
 * click `Save` (or `Apply`)
 * open `My Registries` packages in package manager window
