@@ -15,11 +15,17 @@ namespace VolumeBox.Toolbox
     [InitializeOnLoad]
     public static class EditorPlayStateHandler
     {
-        private const string DevelopmentScenePath = "Assets/Plugins/Unity Toolbox/Scenes/MAIN.unity";
-        private const string ProductionScenePath = "Packages/com.volumebox.toolbox/Scenes/MAIN.unity";
+        private const string DevelopmentSceneAssetPath = "Assets/Plugins/Unity Toolbox/Scenes/MAIN.unity";
+        private const string DevelopmentScenePath = "Plugins/Unity Toolbox/Scenes/MAIN.unity";
+        
+        private const string ProductionSceneAssetPath = "Assets/Scenes/MAIN.unity";
+        private const string ProductionScenePath = "Scenes/MAIN.unity";
+        
+        private const string PackageScenePath = "Packages/com.volumebox.toolbox/Scenes/MAIN.unity";
+        
         private const string PackageName = "com.volumebox.toolbox";
         private const string MainSceneName = "MAIN";
-        
+
         private static List<string> _scenesOpenedAtStart;
         
         public static bool EditorReady { get; private set; }
@@ -106,7 +112,7 @@ namespace VolumeBox.Toolbox
 
         private static bool IsMainSceneCorrectInBuild()
         {
-            if (EditorBuildSettings.scenes[0].path != DevelopmentScenePath && EditorBuildSettings.scenes[0].path != ProductionScenePath)
+            if (EditorBuildSettings.scenes.Length <= 0 || (EditorBuildSettings.scenes[0].path != DevelopmentSceneAssetPath && EditorBuildSettings.scenes[0].path != ProductionSceneAssetPath))
             {
                 Debug.LogWarning("MAIN scene is not in build setting or it's index not 0. You can fix this from Toolbox/Init MAIN scene");
                 return false;
@@ -124,7 +130,7 @@ namespace VolumeBox.Toolbox
 
             if (pack.Result.Any(x => x.name == PackageName))
             {
-                return ProductionScenePath;
+                return PackageScenePath;
             }
 
             return DevelopmentScenePath;
@@ -145,11 +151,32 @@ namespace VolumeBox.Toolbox
                 }
             }
 
-            var path = await GetCurrentMainScenePath();
+            var initialPath = await GetCurrentMainScenePath();
+            var targetPath = string.Empty;
+
+            if (initialPath == PackageScenePath)
+            {
+                var fullProductionPath = Application.dataPath + "/" + ProductionScenePath;
+                var fullPackagePath = Directory.GetParent(Application.dataPath) + "/" + PackageScenePath;
             
-            scenes.Insert(0, new EditorBuildSettingsScene(path, true));
+                if (!File.Exists(fullProductionPath))
+                {
+                    Directory.CreateDirectory(Directory.GetParent(ProductionSceneAssetPath).FullName);
+                    await ToolboxExtensions.CopyFileAsync(fullPackagePath, fullProductionPath);
+                }
+                
+                targetPath = ProductionSceneAssetPath;
+            }
+            else
+            {
+                targetPath = DevelopmentSceneAssetPath;
+            }
+                
+            scenes.Insert(0, new EditorBuildSettingsScene(targetPath, true));
 
             EditorBuildSettings.scenes = scenes.ToArray();
+
+            AssetDatabase.Refresh();
 
             Debug.Log("MAIN scene initialized");
         }
@@ -173,7 +200,15 @@ namespace VolumeBox.Toolbox
             }
 
             Debug.Log("Opened MAIN scene");
-            EditorSceneManager.OpenScene(await GetCurrentMainScenePath(), OpenSceneMode.Additive);
+
+            if (await GetCurrentMainScenePath() == PackageScenePath)
+            {
+                EditorSceneManager.OpenScene(ProductionSceneAssetPath, OpenSceneMode.Additive);
+            }
+            else
+            {
+                EditorSceneManager.OpenScene(DevelopmentSceneAssetPath, OpenSceneMode.Additive);
+            }
         }
     }
 }
