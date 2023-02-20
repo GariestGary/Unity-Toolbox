@@ -308,8 +308,3 @@ Here you can see that StateProvider uses GameData class to store variables and r
 ## Travel System
 
 
-
-## Routine System
-
-
-Toolbox uses a third-party coroutine and tweening system called [BeauRoutine](https://github.com/BeauPrime/BeauRoutine)
