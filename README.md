@@ -71,7 +71,7 @@ Alternatively, merge the snippet to Packages/manifest.json
 
 ## Basics
 
-All starts with scene named "MAIN", just open it from `Plugins/Toolbox/Scenes/MAIN.unity` and add to build settings. Scene has main [ENTRY] object, which contains all necessary components. 
+All starts with scene named "MAIN", just initialize it from `Toolbox/Init MAIN` menu and open from `Toolbox/Open MAIN`. Scene has main [ENTRY] object, which contains all necessary components. 
 
 From ENTRY component you can directly change global time scale, set initial scene name, which opens at game start and `On Load Event` that calls from unity's `Start()` method.
 
@@ -133,7 +133,7 @@ public class Test: MonoCached
   
   public override void Rise()
   {
-    msg.Send(Message.IT_JUST_WORKS); //you can use `Messager` instance, without clearly initialize it in `Test` class
+    msg.Send<ItJustWorksMessage>(); //you can use `Messager` instance, without clearly initialize it in `Test` class
   }
 }
 ```
@@ -158,9 +158,16 @@ If you want to use your own MonoBehaviour's components, you can add this compone
 
 Message system allows you to reduce code cohesion by subscribing to messages and sending them.
 
-All messages contains in `Message` enum, to add new line in this enum with desired name. To subscribe to a message call `Messager.Subscribe(Message id, Action<object> next)`, where `id` is an desired message you want to subscribe, `next` is an action that invokes when message received.
+To create message with parameters, just create class, derived from `Message` class, and write public parameters you want.
+To subscribe to a message call one of following methods:
 
-To send additional data with a message, simply pass it after the message ID and cast it to the desired type in the callback method.
+`Messager.Subscribe<T>(Action<T> next)`
+
+`Messager.Subscribe(Type type, Action next)`
+
+where `T` and `type` is an desired message class you want to subscribe, `next` is an parameterized action that invokes when message received.
+
+To send additional data with a message, simply pass it with message class public parameters:
 
 ### Example
 ```C#
@@ -172,10 +179,12 @@ public class Test: MonoCached
 
   public override void Rise()
   {
-    msg.Subscribe(Message.PLAYER_DEAD, data => Debug.Log($"Game Over! Your score: {(int)data}");
+    //Here's passed data simply shows in log
+    msg.Subscribe<PlayerDeadMessage>(data => Debug.Log($"Game Over! Your score: {message.CurrentScore}");
   }
 }
 ```
+
 ```C#
 public class GameManager: Singleton<GameManager>
 {
@@ -186,10 +195,17 @@ public class GameManager: Singleton<GameManager>
   
   public void KillPlayer()
   {
-    msg.Send(Message.PLAYER_DEAD, currentScore);
+    msg.Send(new PlayerDeadMessage{ CurrentScore = currentScore });
   }
   
   //...
+}
+```
+
+```C#
+public class PlayerDeadMessage: Message
+{
+  public int CurrentScore;
 }
 ```
 
