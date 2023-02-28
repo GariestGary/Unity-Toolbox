@@ -1051,7 +1051,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeScale: 1
   targetFrameRate: 120
-  initialSceneName: TestScene
+  initialSceneName: New Scene
   initialSceneArgs: {fileID: 0}
   Autocompile: 0
   onLoadEvent:
@@ -1132,8 +1132,7 @@ MonoBehaviour:
   IntervalTimer: 0
   TimeStack: 0
   FixedTimeStack: 0
-  useUiScene: 1
-  uiScene: TestUIScene
+  uiScene: MAIN
 --- !u!114 &365161803
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using NaughtyAttributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,20 +9,52 @@ namespace VolumeBox.Toolbox
 {
     public class MonoCached : MonoBehaviour
     {
-        [SerializeField] protected bool pauseable = true;
-
+        [Foldout("Process Settings")]
+        [SerializeField]
+        private bool processIfInactive = false;
+        [Foldout("Process Settings")]
+        [ShowIf(nameof(processIfInactive))]
+        [SerializeField]
+        private bool processIfInactiveInHierarchy = false;
+ 
         protected float delta;
         protected float fixedDelta;
-        protected bool paused;
         protected float interval;
+        protected bool paused = false;
 
-        private bool active;
         private bool raised;
         private bool ready;
 
         [HideInInspector] public float IntervalTimer;
         [HideInInspector] public float TimeStack;
         [HideInInspector] public float FixedTimeStack;
+
+        public bool Paused => paused;
+
+        public bool ProcessIfInactive
+        {
+            get => processIfInactive;
+
+            set
+            {
+                processIfInactive = value;
+            }
+        }
+
+        public bool ProcessIfInactiveInHierarchy
+        {
+            get => processIfInactiveInHierarchy;
+
+            set
+            {
+                processIfInactiveInHierarchy = value;
+
+                if(value)
+                {
+                    processIfInactive = true;
+                }
+            }
+        }
 
         public float Interval
         {
@@ -55,10 +88,6 @@ namespace VolumeBox.Toolbox
             private set { }
         }
 
-        public bool Paused => paused;
-        public bool Pauseable => pauseable;
-        public bool Active => active;
-
         public void OnRise()
         {
             if (raised) return;
@@ -77,22 +106,39 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
+
+        /// <summary>
+        /// Alternative to Awake()
+        /// </summary>
         protected virtual void Rise()
         {
         }
 
+        /// <summary>
+        /// Alternative to Start()
+        /// </summary>
         protected virtual void Ready()
         {
         }
 
+
+        /// <summary>
+        /// Alternative to Update()
+        /// </summary>
         protected virtual void Tick()
         {
         }
 
+        /// <summary>
+        /// Alternative to FixedUpdate()
+        /// </summary>
         protected virtual void FixedTick()
         {
         }
 
+        /// <summary>
+        /// Alternative to LateUpdate()
+        /// </summary>
         protected virtual void LateTick()
         {
         }
@@ -119,7 +165,7 @@ namespace VolumeBox.Toolbox
         {
             this.delta = delta;
 
-            if(!active || paused) return;
+            if(paused) return;
 
             Tick();
         }
@@ -128,21 +174,21 @@ namespace VolumeBox.Toolbox
         {
             this.fixedDelta = fixedDelta;
 
-            if(!active || paused) return;
+            if(paused) return;
 
             FixedTick();
         }
 
         public void LateProcess(float delta)
         {
-            if(!active || paused) return;
+            if(paused) return;
 
             LateTick();
         }
 
         private void Pause()
         {
-            if(paused || !pauseable) return;
+            if(paused) return;
             paused = true;
             OnPause();
         }
@@ -156,37 +202,43 @@ namespace VolumeBox.Toolbox
         
         public void EnableGameObject()
         {
-            if(gameObject.activeSelf) return;
-            
             gameObject.SetActive(true);
         }
 
         public void DisableGameObject()
         {
-            if (!gameObject.activeSelf) return;
-            
             gameObject.SetActive(false);
         }
 
         private void OnEnable()
         {
-            if(active) return;
-            active = true;
-            OnActivate();
             Resume();
+
+            OnActivate();
         }
 
         private void OnDisable()
         {
-            if(!active) return;
-            active = false;
+            if(!processIfInactive)
+            {
+                if(gameObject.activeInHierarchy)
+                {
+                    if(!processIfInactiveInHierarchy)
+                    {
+                        Pause();
+                    }
+                }
+                else
+                {
+                    Pause();
+                }
+            }
+
             OnDeactivate();
-            Pause();
         }
 
         private void OnDestroy()
         {
-            //
             if(!Updater.HasInstance) return;
 
             Updater upd = Updater.Instance;
