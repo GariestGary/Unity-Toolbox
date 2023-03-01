@@ -56,27 +56,10 @@ namespace VolumeBox.Toolbox
 			return sub;
         }
 
-        public Subscriber SubscribeKeeping(Type type, Action next)
-        {
-	        Action<object> callback = args => next();
-	        var sub = new Subscriber(type, callback);
-	        subscribers.Add(sub);
-	        return sub;
-        }
-        
-
 		public Subscriber Subscribe<T>(Action<T> next) where T: Message
 		{
 			Action<object> callback = args => next((T)args);
 			var sub = new Subscriber(typeof(T), callback);
-            sceneSubscribers.Add(sub);
-            return sub;
-		}
-
-		public Subscriber Subscribe(Type type, Action next)
-		{
-            Action<object> callback = args => next();
-            var sub = new Subscriber(type, callback);
             sceneSubscribers.Add(sub);
             return sub;
 		}

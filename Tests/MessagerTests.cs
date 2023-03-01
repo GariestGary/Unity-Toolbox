@@ -20,13 +20,6 @@ public class MessagerTests
         Messager.Instance.Send<MockMessage>();
         Assert.AreEqual("Reacted", message);
 
-        bool test = false;
-        
-        Messager.Instance.ClearKeepingSubscribers();
-        Messager.Instance.SubscribeKeeping(typeof(MockMessage), () => test = true);
-        Messager.Instance.Send<MockMessage>();
-        Assert.AreEqual(true, test);
-
         yield return null;
     }
 

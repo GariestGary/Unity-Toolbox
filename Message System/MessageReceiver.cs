@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TypeReferences;
@@ -13,6 +14,9 @@ public class MessageReceiver: MonoCached
 
     protected override void Rise()
     {
-        Messager.Instance.Subscribe(messageType.Type, ReceivedEvent.Invoke);
+        var method = typeof(Messager).GetMethod("Subscribe", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        method = method.MakeGenericMethod(messageType.Type);
+        Action<Message> callback = (m) => ReceivedEvent.Invoke();
+        method.Invoke(Messager.Instance, new object[] { callback });
     }
 }
