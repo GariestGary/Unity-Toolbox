@@ -9,16 +9,11 @@ namespace VolumeBox.Toolbox
 {
     public abstract class SceneHandler<TArgs> : SceneHandlerBase where TArgs : SceneArgs
     {
-        [SerializeField] private bool _skipSetup;
-        [SerializeField] private bool _isGameplayLevel;
-
-        public bool IsGameplayScene => _isGameplayLevel;
-
         protected TArgs Args;
 
-        sealed public override void OnLoadCallback()
+        sealed protected override void OnLoadCallback(SceneArgs args)
         {
-            Args = Traveler.Instance.GetCurrentSceneArgs<TArgs>();
+            Args = args as TArgs;
 
             if (Args == null)
             {
@@ -28,17 +23,17 @@ namespace VolumeBox.Toolbox
             SetupScene(Args);
         }
 
-        public abstract void SetupScene(TArgs args);
+        protected abstract void SetupScene(TArgs args);
     }
 
     public class SceneHandlerBase : MonoCached
     {
-        public virtual void OnLoadCallback()
+        protected virtual void OnLoadCallback(SceneArgs args)
         {
 
         }
 
-        public virtual void OnSceneUnload()
+        protected virtual void OnSceneUnload()
         {
 
         }

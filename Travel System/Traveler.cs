@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
-using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,200 +10,172 @@ namespace VolumeBox.Toolbox
 {
     public class Traveler : CachedSingleton<Traveler>, IRunner
     {
-        [SerializeField] [Scene] private string uiScene;
-
         [Inject] private Updater _updater;
         [Inject] private Messager _messager;
 
-        public string CurrentSceneName => _currentSceneName;
+        private AsyncOperation _currentUnloadingSceneOperation;
+        private AsyncOperation _currentLoadingSceneOperation;
+        private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
+        private Queue<QueuedScene> _scenesToOpen = new Queue<QueuedScene>();
+        private MethodInfo _onLoadMethod;
 
-        private SceneArgs _currentOpeningSceneArgs;
-        private AsyncOperation _unloadingScene;
-        private AsyncOperation _loadingScene;
-        private SceneHandlerBase _currentSceneHandler;
-        private string _currentSceneName;
-        private bool _uiOpened;
-        private bool _loadingLevel;
+        public static List<OpenedScene> OpenedScenes => _openedScenes;
 
         public void Run()
         {
-            
+            _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", System.Reflection.BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        public TArgs GetCurrentSceneArgs<TArgs>() where TArgs : SceneArgs
+        public static T TryGetSceneHandler<T>() where T: SceneHandlerBase
         {
-            if (_currentOpeningSceneArgs == null) return null;
+            OpenedScene scene = null;
 
-            if (!(_currentOpeningSceneArgs is TArgs))
+            for(int i = 0; i < _openedScenes.Count; i++)
             {
-                Debug.LogError($"Current loading scene args is {_currentOpeningSceneArgs.GetType()}, but scene requires {typeof(TArgs)}");
-                return null;
+                if (_openedScenes[i].Handler != null && _openedScenes[i].Handler.GetType() == typeof(T))
+                {
+                    scene = _openedScenes[i];
+                    break;
+                }
             }
 
-            TArgs args = (TArgs)_currentOpeningSceneArgs;
-            _currentOpeningSceneArgs = null;
-            return args;
-        }
-
-        public async Task LoadScene(string sceneName, SceneArgs args = null, float fadeInDuration = 0.5f, float fadeOutDuration = 0.5f)
-        {
-            if (_loadingLevel) return;
-
-            _currentOpeningSceneArgs = args;
-
-            _loadingLevel = true;
-
-            await Fader.Instance.FadeInForCoroutine(fadeInDuration);
-
-            //skip unloading level if current level is null
-            if (string.IsNullOrEmpty(_currentSceneName))
+            if(scene == null)
             {
-                _unloadingScene = null;
+                return null;
             }
             else
             {
-                if (_currentSceneHandler != null)
-                {
-                    _currentSceneHandler.OnSceneUnload();
-                }
-                
-                await WaitForSceneUnloadCoroutine(_currentSceneName);
+                return scene.Handler as T;
+            }
+        }
+
+        public async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0)
+        {
+            if(!DoesSceneExist(sceneName))
+            {
+                Debug.LogWarning($"Scene with name {sceneName} doesn't exist");
+                return;
             }
 
-            _loadingScene = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            if(_currentLoadingSceneOperation != null && !string.IsNullOrEmpty(sceneName))
+            {
+                _scenesToOpen.Enqueue(new QueuedScene
+                {
+                    SceneName = sceneName,
+                    Args = args,
+                    FadeIn = fadeIn,
+                    FadeOut = fadeOut
+                });
+                return;
+            }
 
-            //loadingScene.allowSceneActivation = false;
+            await Fader.Instance.FadeInFor(fadeIn);
 
-            while (!_loadingScene.isDone)
+            _currentLoadingSceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
+            while (!_currentLoadingSceneOperation.isDone)
             {
                 await Task.Yield();
             }
 
-            _loadingScene.allowSceneActivation = true;
 
-            await Task.Yield();
+            Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
 
-            await OpenLoadedScene(sceneName, fadeOutDuration);
-        }
+            SceneHandlerBase handler = null;
 
-        private async Task OpenLoadedScene(string sceneName, float fadeOutDuration)
-        {
-            _currentSceneName = sceneName;
+            GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
 
-            GameObject[] rootObjs = SceneManager.GetSceneByName(sceneName).GetRootGameObjects();
-
-            SearchSceneBindings(rootObjs);
-
-            _messager.Send(new SceneLoadedMessage(sceneName));
-            
-            _currentSceneHandler = null;
-
-            foreach (var obj in rootObjs)
+            //Search for DI bindings
+            foreach (var obj in sceneObjects)
             {
-                _currentSceneHandler = obj.GetComponent<SceneHandlerBase>();
+                Resolver.Instance.SearchObjectBindings(obj);
+            }
 
-                if (_currentSceneHandler != null)
+            //Search for scene handler
+            foreach (var obj in sceneObjects)
+            {
+                handler = obj.GetComponent<SceneHandlerBase>();
+
+                if (handler != null)
                 {
                     break;
                 }
             }
 
-            if (_currentSceneHandler == null)
+            OpenedScene newOpenedScene = new OpenedScene(sceneDefinition, handler, args);
+
+            if (handler == null)
             {
                 Debug.Log("There is no SceneHandler in scene, skipping scene setup");
             }
             else
             {
-                _updater.InitializeMono(_currentSceneHandler);
-                _currentSceneHandler.OnLoadCallback();
+                _updater.InitializeMono(handler);
+                _onLoadMethod.Invoke(handler, new object[] { args });
             }
 
-            _updater.InitializeObjects(rootObjs);
-            await Fader.Instance.FadeOutForCoroutine(fadeOutDuration);
+            _openedScenes.Add(newOpenedScene);
+
+            _updater.InitializeObjects(sceneObjects);
+
+            await Fader.Instance.FadeOutFor(fadeOut);
+
+            _currentLoadingSceneOperation = null;
+
             _messager.Send(new SceneOpenedMessage(sceneName));
-            _messager.Send(new GameplaySceneOpenedMessage(sceneName));
 
-            _loadingLevel = false;
-        }
-
-        private void SearchSceneBindings(GameObject[] objs)
-        {
-            List<SceneBinding> bindings = new List<SceneBinding>();
-
-            foreach (var obj in objs)
+            if(_scenesToOpen.Count > 0)
             {
-                Resolver.Instance.SearchObjectBindings(obj);
-            }
+                var sceneToOpen = _scenesToOpen.Dequeue();
 
-            //messager.Send(new SceneBindingMessage() { instances = bindings });
-        }
-
-        private async Task WaitForSceneUnloadCoroutine(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName)) return;
-
-            _messager.Send(new SceneUnloadingMessage(sceneName));
-            _currentSceneHandler?.OnSceneUnload();
-
-            GameObject[] rootObjs = SceneManager.GetSceneByName(CurrentSceneName).GetRootGameObjects();
-
-            string unloadingSceneName = _currentSceneName;
-
-            _unloadingScene = SceneManager.UnloadSceneAsync(unloadingSceneName);
-
-            while (!_unloadingScene.isDone)
-            {
-                await Task.Yield();
-            }
-
-            _messager.Send(new SceneUnloadedMessage(unloadingSceneName));
-        }
-
-        #region UI_Handle
-        public async Task OpenUI()
-        {
-            if(string.IsNullOrEmpty(uiScene) || _uiOpened) return;
-
-            AsyncOperation loadingUi = SceneManager.LoadSceneAsync(uiScene, LoadSceneMode.Additive);
-
-            while (!loadingUi.isDone)
-            {
-                await Task.Yield();
-            }
-
-            GameObject[] uiObjs = SceneManager.GetSceneByName(uiScene).GetRootGameObjects();
-
-            _updater.InitializeObjects(uiObjs);
-
-            _uiOpened = true;
-        }
-
-        public async Task CloseUI()
-        {
-            if(string.IsNullOrEmpty(uiScene)) return;
-
-            if(_uiOpened)
-            {
-                Scene ui = SceneManager.GetSceneByName(uiScene);
-
-                if(!ui.isLoaded)
-                {
-                    return;
-                }
-
-                AsyncOperation unloadingUi = SceneManager.UnloadSceneAsync(uiScene);
-
-                while (!unloadingUi.isDone)
-                {
-                    await Task.Yield();
-                }
-
-                _uiOpened = false;
-
-                //TODO: messager.Send(Message.UI_CLOSED);
+                LoadScene(sceneToOpen.SceneName, sceneToOpen.Args, sceneToOpen.FadeIn, sceneToOpen.FadeOut);
             }
         }
-        #endregion
+
+        public async Task UnloadScene(string sceneName)
+        {
+
+        }
+
+        public static bool DoesSceneExist(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return false;
+
+            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                var scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+                var lastSlash = scenePath.LastIndexOf("/");
+                var sceneName = scenePath.Substring(lastSlash + 1, scenePath.LastIndexOf(".") - lastSlash - 1);
+
+                if (string.Compare(name, sceneName, true) == 0)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private struct QueuedScene
+        {
+            public string SceneName;
+            public SceneArgs Args;
+            public float FadeIn;
+            public float FadeOut;
+        }
+    }
+
+    public class OpenedScene
+    {
+        public Scene SceneDefinition { get; }
+        public SceneArgs Args { get; } = null;
+        public SceneHandlerBase Handler { get; } = null;
+
+        public OpenedScene(Scene sceneDefinition, SceneHandlerBase sceneHandler, SceneArgs args)
+        {
+            SceneDefinition = sceneDefinition;
+            Args = args;
+            Handler = sceneHandler;
+        }
     }
 
  #region Traveler's class messages

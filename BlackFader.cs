@@ -8,30 +8,9 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField] private CanvasGroup canvasGroup;
 
-        public override void FadeInInstantly()
+        protected async override Task FadeInForTask(float fadeInDuration)
         {
-            if (!useFade) return;
-
-            base.FadeInInstantly();
-        }
-
-        public override void FadeOutInstantly()
-        {
-            if (!useFade) return;
-
-            base.FadeOutInstantly();
-            canvasGroup.alpha = 0;
-            canvasGroup.SetInteractions(false);
-        }
-
-        public async override Task FadeInForCoroutine(float fadeInDuration)
-        {
-            if (!useFade)
-            {
-                return;
-            }
-            
-            StopCoroutine(nameof(FadeOutForCoroutine));
+            StopCoroutine(nameof(FadeOutForTask));
             canvasGroup.SetInteractions(true);
 
             float alpha = 0;
@@ -46,14 +25,9 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public async override Task FadeOutForCoroutine(float fadeOutDuration)
+        protected async override Task FadeOutForTask(float fadeOutDuration)
         {
-            if (!useFade)
-            {
-                return;
-            }
-
-            StopCoroutine(nameof(FadeInForCoroutine));
+            StopCoroutine(nameof(FadeInForTask));
 
             float alpha = 1;
             float stack = 0;

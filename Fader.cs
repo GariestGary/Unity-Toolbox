@@ -11,50 +11,33 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField] protected bool useFade;
 
-        public virtual void FadeInInstantly()
+        protected bool _fading;
+
+        public async Task FadeInFor(float duration)
         {
-            if (!useFade)
+            if (!useFade || duration <= 0 || _fading)
             {
                 return;
             }
 
-            StopCoroutine(nameof(FadeOutForCoroutine));
-            StopCoroutine(nameof(FadeInForCoroutine));
-            //image.color = Color.black;
+            _fading = true;
+            await FadeInForTask(duration);
+            _fading = false;
         }
 
-        public virtual void FadeOutInstantly()
+        public async Task FadeOutFor(float duration)
         {
-            if (!useFade)
+            if (!useFade || duration <= 0 || _fading)
             {
                 return;
             }
 
-            StopCoroutine(nameof(FadeOutForCoroutine));
-            StopCoroutine(nameof(FadeInForCoroutine));
+            _fading = true;
+            await FadeOutForTask(duration);
+            _fading = false;
         }
 
-        public void FadeInFor(float duration)
-        {
-            if (!useFade)
-            {
-                return;
-            }
-
-            StartCoroutine(nameof(FadeInForCoroutine));
-        }
-
-        public void FadeOutFor(float duration)
-        {
-            if (!useFade)
-            {
-                return;
-            }
-
-            StartCoroutine(nameof(FadeOutForCoroutine));
-        }
-
-        public abstract Task FadeInForCoroutine(float duration);
-        public abstract Task FadeOutForCoroutine(float duration);
+        protected async virtual Task FadeInForTask(float duration) { }
+        protected async virtual Task FadeOutForTask(float duration) { }
     }
 }

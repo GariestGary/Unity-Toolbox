@@ -7,12 +7,6 @@ namespace VolumeBox.Toolbox
 {
     public class SceneArgs : ScriptableObject
     {
-        [Scene] public string sceneName;
-        public Sprite backgroundSprite;
 
-        [Button("Resolve Background")]
-        public virtual void ResolveBackground()
-        { 
-        }
     }
 }

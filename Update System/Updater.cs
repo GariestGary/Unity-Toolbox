@@ -63,7 +63,40 @@ namespace VolumeBox.Toolbox
         {
             foreach(var obj in objs)
             {
-                InitializeObject(obj);
+                if (obj == null) return;
+
+                Resolver.Instance.Inject(obj);
+
+                MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
+
+                foreach (var mono in objMonos)
+                {
+                    InvokeRise(mono);
+                }
+            }
+
+            foreach (var obj in objs)
+            {
+                if (obj == null) return;
+
+                MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
+
+                foreach (var mono in objMonos)
+                {
+                    InvokeReady(mono);
+                }
+            }
+
+            foreach (var obj in objs)
+            {
+                if (obj == null) return;
+
+                MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
+
+                foreach (var mono in objMonos)
+                {
+                    InvokeProcessSubscription(mono);
+                }
             }
         }
 

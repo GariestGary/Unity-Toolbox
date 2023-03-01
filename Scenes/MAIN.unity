@@ -558,9 +558,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   processIfInactive: 0
   processIfInactiveInHierarchy: 0
-  IntervalTimer: 0
-  TimeStack: 0
-  FixedTimeStack: 0
   canChangeWhenOpened: 1
   MessageTextEvent:
     m_PersistentCalls:
@@ -1024,7 +1021,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3f0a25d3493c734695bf67d568e3b5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  modifiers: []
 --- !u!114 &365161797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1131,10 +1127,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   processIfInactive: 0
   processIfInactiveInHierarchy: 0
-  IntervalTimer: 0
-  TimeStack: 0
-  FixedTimeStack: 0
-  uiScene: MAIN
 --- !u!114 &365161803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1225,9 +1217,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   processIfInactive: 0
   processIfInactiveInHierarchy: 0
-  IntervalTimer: 0
-  TimeStack: 0
-  FixedTimeStack: 0
   _messages:
   - messageType:
       GuidAssignmentFailed: 0
@@ -1593,9 +1582,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   processIfInactive: 0
   processIfInactiveInHierarchy: 0
-  IntervalTimer: 0
-  TimeStack: 0
-  FixedTimeStack: 0
   _messages: []
   references:
     version: 2
@@ -2204,9 +2190,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   processIfInactive: 0
   processIfInactiveInHierarchy: 0
-  IntervalTimer: 0
-  TimeStack: 0
-  FixedTimeStack: 0
   canChangeWhenOpened: 0
   MessageTextEvent:
     m_PersistentCalls:
