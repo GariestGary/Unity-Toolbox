@@ -16,11 +16,13 @@ namespace VolumeBox.Toolbox
         [ShowIf(nameof(processIfInactive))]
         [SerializeField]
         private bool processIfInactiveInHierarchy = false;
- 
+
+        private RectTransform rect;
         protected float delta;
         protected float fixedDelta;
         protected float interval;
-        protected bool paused = false;
+        private bool pausedByActiveState = false;
+        private bool pausedManual = false;
 
         private bool raised;
         private bool ready;
@@ -29,7 +31,7 @@ namespace VolumeBox.Toolbox
         [HideInInspector] public float TimeStack;
         [HideInInspector] public float FixedTimeStack;
 
-        public bool Paused => paused;
+        public bool Paused => pausedByActiveState || pausedManual;
 
         public bool ProcessIfInactive
         {
@@ -72,18 +74,19 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public RectTransform rect
+        public RectTransform Rect
         {
             get
             {
-                if (transform is RectTransform)
+                if(rect == null)
                 {
-                    return transform as RectTransform;
+                    if (transform is RectTransform)
+                    {
+                        rect = transform as RectTransform;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+
+                return rect;
             }
             private set { }
         }
@@ -110,62 +113,49 @@ namespace VolumeBox.Toolbox
         /// <summary>
         /// Alternative to Awake()
         /// </summary>
-        protected virtual void Rise()
-        {
-        }
+        protected virtual void Rise(){}
 
         /// <summary>
         /// Alternative to Start()
         /// </summary>
-        protected virtual void Ready()
-        {
-        }
-
+        protected virtual void Ready(){}
 
         /// <summary>
         /// Alternative to Update()
         /// </summary>
-        protected virtual void Tick()
-        {
-        }
+        protected virtual void Tick(){}
 
         /// <summary>
         /// Alternative to FixedUpdate()
         /// </summary>
-        protected virtual void FixedTick()
-        {
-        }
+        protected virtual void FixedTick(){}
 
         /// <summary>
         /// Alternative to LateUpdate()
         /// </summary>
-        protected virtual void LateTick()
-        {
-        }
+        public virtual void LateTick(){}
 
-        protected virtual void OnPause()
-        {
-        }
 
-        protected virtual void OnResume()
-        {
-        }
-
-        protected virtual void Destroyed()
-        {
-            
-        }
+        public virtual void Destroyed(){}
 
         public virtual void OnRemove(){}
+
         public virtual void OnAdd(){}
-        public virtual void OnActivate(){}
-        public virtual void OnDeactivate(){}
+        
+        
+        protected virtual void OnPause(){}
+
+        protected virtual void OnResume(){}
+
+        protected virtual void OnActivate(){}
+
+        protected virtual void OnDeactivate(){}
         
         public void Process(float delta)
         {
             this.delta = delta;
 
-            if(paused) return;
+            if(pausedByActiveState || pausedManual) return;
 
             Tick();
         }
@@ -174,29 +164,29 @@ namespace VolumeBox.Toolbox
         {
             this.fixedDelta = fixedDelta;
 
-            if(paused) return;
+            if(pausedByActiveState || pausedManual) return;
 
             FixedTick();
         }
 
         public void LateProcess(float delta)
         {
-            if(paused) return;
+            if(pausedByActiveState || pausedManual) return;
 
             LateTick();
         }
 
-        private void Pause()
+        public void Pause()
         {
-            if(paused) return;
-            paused = true;
+            if(pausedManual) return;
+            pausedManual = true;
             OnPause();
         }
 
-        private void Resume()
+        public void Resume()
         {
-            if(!paused) return;
-            paused = false;
+            if(!pausedManual) return;
+            pausedManual = false;
             OnResume();
         }
         
@@ -212,7 +202,12 @@ namespace VolumeBox.Toolbox
 
         private void OnEnable()
         {
-            Resume();
+            pausedByActiveState = false;
+
+            if(!pausedManual)
+            {
+                OnResume();
+            }
 
             OnActivate();
         }
@@ -225,12 +220,22 @@ namespace VolumeBox.Toolbox
                 {
                     if(!processIfInactiveInHierarchy)
                     {
-                        Pause();
+                        if(!pausedByActiveState)
+                        {
+                            OnPause();
+                        }
+
+                        pausedByActiveState = true;
                     }
                 }
                 else
                 {
-                    Pause();
+                    if(!pausedByActiveState)
+                    {
+                        OnPause();
+                    }
+
+                    pausedByActiveState = true;
                 }
             }
 

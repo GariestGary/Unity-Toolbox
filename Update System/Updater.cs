@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using NaughtyAttributes;
+using System.Diagnostics;
+using UnityEngine.Profiling;
 
 namespace VolumeBox.Toolbox
 {
@@ -21,6 +23,8 @@ namespace VolumeBox.Toolbox
         public float Delta => delta;
         public event Action<float> deltaTick;
         public event Action<float> fixedDeltaTick;
+
+        private Stopwatch watch;
 
         public float TimeScale
         {
@@ -241,6 +245,9 @@ namespace VolumeBox.Toolbox
         
         void Update()
         {
+
+            watch = Stopwatch.StartNew();
+
             delta = Time.deltaTime * TimeScale;
             deltaTick?.Invoke(delta);
 
@@ -277,6 +284,9 @@ namespace VolumeBox.Toolbox
 
                 }
             }
+
+            watch.Stop();
+            UnityEngine.Debug.Log(watch.Elapsed.TotalMilliseconds + " " + Profiler.GetMonoUsedSizeLong());
         }
 
         void FixedUpdate()
@@ -339,6 +349,14 @@ namespace VolumeBox.Toolbox
                     }
                 }
             }
+        }
+
+        private class ProcessingComponent
+        {
+            public MonoCached mono;
+
+            public Action Process;
+
         }
     }
 }
