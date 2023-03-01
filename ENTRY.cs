@@ -43,7 +43,7 @@ namespace VolumeBox.Toolbox
         {
             if(updater != null)
             {
-                updater.TimeScale = timeScale;
+                Updater.TimeScale = timeScale;
             }          
         }
         

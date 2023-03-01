@@ -14,11 +14,11 @@ public class UpdaterTests
         var foo = testGO.AddComponent<Foo>();
         Updater.Instance.InitializeObject(testGO);
 
-        Updater.Instance.TimeScale = 0.5f;
+        Updater.TimeScale = 0.5f;
 
         yield return null;
 
-        Assert.AreEqual(Updater.Instance.Delta, foo.Delta);
+        Assert.AreEqual(Updater.Delta, foo.Delta);
     }
 
     [UnityTest]

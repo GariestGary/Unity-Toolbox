@@ -118,7 +118,6 @@ namespace VolumeBox.Toolbox
             }
 
             _updater.InitializeObjects(rootObjs);
-            _updater.OnSceneObjectsAdded(rootObjs);
             await Fader.Instance.FadeOutForCoroutine(fadeOutDuration);
             _messager.Send(new SceneOpenedMessage(sceneName));
             _messager.Send(new GameplaySceneOpenedMessage(sceneName));
@@ -146,9 +145,6 @@ namespace VolumeBox.Toolbox
             _currentSceneHandler?.OnSceneUnload();
 
             GameObject[] rootObjs = SceneManager.GetSceneByName(CurrentSceneName).GetRootGameObjects();
-
-            _updater.OnSceneObjectsRemoved(rootObjs);
-            _updater.RemoveObjectsFromUpdate(rootObjs);
 
             string unloadingSceneName = _currentSceneName;
 
@@ -193,8 +189,6 @@ namespace VolumeBox.Toolbox
                 {
                     return;
                 }
-                
-                _updater.RemoveObjectsFromUpdate(ui.GetRootGameObjects());
 
                 AsyncOperation unloadingUi = SceneManager.UnloadSceneAsync(uiScene);
 

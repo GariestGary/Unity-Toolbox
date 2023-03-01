@@ -17,20 +17,20 @@ namespace VolumeBox.Toolbox
         [SerializeField]
         private bool processIfInactiveInHierarchy = false;
 
-        private RectTransform rect;
         protected float delta;
         protected float fixedDelta;
         protected float interval;
+        private RectTransform rect;
         private bool pausedByActiveState = false;
         private bool pausedManual = false;
-
         private bool raised;
         private bool ready;
 
-        [HideInInspector] public float IntervalTimer;
-        [HideInInspector] public float TimeStack;
-        [HideInInspector] public float FixedTimeStack;
+        [HideInInspector] private float IntervalTimer;
+        [HideInInspector] private float TimeStack;
+        [HideInInspector] private float FixedTimeStack;
 
+        #region Properties
         public bool Paused => pausedByActiveState || pausedManual;
 
         public bool ProcessIfInactive
@@ -90,8 +90,23 @@ namespace VolumeBox.Toolbox
             }
             private set { }
         }
+        #endregion
 
-        public void OnRise()
+        private void HandleProcessSubscribe()
+        {
+            Updater.ProcessTick += ProcessInvokeControl;
+            Updater.FixedProcessTick += FixedProcessInvokeControl;
+            Updater.LateProcessTick += LateProcessInvokeControl;
+        }
+
+        private void HandleProcessUnsubscribe()
+        {
+            Updater.ProcessTick -= ProcessInvokeControl;
+            Updater.FixedProcessTick -= FixedProcessInvokeControl;
+            Updater.LateProcessTick -= LateProcessInvokeControl;
+        }
+
+        private void OnRise()
         {
             if (raised) return;
 
@@ -100,7 +115,7 @@ namespace VolumeBox.Toolbox
             raised = true;
         }
 
-        public void OnReady()
+        private void OnReady()
         {
             if (ready) return;
 
@@ -109,7 +124,59 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
+        private void ProcessInvokeControl(float extDelta)
+        {
+            if (Interval > 0)
+            {
+                if (IntervalTimer >= Interval)
+                {
+                    Process(TimeStack);
+                    TimeStack = 0;
+                    IntervalTimer -= Interval;
+                }
+                IntervalTimer += extDelta;
+                TimeStack += extDelta;
+            }
+            else
+            {
+               Process(extDelta);
+            }
+        }
 
+        private void FixedProcessInvokeControl(float extFixedDelta)
+        {
+            if (Interval > 0)
+            {
+                if (IntervalTimer >= Interval)
+                {
+                    FixedProcess(FixedTimeStack);
+                    FixedTimeStack = 0;
+                }
+                FixedTimeStack += extFixedDelta;
+            }
+            else
+            {
+                FixedProcess(extFixedDelta);
+            }
+        }
+
+        private void LateProcessInvokeControl(float extDelta)
+        {
+            if (Interval > 0)
+            {
+                if (IntervalTimer >= Interval)
+                {
+                    //Time stack counting in Process method
+                    LateProcess(TimeStack);
+                }
+            }
+            else
+            {
+                LateProcess(delta);
+            }
+        }
+
+        #region Virtual Process Methods
         /// <summary>
         /// Alternative to Awake()
         /// </summary>
@@ -134,15 +201,11 @@ namespace VolumeBox.Toolbox
         /// Alternative to LateUpdate()
         /// </summary>
         public virtual void LateTick(){}
+        #endregion
 
-
+        #region Lifetime Methods
         public virtual void Destroyed(){}
 
-        public virtual void OnRemove(){}
-
-        public virtual void OnAdd(){}
-        
-        
         protected virtual void OnPause(){}
 
         protected virtual void OnResume(){}
@@ -150,8 +213,10 @@ namespace VolumeBox.Toolbox
         protected virtual void OnActivate(){}
 
         protected virtual void OnDeactivate(){}
-        
-        public void Process(float delta)
+        #endregion
+
+        #region Process Methods
+        private void Process(float delta)
         {
             this.delta = delta;
 
@@ -160,7 +225,7 @@ namespace VolumeBox.Toolbox
             Tick();
         }
 
-        public void FixedProcess(float fixedDelta)
+        private void FixedProcess(float fixedDelta)
         {
             this.fixedDelta = fixedDelta;
 
@@ -169,13 +234,15 @@ namespace VolumeBox.Toolbox
             FixedTick();
         }
 
-        public void LateProcess(float delta)
+        private void LateProcess(float delta)
         {
             if(pausedByActiveState || pausedManual) return;
 
             LateTick();
         }
+        #endregion
 
+        #region Lifetime Control Methods
         public void Pause()
         {
             if(pausedManual) return;
@@ -249,11 +316,12 @@ namespace VolumeBox.Toolbox
             Updater upd = Updater.Instance;
             
             if(upd == null) return;
-            
-            upd.RemoveMonoFromProcess(this);
+
+            HandleProcessUnsubscribe();
             
             Destroyed();
         }
+        #endregion
     }
 
     public static class GameObjectExtensions

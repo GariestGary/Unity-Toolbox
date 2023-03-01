@@ -12,21 +12,11 @@ namespace VolumeBox.Toolbox
 {
     public class Updater : Singleton<Updater>, IRunner
     {
-        //TODO: modifiers clears at start, try to consistent set to list, maybe cancel inherit from scriptableobjects
-        [SerializeField] protected List<UpdateModifier> modifiers;
-        private List<MonoCached> monos = new List<MonoCached>();
-
-        private float timeScale = 1;
-        private float delta;
+        private static float timeScale = 1;
+        private static float delta;
         
         public float UnscaledDelta => Time.deltaTime;
-        public float Delta => delta;
-        public event Action<float> deltaTick;
-        public event Action<float> fixedDeltaTick;
-
-        private Stopwatch watch;
-
-        public float TimeScale
+        public static float TimeScale
         {
             get
             {
@@ -48,48 +38,21 @@ namespace VolumeBox.Toolbox
                 }
             }
         }
+        public static float Delta => delta;
 
-        [Button("Refresh Modifiers")]
-        public void RefreshModifiers()
-        {
-            if(modifiers == null)
-            {
-                modifiers = new List<UpdateModifier>();
-            }
+        public static event Action<float> ProcessTick;
+        public static event Action<float> FixedProcessTick;
+        public static event Action<float> LateProcessTick;
 
-            var modifierTypes = Assembly
-            .GetAssembly(typeof(UpdateModifier))
-            .GetTypes()
-            .Where(x => typeof(UpdateModifier).IsAssignableFrom(x) && !x.IsAbstract);
-
-            foreach (var modifierType in modifierTypes)
-            {
-                UpdateModifier newModifier = ScriptableObject.CreateInstance(modifierType) as UpdateModifier;
-
-                if(!modifiers.Any(x => x.GetType() == newModifier.GetType()))
-                {
-                    modifiers.Add(newModifier);
-                }
-            }
-        }
-
-        [Button("Clear Modifiers")]
-        public void ClearModifiers()
-        {
-            if(modifiers != null)
-            {
-                modifiers.Clear();
-            }
-            else
-            {
-                modifiers = new List<UpdateModifier>();
-            }
-        }
+        private MethodInfo riseMethod;
+        private MethodInfo readyMethod;
+        private MethodInfo subscribeProcessMethod;
 
         public void Run()
         {
-            //modifiers = new List<UpdateModifier>();
-            TimeScale = 1;
+            riseMethod = typeof(MonoCached).GetMethod("OnRise", BindingFlags.NonPublic | BindingFlags.Instance);
+            readyMethod = typeof(MonoCached).GetMethod("OnReady", BindingFlags.NonPublic | BindingFlags.Instance);
+            subscribeProcessMethod = typeof(MonoCached).GetMethod("HandleProcessSubscribe", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
@@ -118,17 +81,17 @@ namespace VolumeBox.Toolbox
 
             foreach (var mono in objMonos)
             {
-                mono.OnRise();
+                InvokeRise(mono);
             }
 
             foreach (var mono in objMonos)
             {
-                mono.OnReady();
+                InvokeReady(mono);
             }
 
-            foreach(var mono in objMonos)
+            foreach (var mono in objMonos)
             {
-                AddMonoToProcess(mono);
+                InvokeProcessSubscription(mono);
             }
         }
 
@@ -137,226 +100,46 @@ namespace VolumeBox.Toolbox
             if (mono == null) return;
 
             Resolver.Instance.Inject(mono);
-            mono.OnRise();
-            mono.OnReady();
-            AddMonoToProcess(mono);
-        }
-
-        public void AddMonoToProcess(MonoCached mono)
-        {
-            if(!monos.Contains(mono))
-            {
-                monos.Add(mono);
-            }
-        }
-
-        public void RemoveMonoFromProcess(MonoCached mono)
-        {
-            if(monos.Contains(mono))
-            {
-                monos.Remove(mono);
-            }
-        }
-
-        public void AddObjectToUpdate(GameObject obj)
-        {
-            if(obj == null) return;
-
-            MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
-
-            foreach (var mono in objMonos)
-            {
-                AddMonoToProcess(mono);
-            }
+            InvokeRise(mono);
+            InvokeReady(mono);
+            InvokeProcessSubscription(mono);
         }
         
 
-        public void RemoveObjectFromUpdate(GameObject obj)
+        #region Invoke Reflection Methods
+        private void InvokeRise(MonoCached mono)
         {
-            if(obj == null) return;
-            
-            MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
-
-            foreach (var mono in objMonos)
-            {
-                RemoveMonoFromProcess(mono);
-            }
+            riseMethod.Invoke(mono, null);
         }
 
-        public void RemoveObjectsFromUpdate(GameObject[] objs)
+        private void InvokeReady(MonoCached mono)
         {
-            for (var i = 0; i < objs.Length; i++)
-            {
-                RemoveObjectFromUpdate(objs[i]);
-            }
-        }
-        
-        public void AddObjectsToUpdate(GameObject[] objs)
-        {
-            for (var i = 0; i < objs.Length; i++)
-            {
-                AddObjectToUpdate(objs[i]);
-            }
+            readyMethod.Invoke(mono, null);
         }
 
-        public void OnSceneObjectsRemoved(GameObject[] objs)
+        private void InvokeProcessSubscription(MonoCached mono)
         {
-            if(objs == null) return;
-
-            foreach (var obj in objs)
-            {
-                OnSceneObjectRemoved(obj);
-            }
+            subscribeProcessMethod.Invoke(mono, null);
         }
+        #endregion
 
-        private void OnSceneObjectRemoved(GameObject obj)
+        #region Updates
+        private void Update()
         {
-            if(obj == null) return;
-
-            MonoCached[] monos = obj.GetComponentsInChildren<MonoCached>(true);
-
-            foreach (var mono in monos)
-            {
-                mono.OnRemove();
-            }
-        }
-        
-        public void OnSceneObjectsAdded(GameObject[] objs)
-        {
-            if(objs == null) return;
-
-            foreach (var obj in objs)
-            {
-                OnSceneObjectAdded(obj);
-            }
-        }
-
-        private void OnSceneObjectAdded(GameObject obj)
-        {
-            if(obj == null) return;
-
-            MonoCached[] monos = obj.GetComponentsInChildren<MonoCached>(true);
-
-            foreach (var mono in monos)
-            {
-                mono.OnAdd();
-            }
-        }
-        
-        void Update()
-        {
-
-            watch = Stopwatch.StartNew();
-
             delta = Time.deltaTime * TimeScale;
-            deltaTick?.Invoke(delta);
-
-            if(monos != null && monos.Count > 0)
-            {
-                for (var i = 0; i < monos.Count; i++)
-                {
-                    var mono = monos[i];
-
-                    if(modifiers != null && modifiers.Count > 0)
-                    {    
-                        foreach(var modifier in modifiers)
-                        {
-                            float? modifiedDelta = modifier?.Modify(delta, mono);
-                            delta = modifiedDelta.Value;
-                        }
-                    }
-
-                    if(mono.Interval > 0)
-                    {
-                        if(mono.IntervalTimer >= mono.Interval)
-                        {
-                            mono.Process(mono.TimeStack);
-                            mono.TimeStack = 0;
-                            mono.IntervalTimer -= mono.Interval;
-                        }
-                        mono.IntervalTimer += delta;
-                        mono.TimeStack += delta;
-                    }
-                    else
-                    {
-                        mono.Process(delta);
-                    }
-
-                }
-            }
-
-            watch.Stop();
-            UnityEngine.Debug.Log(watch.Elapsed.TotalMilliseconds + " " + Profiler.GetMonoUsedSizeLong());
+            ProcessTick?.Invoke(delta);
         }
 
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             float fixedDelta = Time.fixedDeltaTime * timeScale;
-            fixedDeltaTick?.Invoke(fixedDelta);
-
-            if(monos != null && monos.Count > 0)
-            {
-                for (var i = 0; i < monos.Count; i++)
-                {
-                    var mono = monos[i];
-
-                    if(mono.Interval > 0)
-                    {
-                        if(mono.IntervalTimer >= mono.Interval)
-                        {
-                            mono.FixedProcess(mono.FixedTimeStack);
-                            mono.FixedTimeStack = 0;
-                        }
-                        mono.FixedTimeStack += fixedDelta;
-                    }
-                    else
-                    {
-                        mono.FixedProcess(fixedDelta);
-                    }
-                }
-
-                
-            }
+            FixedProcessTick?.Invoke(fixedDelta);  
         }
 
-        void LateUpdate()
+        private void LateUpdate()
         {
-            if(monos != null && monos.Count > 0)
-            {
-                for (var i = 0; i < monos.Count; i++)
-                {
-                    var mono = monos[i];
-
-                    if(modifiers != null && modifiers.Count > 0)
-                    {
-                        foreach(var modifier in modifiers)
-                        {
-                            modifier.Modify(delta, mono);
-                        }
-                    }
-
-                    if(mono.Interval > 0)
-                    {
-                        if(mono.IntervalTimer >= mono.Interval)
-                        {
-                            //Time stack counting in Process method
-                            mono.LateProcess(mono.TimeStack);
-                        }
-                    }
-                    else
-                    {
-                        mono.LateProcess(delta);
-                    }
-                }
-            }
+            LateProcessTick?.Invoke(delta);
         }
-
-        private class ProcessingComponent
-        {
-            public MonoCached mono;
-
-            public Action Process;
-
-        }
+        #endregion
     }
 }
