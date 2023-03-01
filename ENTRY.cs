@@ -98,7 +98,7 @@ namespace VolumeBox.Toolbox
 
             if(!string.IsNullOrEmpty(initialSceneName) || initialSceneName != "MAIN")
             {
-                await traveler.LoadScene(initialSceneName, initialSceneArgs, 0, 1.5f);
+                await Traveler.LoadScene(initialSceneName, initialSceneArgs, 0, 1.5f);
             }
         }
 

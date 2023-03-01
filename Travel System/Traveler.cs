@@ -10,14 +10,12 @@ namespace VolumeBox.Toolbox
 {
     public class Traveler : CachedSingleton<Traveler>, IRunner
     {
-        [Inject] private Updater _updater;
-        [Inject] private Messager _messager;
-
-        private AsyncOperation _currentUnloadingSceneOperation;
-        private AsyncOperation _currentLoadingSceneOperation;
+        private static AsyncOperation _currentUnloadingSceneOperation;
+        private static AsyncOperation _currentLoadingSceneOperation;
         private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
-        private Queue<QueuedScene> _scenesToOpen = new Queue<QueuedScene>();
-        private MethodInfo _onLoadMethod;
+        private static Queue<QueuedScene> _scenesToOpen = new Queue<QueuedScene>();
+        private static Queue<QueuedScene> _scenesToClose = new Queue<QueuedScene>();
+        private static MethodInfo _onLoadMethod;
 
         public static List<OpenedScene> OpenedScenes => _openedScenes;
 
@@ -49,11 +47,11 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0)
+        public static async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0)
         {
             if(!DoesSceneExist(sceneName))
             {
-                Debug.LogWarning($"Scene with name {sceneName} doesn't exist");
+                Debug.LogWarning($"Scene with name {sceneName} you want to load doesn't exist");
                 return;
             }
 
@@ -110,19 +108,19 @@ namespace VolumeBox.Toolbox
             }
             else
             {
-                _updater.InitializeMono(handler);
+                Updater.Instance.InitializeMono(handler);
                 _onLoadMethod.Invoke(handler, new object[] { args });
             }
 
             _openedScenes.Add(newOpenedScene);
 
-            _updater.InitializeObjects(sceneObjects);
+            Updater.Instance.InitializeObjects(sceneObjects);
 
             await Fader.Instance.FadeOutFor(fadeOut);
 
             _currentLoadingSceneOperation = null;
 
-            _messager.Send(new SceneOpenedMessage(sceneName));
+            Messager.Instance.Send(new SceneOpenedMessage(sceneName));
 
             if(_scenesToOpen.Count > 0)
             {
@@ -132,9 +130,44 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public async Task UnloadScene(string sceneName)
+        public static async Task UnloadScene(string sceneName, float fadeIn = 0, float fadeOut = 0)
         {
+            if (!_openedScenes.Any(x => x.SceneDefinition.name == sceneName))
+            {
+                Debug.LogWarning($"Scene with name {sceneName} you want to unload doesn't exist");
+                return;
+            }
 
+            if (_currentUnloadingSceneOperation != null && !string.IsNullOrEmpty(sceneName))
+            {
+                _scenesToClose.Enqueue(new QueuedScene
+                {
+                    SceneName = sceneName,
+                    FadeIn = fadeIn,
+                    FadeOut = fadeOut
+                });
+                return;
+            }
+
+            await Fader.Instance.FadeInFor(fadeIn);
+
+            _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
+
+            while (!_currentUnloadingSceneOperation.isDone)
+            {
+                await Task.Yield();
+            }
+
+            await Fader.Instance.FadeOutFor(fadeOut);
+
+            _currentUnloadingSceneOperation = null;
+
+            if (_scenesToOpen.Count > 0)
+            {
+                var sceneToClose = _scenesToClose.Dequeue();
+
+                UnloadScene(sceneToClose.SceneName, sceneToClose.FadeIn, sceneToClose.FadeOut);
+            }
         }
 
         public static bool DoesSceneExist(string name)
