@@ -10,6 +10,8 @@ namespace VolumeBox.Toolbox
 
         protected async override Task FadeInForTask(float fadeInDuration)
         {
+            if (canvasGroup == null) return;
+
             StopCoroutine(nameof(FadeOutForTask));
             canvasGroup.SetInteractions(true);
 
@@ -27,6 +29,8 @@ namespace VolumeBox.Toolbox
 
         protected async override Task FadeOutForTask(float fadeOutDuration)
         {
+            if (canvasGroup == null) return;
+
             StopCoroutine(nameof(FadeInForTask));
 
             float alpha = 1;

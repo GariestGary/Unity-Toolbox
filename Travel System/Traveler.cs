@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox
 {
@@ -13,17 +14,22 @@ namespace VolumeBox.Toolbox
         private static AsyncOperation _currentUnloadingSceneOperation;
         private static AsyncOperation _currentLoadingSceneOperation;
         private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
-        private static Queue<QueuedScene> _scenesToOpen = new Queue<QueuedScene>();
-        private static Queue<QueuedScene> _scenesToClose = new Queue<QueuedScene>();
         private static MethodInfo _onLoadMethod;
-
-        public static List<OpenedScene> OpenedScenes => _openedScenes;
+        private static MethodInfo _onUnloadMethod;
 
         public void Run()
         {
-            _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", System.Reflection.BindingFlags.NonPublic | BindingFlags.Instance);
+            _openedScenes = new List<OpenedScene>();
+
+            _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
+            _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
+        /// <summary>
+        /// Returns SceneHandler with specified type, if it exists among loaded scenes
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T TryGetSceneHandler<T>() where T: SceneHandlerBase
         {
             OpenedScene scene = null;
@@ -47,6 +53,14 @@ namespace VolumeBox.Toolbox
             }
         }
 
+        /// <summary>
+        /// Loads scene with given name, args and fade time. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// </summary>
+        /// <param name="sceneName">scene name other than empty string</param>
+        /// <param name="args">custom scene arguments, null by default</param>
+        /// <param name="fadeIn">fade in duration before scene starts loading, 0 by default</param>
+        /// <param name="fadeOut">fade out duration after scene is loaded, 0 by default</param>
+        /// <returns></returns>
         public static async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0)
         {
             if(!DoesSceneExist(sceneName))
@@ -55,17 +69,7 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            if(_currentLoadingSceneOperation != null && !string.IsNullOrEmpty(sceneName))
-            {
-                _scenesToOpen.Enqueue(new QueuedScene
-                {
-                    SceneName = sceneName,
-                    Args = args,
-                    FadeIn = fadeIn,
-                    FadeOut = fadeOut
-                });
-                return;
-            }
+            await QueueSceneLoad(sceneName);
 
             await Fader.Instance.FadeInFor(fadeIn);
 
@@ -75,7 +79,6 @@ namespace VolumeBox.Toolbox
             {
                 await Task.Yield();
             }
-
 
             Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
 
@@ -104,7 +107,7 @@ namespace VolumeBox.Toolbox
 
             if (handler == null)
             {
-                Debug.Log("There is no SceneHandler in scene, skipping scene setup");
+                Debug.Log($"There is no SceneHandler in scene '{sceneName}', skipping scene setup");
             }
             else
             {
@@ -121,33 +124,26 @@ namespace VolumeBox.Toolbox
             _currentLoadingSceneOperation = null;
 
             Messager.Instance.Send(new SceneOpenedMessage(sceneName));
-
-            if(_scenesToOpen.Count > 0)
-            {
-                var sceneToOpen = _scenesToOpen.Dequeue();
-
-                LoadScene(sceneToOpen.SceneName, sceneToOpen.Args, sceneToOpen.FadeIn, sceneToOpen.FadeOut);
-            }
         }
 
+        /// <summary>
+        /// Unloads scene if it loaded now. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// </summary>
+        /// <param name="sceneName">scene name other than empty string</param>
+        /// <param name="fadeIn">fade in duration before scene starts unloading, 0 by default</param>
+        /// <param name="fadeOut">fade out duration after scene is unloaded, 0 by default</param>
+        /// <returns></returns>
         public static async Task UnloadScene(string sceneName, float fadeIn = 0, float fadeOut = 0)
         {
-            if (!_openedScenes.Any(x => x.SceneDefinition.name == sceneName))
+            OpenedScene sceneToUnload = _openedScenes.FirstOrDefault(x => x.SceneDefinition.name == sceneName);
+
+            if (sceneToUnload == null)
             {
                 Debug.LogWarning($"Scene with name {sceneName} you want to unload doesn't exist");
                 return;
             }
 
-            if (_currentUnloadingSceneOperation != null && !string.IsNullOrEmpty(sceneName))
-            {
-                _scenesToClose.Enqueue(new QueuedScene
-                {
-                    SceneName = sceneName,
-                    FadeIn = fadeIn,
-                    FadeOut = fadeOut
-                });
-                return;
-            }
+            await QueueSceneLoad(sceneName);
 
             await Fader.Instance.FadeInFor(fadeIn);
 
@@ -161,16 +157,28 @@ namespace VolumeBox.Toolbox
             await Fader.Instance.FadeOutFor(fadeOut);
 
             _currentUnloadingSceneOperation = null;
+        }
 
-            if (_scenesToOpen.Count > 0)
+        private static async Task QueueSceneLoad(string sceneName)
+        {
+            if(!CanLoadSceneNow(sceneName))
             {
-                var sceneToClose = _scenesToClose.Dequeue();
+                bool unloaded = _currentUnloadingSceneOperation == null || _currentUnloadingSceneOperation.isDone;
+                bool loaded = _currentLoadingSceneOperation == null || _currentLoadingSceneOperation.isDone;
 
-                UnloadScene(sceneToClose.SceneName, sceneToClose.FadeIn, sceneToClose.FadeOut);
+                while (!unloaded || !loaded)
+                {
+                    await Task.Yield();
+                }
             }
         }
 
-        public static bool DoesSceneExist(string name)
+        private static bool CanLoadSceneNow(string sceneName)
+        {
+            return _currentUnloadingSceneOperation == null && _currentLoadingSceneOperation == null && !string.IsNullOrEmpty(sceneName);
+        }
+
+        private static bool DoesSceneExist(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return false;
@@ -188,28 +196,22 @@ namespace VolumeBox.Toolbox
             return false;
         }
 
-        private struct QueuedScene
+        private class OpenedScene
         {
-            public string SceneName;
-            public SceneArgs Args;
-            public float FadeIn;
-            public float FadeOut;
+            public Scene SceneDefinition { get; }
+            public SceneArgs Args { get; } = null;
+            public SceneHandlerBase Handler { get; } = null;
+
+            public OpenedScene(Scene sceneDefinition, SceneHandlerBase sceneHandler, SceneArgs args)
+            {
+                SceneDefinition = sceneDefinition;
+                Args = args;
+                Handler = sceneHandler;
+            }
         }
     }
 
-    public class OpenedScene
-    {
-        public Scene SceneDefinition { get; }
-        public SceneArgs Args { get; } = null;
-        public SceneHandlerBase Handler { get; } = null;
-
-        public OpenedScene(Scene sceneDefinition, SceneHandlerBase sceneHandler, SceneArgs args)
-        {
-            SceneDefinition = sceneDefinition;
-            Args = args;
-            Handler = sceneHandler;
-        }
-    }
+    
 
  #region Traveler's class messages
     public class UnloadScene: Message { }

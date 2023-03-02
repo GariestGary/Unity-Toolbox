@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.CullingGroup;
 
 namespace VolumeBox.Toolbox
 {
@@ -12,6 +14,17 @@ namespace VolumeBox.Toolbox
         [SerializeField] protected bool useFade;
 
         protected bool _fading;
+
+        [RuntimeInitializeOnLoadMethod]
+        private void PlayStateChanged()
+        {
+            EditorApplication.playModeStateChanged += OnStateChanged;
+        }
+
+        private async void OnStateChanged(PlayModeStateChange state)
+        {
+            FadeOutFor(0);
+        }
 
         public async Task FadeInFor(float duration)
         {

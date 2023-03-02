@@ -15,9 +15,16 @@ namespace VolumeBox.Toolbox
         {
             Args = args as TArgs;
 
-            if (Args == null)
+            if(args is TArgs)
             {
-                Debug.LogWarning("Current scene args is null");
+                if(Args == null)
+                {
+                    Debug.Log("Current loaded scene args is null");
+                }
+            }
+            else
+            {
+                Debug.Log($"Current loaded scene expected {typeof(TArgs)} args, but provided with {args.GetType()}");
             }
 
             SetupScene(Args);
