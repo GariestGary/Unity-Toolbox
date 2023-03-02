@@ -11,9 +11,8 @@ namespace VolumeBox.Toolbox
     {
         [Foldout("Process Settings")]
         [SerializeField]
-        private bool processIfInactive = false;
+        private bool processIfInactiveSelf = false;
         [Foldout("Process Settings")]
-        [ShowIf(nameof(processIfInactive))]
         [SerializeField]
         private bool processIfInactiveInHierarchy = false;
 
@@ -33,13 +32,13 @@ namespace VolumeBox.Toolbox
         #region Properties
         public bool Paused => pausedByActiveState || pausedManual;
 
-        public bool ProcessIfInactive
+        public bool ProcessIfInactiveSelf
         {
-            get => processIfInactive;
+            get => processIfInactiveSelf;
 
             set
             {
-                processIfInactive = value;
+                processIfInactiveSelf = value;
             }
         }
 
@@ -50,11 +49,6 @@ namespace VolumeBox.Toolbox
             set
             {
                 processIfInactiveInHierarchy = value;
-
-                if(value)
-                {
-                    processIfInactive = true;
-                }
             }
         }
 
@@ -271,37 +265,22 @@ namespace VolumeBox.Toolbox
         {
             pausedByActiveState = false;
 
-            if(!pausedManual)
-            {
-                OnResume();
-            }
-
             OnActivate();
         }
 
         private void OnDisable()
         {
-            if(!processIfInactive)
+            if (gameObject.activeSelf)
             {
-                if(gameObject.activeInHierarchy)
+                if (!gameObject.activeInHierarchy && !processIfInactiveInHierarchy)
                 {
-                    if(!processIfInactiveInHierarchy)
-                    {
-                        if(!pausedByActiveState)
-                        {
-                            OnPause();
-                        }
-
-                        pausedByActiveState = true;
-                    }
+                    pausedByActiveState = true;
                 }
-                else
+            }
+            else
+            {
+                if (!processIfInactiveSelf)
                 {
-                    if(!pausedByActiveState)
-                    {
-                        OnPause();
-                    }
-
                     pausedByActiveState = true;
                 }
             }

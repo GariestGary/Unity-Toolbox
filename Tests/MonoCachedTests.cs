@@ -15,7 +15,6 @@ public class MonoCachedTests
 
         child.transform.SetParent(parent.transform);
 
-
         //check default, not process if inactive, not process if inactive in hierarchy
         parent.DisableGameObject();
         Assert.AreEqual(true, parent.Paused);
@@ -23,14 +22,19 @@ public class MonoCachedTests
         parent.EnableGameObject();
 
         //check if process if inactive
-        parent.ProcessIfInactive = true;
-        child.ProcessIfInactive = true;
+        parent.ProcessIfInactiveSelf = true;
+        child.ProcessIfInactiveSelf = true;
         parent.DisableGameObject();
-        Assert.AreEqual(false, child.Paused);
+        Assert.AreEqual(true, child.Paused);
         Assert.AreEqual(false, parent.Paused);
         parent.EnableGameObject();
-        parent.ProcessIfInactive = false;
-        child.ProcessIfInactive = false;
+        child.ProcessIfInactiveInHierarchy = true;
+        parent.DisableGameObject();
+        Assert.AreEqual(false, child.Paused);
+        parent.EnableGameObject();
+        parent.ProcessIfInactiveSelf = false;
+        child.ProcessIfInactiveSelf = false;
+        child.ProcessIfInactiveInHierarchy = false;
 
         //check if process if inactive in hierarchy
         child.ProcessIfInactiveInHierarchy = true;
