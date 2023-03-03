@@ -556,7 +556,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 707ef45704114ef9937c2da50f1222cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  processIfInactive: 0
+  processIfInactiveSelf: 0
   processIfInactiveInHierarchy: 0
   canChangeWhenOpened: 1
   MessageTextEvent:
@@ -1125,7 +1125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ef3565177c6c1459d0c5e5ab6dd734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  processIfInactive: 0
+  processIfInactiveSelf: 0
   processIfInactiveInHierarchy: 0
 --- !u!114 &365161803
 MonoBehaviour:
@@ -1215,7 +1215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3c8c7f3cc360864b953987a5e10a9f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  processIfInactive: 0
+  processIfInactiveSelf: 0
   processIfInactiveInHierarchy: 0
   _messages:
   - messageType:
@@ -1580,7 +1580,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3c8c7f3cc360864b953987a5e10a9f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  processIfInactive: 0
+  processIfInactiveSelf: 0
   processIfInactiveInHierarchy: 0
   _messages: []
   references:
@@ -2188,7 +2188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c82281f3dc1443b6ad5f3ca9ace9e66c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  processIfInactive: 0
+  processIfInactiveSelf: 0
   processIfInactiveInHierarchy: 0
   canChangeWhenOpened: 0
   MessageTextEvent:

@@ -1,9 +1,13 @@
 using System.Collections;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
+    /// <summary>
+    /// Default implementation of Fader, simply fades in and out black screen
+    /// </summary>
     public class BlackFader : Fader
     {
         [SerializeField] private CanvasGroup canvasGroup;
