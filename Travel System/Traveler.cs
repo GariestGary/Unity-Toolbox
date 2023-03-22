@@ -151,6 +151,8 @@ namespace VolumeBox.Toolbox
 
             await Fader.In(fadeIn);
 
+            Messager.Instance.Send(new SceneUnloadingMessage(sceneName));
+
             if (_onUnloadMethod != null && sceneToUnload.Handler != null)
             {
                 _onUnloadMethod.Invoke(sceneToUnload.Handler, null);

@@ -19,8 +19,6 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            //TODO: msg.Subscribe(Message.SCENE_UNLOADING, _ => ClearPools());
-            
             pools = new List<Pool>();
 
             objectPoolParent = new GameObject().transform;
@@ -31,7 +29,7 @@ namespace VolumeBox.Toolbox
                 AddPool(t);
             }
 
-            //TODO: clear pools on level change
+            msg.Subscribe<SceneUnloadingMessage>(m => HandleSceneUnload(m.SceneName));
         }
 
         public void AddPool(PoolData poolToAdd)
@@ -51,17 +49,6 @@ namespace VolumeBox.Toolbox
 
             pools.Add(new Pool(poolToAdd.tag, poolToAdd.destroyOnLevelChange, objectPoolList));
 
-        }
-
-        public void ClearPools()
-        {
-            foreach (var pool in pools)
-            {
-                foreach (var obj in pool.objects)
-                {
-                    TryDespawn(obj);
-                }
-            }
         }
 
         public void AddPool(string tag, GameObject obj, int size, bool destroyOnLevelChange = true)
@@ -290,34 +277,24 @@ namespace VolumeBox.Toolbox
         private void ReturnToPool(GameObject obj)
         {
             obj.Disable();
-
             obj.transform.SetParent(objectPoolParent);
         }
-
-        //TODO: handle unresolved gameObjects link solve
-
+        
         private void HandleSceneUnload(string unloadedSceneName)
         {
-            ClearTemporaryPools();
-        }
-
-        private void ClearTemporaryPools()
-        {
-            Debug.Log("Cleaning pools");
-
-            Pool[] poolsToClear = pools.Where(x => x.destroyOnLevelChange).ToArray();
-
-            Debug.Log("Pools to clear count: " + poolsToClear.Length);
-
-            foreach (var pool in poolsToClear)
+            //TODO: cache objects at spawn into dictionary with scene name key and destroy from correlated list
+            
+            for (int i = 0; i < pools.Count; i++)
             {
-                foreach (var obj in pool.objects)
+                for (int j = 0; j < pools[i].objects.Count; j++)
                 {
-                    TryDespawn(obj.gameObject);
-                    Destroy(obj.gameObject);
-                }
+                    var obj = pools[i].objects.ElementAt(j);
 
-                pools.Remove(pool);
+                    if (obj.gameObject.scene.name == unloadedSceneName && obj.Used)
+                    {
+                        TryDespawn(obj);
+                    }
+                }
             }
         }
 
@@ -326,13 +303,11 @@ namespace VolumeBox.Toolbox
         private sealed class Pool
         {
             public string tag;
-            public bool destroyOnLevelChange;
             public LinkedList<PooledGameObject> objects;
 
             public Pool(string tag, bool destroyOnLevelChange, LinkedList<PooledGameObject> objects = null)
             {
                 this.tag = tag;
-                this.destroyOnLevelChange = destroyOnLevelChange;
                 if(objects == null)
                 {
                     this.objects = new LinkedList<PooledGameObject>();

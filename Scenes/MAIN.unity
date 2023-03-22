@@ -1048,24 +1048,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeScale: 1
   targetFrameRate: 120
-  initialSceneName: Test Scene
+  initialSceneName: SampleScene
   initialSceneArgs: {fileID: 0}
+  manualFadeOut: 0
   Autocompile: 0
   onLoadEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 365161795}
-        m_TargetAssemblyTypeName: HandleEditorPlay, Assembly-CSharp
-        m_MethodName: 
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!4 &365161799
 Transform:
   m_ObjectHideFlags: 0
@@ -1112,7 +1101,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36e3a2d80f49df4a8c84293155d14aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolsList: []
+  poolsList:
+  - tag: Test Object
+    pooledObject: {fileID: 6181336801501243830, guid: edf64c02cc0134841b1820ce12d9f6d0, type: 3}
+    initialSize: 2
+    destroyOnLevelChange: 0
 --- !u!114 &365161802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1155,40 +1148,10 @@ MonoBehaviour:
   uiSource: {fileID: 314777514}
   atmosphereSource: {fileID: 1529264683}
   soundsSource: {fileID: 56211399}
-  music:
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: d51453d77111a55458ab9c382fca120b, type: 3}
-    id: music
-  ui:
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: eb573f0672b79234ca8771a4150a9b6d, type: 3}
-    id: click
+  music: []
+  ui: []
   atmos: []
-  sounds:
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: c116eaa7fc0e8c8428d64af3895e82b4, type: 3}
-    id: correct
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: c88b058b11f5fb840b8e1d6764aab4ba, type: 3}
-    id: correct
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: 92038d17feec3fa459f2542f36aa83ed, type: 3}
-    id: correct
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: 7bc4381a989e9534ba53cf5140391ce3, type: 3}
-    id: correct
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: 54152a0370b94dd4f82aa9eec98018da, type: 3}
-    id: wrong
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: 44f1e6d335184c14da2e7d879e4f021f, type: 3}
-    id: wrong
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: 84ce5b96025291242a45ed3819f538c4, type: 3}
-    id: win
-  - s: {fileID: 0}
-    clip: {fileID: 8300000, guid: 5e674075aa71f52438cde1f25eefe789, type: 3}
-    id: pop
+  sounds: []
 --- !u!114 &365161807
 MonoBehaviour:
   m_ObjectHideFlags: 0
