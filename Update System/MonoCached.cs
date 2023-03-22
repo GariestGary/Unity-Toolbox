@@ -194,11 +194,11 @@ namespace VolumeBox.Toolbox
         /// <summary>
         /// Alternative to LateUpdate()
         /// </summary>
-        public virtual void LateTick(){}
+        protected virtual void LateTick(){}
         #endregion
 
         #region Lifetime Methods
-        public virtual void Destroyed(){}
+        protected virtual void Destroyed(){}
 
         protected virtual void OnPause(){}
 
