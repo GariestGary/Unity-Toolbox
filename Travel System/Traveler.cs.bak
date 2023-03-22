@@ -59,7 +59,7 @@ namespace VolumeBox.Toolbox
         /// <param name="args">custom scene arguments, null by default</param>
         /// <param name="fadeIn">fade in duration before scene starts loading, 0 by default</param>
         /// <param name="fadeOut">fade out duration after scene is loaded, 0 by default</param>
-        public static async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0, bool manualFadeOut = false)
+        public static async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0)
         {
             if(!DoesSceneExist(sceneName))
             {
@@ -110,21 +110,14 @@ namespace VolumeBox.Toolbox
             else
             {
                 Updater.Instance.InitializeMono(handler);
-                
-                if (_onLoadMethod != null)
-                {
-                    _onLoadMethod.Invoke(handler, new object[] { args });
-                }
+                _onLoadMethod.Invoke(handler, new object[] { args });
             }
 
             _openedScenes.Add(newOpenedScene);
 
             Updater.Instance.InitializeObjects(sceneObjects);
 
-            if(!manualFadeOut)
-            {
-                await Fader.Out(fadeOut);
-            }
+            await Fader.Out(fadeOut);
 
             _currentLoadingSceneOperation = null;
 
@@ -151,10 +144,7 @@ namespace VolumeBox.Toolbox
 
             await Fader.In(fadeIn);
 
-            if (_onUnloadMethod != null && sceneToUnload.Handler != null)
-            {
-                _onUnloadMethod.Invoke(sceneToUnload.Handler, null);
-            }
+            _onUnloadMethod.Invoke(sceneToUnload.Handler, null);
 
             _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
 

@@ -89,7 +89,7 @@ namespace VolumeBox.Toolbox
                 return null;
             }
 
-            Pool p = pools.Where(x => x.tag == poolTag).First();
+            Pool p = pools.First(x => x.tag == poolTag);
 
             //Create new object if last in list is active
             if (p.objects.Last.Value.Used)
@@ -132,19 +132,29 @@ namespace VolumeBox.Toolbox
             return obj.gameObject;
         }
 
-        public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, bool addToProcess = true)
+        /// <summary>
+        /// Alternative to Unity's Instantiate method, that automatically injects object
+        /// </summary>
+        /// <param name="prefab"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <param name="parent"></param>
+        /// <param name="addToProcess"></param>
+        /// <returns></returns>
+        public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             GameObject inst = GameObject.Instantiate(prefab, position, rotation, parent);
         
             Resolver.Instance.SearchObjectBindings(inst);
 
-            if (addToProcess)
-            {
-                updater.InitializeObject(inst);
-                inst.Enable();
-            }
+            updater.InitializeObject(inst);
 
             return inst;
+        }
+
+        public GameObject Instantiate(GameObject prefab)
+        {
+            return Instantiate(prefab, Vector3.zero, Quaternion.identity);
         }
 
         private void CallSpawns(GameObject obj, object data)
@@ -215,11 +225,12 @@ namespace VolumeBox.Toolbox
 
             if (delay == 0)
             {
+                pgo.Used = false;
                 ReturnToPool(pgo.gameObject);
             }
             else
             {
-                StartCoroutine(DespawnCoroutine(pgo.gameObject, delay));
+                StartCoroutine(DespawnCoroutine(pgo, delay));
             }
 
             return true;
@@ -267,11 +278,13 @@ namespace VolumeBox.Toolbox
             Destroy(obj);
         }
 
-        private IEnumerator DespawnCoroutine(GameObject objectToDespawn, float delay)
+        private IEnumerator DespawnCoroutine(PooledGameObject objectToDespawn, float delay)
         {
             yield return new WaitForSeconds(delay);
 
-            ReturnToPool(objectToDespawn);
+            objectToDespawn.Used = false;
+
+            ReturnToPool(objectToDespawn.gameObject);
         }
 
         private void ReturnToPool(GameObject obj)
@@ -281,22 +294,11 @@ namespace VolumeBox.Toolbox
             obj.transform.SetParent(objectPoolParent);
         }
 
-        private void HandleLevelChange()
-        {
-            ResolveObjectsLinks();
-            ClearTemporaryPools();
-        }
+        //TODO: handle unresolved gameObjects link solve
 
-        private void ResolveObjectsLinks()
+        private void HandleSceneUnload(string unloadedSceneName)
         {
-            //TODO: maybe it's better to simply change active pool objects parent to null, than despawning all
-            foreach (var pool in pools)
-            {
-                foreach (var obj in pool.objects)
-                {
-                    TryDespawn(obj.gameObject);    
-                }
-            }
+            ClearTemporaryPools();
         }
 
         private void ClearTemporaryPools()
@@ -318,41 +320,45 @@ namespace VolumeBox.Toolbox
                 pools.Remove(pool);
             }
         }
+
+        //TODO: separate pool component with self objects, that destroys when scene unloads
+
+        private sealed class Pool
+        {
+            public string tag;
+            public bool destroyOnLevelChange;
+            public LinkedList<PooledGameObject> objects;
+
+            public Pool(string tag, bool destroyOnLevelChange, LinkedList<PooledGameObject> objects = null)
+            {
+                this.tag = tag;
+                this.destroyOnLevelChange = destroyOnLevelChange;
+                if(objects == null)
+                {
+                    this.objects = new LinkedList<PooledGameObject>();
+                }
+                else
+                {
+                    this.objects = objects;
+                }
+            }
+        }
+
+        private sealed class PooledGameObject
+        {
+            public GameObject gameObject;
+            public bool Used;
+        }
     }
-}
 
-[System.Serializable]
-public class PoolData
-{
-    public string tag;
-    public GameObject pooledObject;
-    public int initialSize;
-    public bool destroyOnLevelChange;
-}
-
-public class Pool
-{
-    public string tag;
-    public bool destroyOnLevelChange;
-    public LinkedList<PooledGameObject> objects;
-
-    public Pool(string tag, bool destroyOnLevelChange, LinkedList<PooledGameObject> objects = null)
+    [System.Serializable]
+    public class PoolData
     {
-        this.tag = tag;
-        this.destroyOnLevelChange = destroyOnLevelChange;
-        if(objects == null)
-        {
-            this.objects = new LinkedList<PooledGameObject>();
-        }
-        else
-        {
-            this.objects = objects;
-        }
+        public string tag;
+        public GameObject pooledObject;
+        public int initialSize;
+        public bool destroyOnLevelChange;
     }
 }
 
-public class PooledGameObject
-{
-    public GameObject gameObject;
-    public bool Used;
-}
+
