@@ -119,6 +119,8 @@ namespace VolumeBox.Toolbox
 
             _openedScenes.Add(newOpenedScene);
 
+            var parameters = new object[] { };
+
             Updater.Instance.InitializeObjects(sceneObjects);
 
             if(!manualFadeOut)
