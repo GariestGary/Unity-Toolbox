@@ -26,13 +26,13 @@ namespace VolumeBox.Toolbox
 
             foreach (var t in poolsList)
             {
-                AddPool(t);
+                TryAddPool(t);
             }
 
             msg.Subscribe<SceneUnloadingMessage>(m => HandleSceneUnload(m.SceneName));
         }
 
-        public void AddPool(PoolData poolToAdd)
+        public void TryAddPool(PoolData poolToAdd)
         {
             if (pools.Any(x => x.tag == poolToAdd.tag))
             {
@@ -47,15 +47,30 @@ namespace VolumeBox.Toolbox
                 CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
             }
 
-            pools.Add(new Pool(poolToAdd.tag, poolToAdd.destroyOnLevelChange, objectPoolList));
+            pools.Add(new Pool(poolToAdd.tag, objectPoolList));
 
         }
 
-        public void AddPool(string tag, GameObject obj, int size, bool destroyOnLevelChange = true)
+        public void TryAddPool(string tag, GameObject obj, int size)
         {
-            PoolData pool = new PoolData() { tag = tag, pooledObject = obj, initialSize = size, destroyOnLevelChange = destroyOnLevelChange };
+            PoolData pool = new PoolData() { tag = tag, pooledObject = obj, initialSize = size };
 
-            AddPool(pool);
+            TryAddPool(pool);
+        }
+
+        public void TryRemovePool(string tag)
+        {
+            var poolToRemove = pools.FirstOrDefault(p => p.tag == tag);
+
+            if (poolToRemove == null) return;
+
+            foreach (var obj in poolToRemove.objects)
+            {
+                TryDespawn(obj);
+                Destroy(obj.GameObject);
+            }
+
+            pools.Remove(poolToRemove);
         }
 
         /// <summary>
@@ -81,7 +96,7 @@ namespace VolumeBox.Toolbox
             //Create new object if last in list is active
             if (p.objects.Last.Value.Used)
             {
-                CreateNewPoolObject(p.objects.Last.Value.gameObject, p.objects);
+                CreateNewPoolObject(p.objects.Last.Value.GameObject, p.objects);
             }
 
             //Take last object
@@ -98,25 +113,25 @@ namespace VolumeBox.Toolbox
             resolver?.Inject(obj);
 
             //Setting transform
-            obj.gameObject.transform.position = position;
-            obj.gameObject.transform.rotation = rotation;
-            obj.gameObject.transform.SetParent(parent);
-            obj.gameObject.Enable();
+            obj.GameObject.transform.position = position;
+            obj.GameObject.transform.rotation = rotation;
+            obj.GameObject.transform.SetParent(parent);
+            obj.GameObject.Enable();
 
             //Call all spawn methods in gameobject
-            CallSpawns(obj.gameObject, data);
+            CallSpawns(obj.GameObject, data);
 
             //Add object back to start
             p.objects.AddFirst(obj);
 
             if (spawnAction != null)
             {
-                spawnAction.Invoke(obj.gameObject);
+                spawnAction.Invoke(obj.GameObject);
             }
 
             obj.Used = true;
             
-            return obj.gameObject;
+            return obj.GameObject;
         }
 
         /// <summary>
@@ -185,7 +200,7 @@ namespace VolumeBox.Toolbox
                 return false;
             }
 
-            Pool p = pools.FirstOrDefault(x => x.objects.Any(g => g.gameObject == objectToDespawn));
+            Pool p = pools.FirstOrDefault(x => x.objects.Any(g => g.GameObject == objectToDespawn));
 
             PooledGameObject pgo = null;
             
@@ -195,7 +210,7 @@ namespace VolumeBox.Toolbox
             }
             else
             {
-                pgo = p.objects.FirstOrDefault(x => x.gameObject == objectToDespawn);
+                pgo = p.objects.FirstOrDefault(x => x.GameObject == objectToDespawn);
             }
 
             return TryDespawn(pgo, delay);
@@ -213,7 +228,7 @@ namespace VolumeBox.Toolbox
             if (delay == 0)
             {
                 pgo.Used = false;
-                ReturnToPool(pgo.gameObject);
+                ReturnToPool(pgo.GameObject);
             }
             else
             {
@@ -249,7 +264,7 @@ namespace VolumeBox.Toolbox
 
             PooledGameObject pgo = new PooledGameObject()
             {
-                gameObject = poolObj,
+                GameObject = poolObj,
                 Used = false
             };
             
@@ -271,7 +286,7 @@ namespace VolumeBox.Toolbox
 
             objectToDespawn.Used = false;
 
-            ReturnToPool(objectToDespawn.gameObject);
+            ReturnToPool(objectToDespawn.GameObject);
         }
 
         private void ReturnToPool(GameObject obj)
@@ -283,14 +298,13 @@ namespace VolumeBox.Toolbox
         private void HandleSceneUnload(string unloadedSceneName)
         {
             //TODO: cache objects at spawn into dictionary with scene name key and destroy from correlated list
+            //what if after spawning and caching scene, i move object to other scene, object will stay in old list, correlated to old previous scene
             
             for (int i = 0; i < pools.Count; i++)
             {
-                for (int j = 0; j < pools[i].objects.Count; j++)
+                foreach (var obj in pools[i].objects)
                 {
-                    var obj = pools[i].objects.ElementAt(j);
-
-                    if (obj.gameObject.scene.name == unloadedSceneName && obj.Used)
+                    if (obj.GameObject.scene.name == unloadedSceneName && obj.Used)
                     {
                         TryDespawn(obj);
                     }
@@ -305,7 +319,7 @@ namespace VolumeBox.Toolbox
             public string tag;
             public LinkedList<PooledGameObject> objects;
 
-            public Pool(string tag, bool destroyOnLevelChange, LinkedList<PooledGameObject> objects = null)
+            public Pool(string tag, LinkedList<PooledGameObject> objects = null)
             {
                 this.tag = tag;
                 if(objects == null)
@@ -321,7 +335,7 @@ namespace VolumeBox.Toolbox
 
         private sealed class PooledGameObject
         {
-            public GameObject gameObject;
+            public GameObject GameObject;
             public bool Used;
         }
     }
@@ -332,7 +346,6 @@ namespace VolumeBox.Toolbox
         public string tag;
         public GameObject pooledObject;
         public int initialSize;
-        public bool destroyOnLevelChange;
     }
 }
 

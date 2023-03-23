@@ -13,7 +13,7 @@ public class PoolerTests
     public IEnumerator PoolerSpawnObjectTest()
     {
         GameObject pooledGO = new GameObject("Pooler Test");
-        Pooler.Instance.AddPool("Test pool", pooledGO, 3, false);
+        Pooler.Instance.TryAddPool("Test pool", pooledGO, 3);
 
         GameObject sp = Pooler.Instance.Spawn("Test pool", Vector3.zero, Quaternion.identity);
         sp.name = "Pooler Test 1";

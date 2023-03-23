@@ -172,6 +172,11 @@ namespace VolumeBox.Toolbox
 
         #region Virtual Process Methods
         /// <summary>
+        /// Calls when scene which this MonoCached part of loaded
+        /// </summary>
+        protected virtual void OnSceneLoaded(){}
+
+        /// <summary>
         /// Alternative to Awake()
         /// </summary>
         protected virtual void Rise(){}
