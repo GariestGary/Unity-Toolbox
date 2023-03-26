@@ -1,6 +1,6 @@
 {
   "name": "com.volumebox.toolbox",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "displayName": "VolumeBox Toolbox",
   "description": "Architecture solution for simplifying process of creating games",
   "dependencies": {
