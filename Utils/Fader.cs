@@ -3,10 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using static UnityEngine.CullingGroup;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace VolumeBox.Toolbox
 {
@@ -16,6 +19,7 @@ namespace VolumeBox.Toolbox
 
         protected bool _fading;
 
+#if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod]
         private void PlayStateChanged()
         {
@@ -26,6 +30,7 @@ namespace VolumeBox.Toolbox
         {
             FadeOutFor(0);
         }
+#endif
 
         public static async Task In(float duration)
         {
