@@ -53,13 +53,11 @@ namespace VolumeBox.Toolbox
         }
 
         /// <summary>
-        /// Loads scene with given name, args and fade time. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// Loads scene with given name and args. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
         /// </summary>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        /// <param name="fadeIn">fade in duration before scene starts loading, 0 by default</param>
-        /// <param name="fadeOut">fade out duration after scene is loaded, 0 by default</param>
-        public static async Task LoadScene(string sceneName, SceneArgs args = null, float fadeIn = 0, float fadeOut = 0, bool manualFadeOut = false)
+        public static async Task LoadScene(string sceneName, SceneArgs args = null)
         {
             if(!DoesSceneExist(sceneName))
             {
@@ -69,11 +67,9 @@ namespace VolumeBox.Toolbox
 
             await QueueSceneLoad(sceneName);
 
-            await Fader.In(fadeIn);
-
             _currentLoadingSceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
-            while (!_currentLoadingSceneOperation.isDone)
+            while (_currentLoadingSceneOperation != null && !_currentLoadingSceneOperation.isDone)
             {
                 await Task.Yield();
             }
@@ -123,11 +119,6 @@ namespace VolumeBox.Toolbox
 
             Updater.Instance.InitializeObjects(sceneObjects);
 
-            if(!manualFadeOut)
-            {
-                await Fader.Out(fadeOut);
-            }
-
             _currentLoadingSceneOperation = null;
 
             Messager.Instance.Send(new SceneOpenedMessage(sceneName));
@@ -137,9 +128,7 @@ namespace VolumeBox.Toolbox
         /// Unloads scene if it loaded now. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
         /// </summary>
         /// <param name="sceneName">scene name other than empty string</param>
-        /// <param name="fadeIn">fade in duration before scene starts unloading, 0 by default</param>
-        /// <param name="fadeOut">fade out duration after scene is unloaded, 0 by default</param>
-        public static async Task UnloadScene(string sceneName, float fadeIn = 0, float fadeOut = 0)
+        public static async Task UnloadScene(string sceneName)
         {
             OpenedScene sceneToUnload = _openedScenes.FirstOrDefault(x => x.SceneDefinition.name == sceneName);
 
@@ -151,8 +140,6 @@ namespace VolumeBox.Toolbox
 
             await QueueSceneLoad(sceneName);
 
-            await Fader.In(fadeIn);
-
             Messager.Instance.Send(new SceneUnloadingMessage(sceneName));
 
             if (_onUnloadMethod != null && sceneToUnload.Handler != null)
@@ -162,12 +149,10 @@ namespace VolumeBox.Toolbox
 
             _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
 
-            while (!_currentUnloadingSceneOperation.isDone)
+            while (_currentLoadingSceneOperation != null && !_currentUnloadingSceneOperation.isDone)
             {
                 await Task.Yield();
             }
-
-            await Fader.Out(fadeOut);
 
             _currentUnloadingSceneOperation = null;
         }

@@ -29,6 +29,8 @@ namespace VolumeBox.Toolbox
         private SceneArgs initialSceneArgs;
         [SerializeField, Foldout("Initial Scene")]
         private bool manualFadeOut;
+        [SerializeField, HideIf(nameof(manualFadeOut))]
+        private float fadeOutDuration;
         
         [ReadOnly] public bool Autocompile;
         public UnityEvent onLoadEvent;
@@ -100,7 +102,12 @@ namespace VolumeBox.Toolbox
 
             if(!string.IsNullOrEmpty(initialSceneName) || initialSceneName != "MAIN")
             {
-                await Traveler.LoadScene(initialSceneName, initialSceneArgs, 0, 1.5f, manualFadeOut);
+                await Traveler.LoadScene(initialSceneName, initialSceneArgs);
+
+                if(!manualFadeOut)
+                {
+                    await Fader.Out(fadeOutDuration);
+                }
             }
         }
 
