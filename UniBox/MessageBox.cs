@@ -7,19 +7,29 @@ namespace VolumeBox.Toolbox.UIInformer
     {
         [SerializeField] private GameObject okButton;
         [SerializeField] private GameObject cancelButton;
-        
+
+        private bool _isAsync;
+
         private Action _currentOkAction;
         private Action _currentCancelAction;
+
+        public event Action OnButtonClicked;
+
+        public MessageBoxResult Result { get; private set; }
 
         public void OkClick()
         {
             _currentOkAction?.Invoke();
+            OnButtonClicked?.Invoke();
+            Result = MessageBoxResult.OK;
             Close();
         }
 
         public void CancelClick()
         {
             _currentCancelAction?.Invoke();
+            OnButtonClicked?.Invoke();
+            Result = MessageBoxResult.CANCEL;
             Close();
         }
         
@@ -37,11 +47,16 @@ namespace VolumeBox.Toolbox.UIInformer
             _currentCancelAction = action;
         }
 
+        public void SetAsync()
+        {
+            _isAsync = true;
+        }
+
         protected override bool OnShow()
         {
             if (_currentCancelAction == null && _currentOkAction == null) return false;
 
-            if (_currentOkAction == null)
+            if (_currentOkAction == null && !_isAsync)
             {
                 okButton.Disable();
             }
@@ -57,6 +72,13 @@ namespace VolumeBox.Toolbox.UIInformer
         {
             _currentCancelAction = null;
             _currentOkAction = null;
+            _isAsync = false;
         }
+    }
+
+    public enum MessageBoxResult
+    {
+        OK,
+        CANCEL,
     }
 }

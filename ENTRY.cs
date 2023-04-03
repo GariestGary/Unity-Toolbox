@@ -6,6 +6,7 @@ using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using VolumeBox.Toolbox.UIInformer;
 
 namespace VolumeBox.Toolbox
 {   
@@ -35,13 +36,14 @@ namespace VolumeBox.Toolbox
         [ReadOnly] public bool Autocompile;
         public UnityEvent onLoadEvent;
         
+        private AudioPlayer audioPlayer;
         private Resolver resolver;
         private Messager messager;
         private Traveler traveler;
         private Updater updater;
         private Pooler pooler;
         private Saver saver;
-        private AudioPlayer audioPlayer;
+        private Info info; 
 
         private void OnValidate() 
         {
@@ -72,31 +74,36 @@ namespace VolumeBox.Toolbox
             Application.targetFrameRate = targetFrameRate;
 
             resolver = GetComponent<Resolver>();
+            
+            audioPlayer = GetComponent<AudioPlayer>();
             messager = GetComponent<Messager>();
             traveler = GetComponent<Traveler>();
             updater = GetComponent<Updater>();
             pooler = GetComponent<Pooler>();
             saver = GetComponent<Saver>();
-            audioPlayer = GetComponent<AudioPlayer>();
+            info = GetComponent<Info>();
+
 
             resolver.Run();
-
             resolver.AddInstance(resolver);
+
+            resolver.AddInstance(audioPlayer);
             resolver.AddInstance(messager);
             resolver.AddInstance(traveler);
             resolver.AddInstance(updater);
             resolver.AddInstance(pooler);
             resolver.AddInstance(saver);
-            resolver.AddInstance(audioPlayer);
+            resolver.AddInstance(info);
 
             resolver.InjectInstances();
 
+            audioPlayer.Run();
             messager.Run();
             traveler.Run();
             updater.Run();
             pooler.Run();
             saver.Run();
-            audioPlayer.Run();
+            info.Run();
 
             updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 

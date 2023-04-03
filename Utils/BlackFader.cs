@@ -19,7 +19,7 @@ namespace VolumeBox.Toolbox
             StopCoroutine(nameof(FadeOutForTask));
             canvasGroup.SetInteractions(true);
 
-            float alpha = 0;
+            float alpha = canvasGroup.alpha;
             float stack = 0;
 
             while (alpha < 1)
@@ -37,7 +37,7 @@ namespace VolumeBox.Toolbox
 
             StopCoroutine(nameof(FadeInForTask));
 
-            float alpha = 1;
+            float alpha = canvasGroup.alpha;
             float stack = 0;
 
             while (alpha > 0)

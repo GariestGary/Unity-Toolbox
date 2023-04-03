@@ -6,11 +6,11 @@ namespace VolumeBox.Toolbox.UIInformer
 {
     public class HintBox : BoxBase, IPointerClickHandler
     {
-        [SerializeField] private CanvasGroup canvasGroup;
-        [SerializeField] private float fadeOutDuration;
+        [SerializeField] private float selfFadeOutDuration;
         [SerializeField] private float defaultDelay;
         
         private float _currentDelay;
+        private Coroutine selfFadeOutCoroutine;
 
         protected override void Rise()
         {
@@ -31,22 +31,27 @@ namespace VolumeBox.Toolbox.UIInformer
 
         protected override bool OnShow()
         {
-            StopCoroutine(nameof(CloseCoroutine));
-            canvasGroup.alpha = 1;
+            if(selfFadeOutCoroutine != null)
+                StopCoroutine(selfFadeOutCoroutine);
             
-            StartCoroutine(nameof(CloseCoroutine));
+            selfFadeOutCoroutine = StartCoroutine(CloseCoroutine());
             
             return true;
         }
 
         protected override void OnClose()
         {
+            if(selfFadeOutCoroutine != null)
+                StopCoroutine(selfFadeOutCoroutine);
+            
             _currentDelay = defaultDelay;
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            StopCoroutine(nameof(CloseCoroutine));
+            if (selfFadeOutCoroutine != null)
+                StopCoroutine(selfFadeOutCoroutine);
+            
             Close();
         }
 
@@ -54,12 +59,12 @@ namespace VolumeBox.Toolbox.UIInformer
         {
             yield return new WaitForSeconds(_currentDelay);
             
-            float timer = fadeOutDuration;
+            float timer = selfFadeOutDuration;
             
             while (timer > 0)
             {
                 timer -= Time.deltaTime;
-                canvasGroup.alpha = timer / fadeOutDuration;
+                canvasGroup.alpha = timer / selfFadeOutDuration;
                 yield return null;
             }
             
