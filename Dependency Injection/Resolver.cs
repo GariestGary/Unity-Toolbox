@@ -145,7 +145,8 @@ namespace VolumeBox.Toolbox
         private void ResolveField(FieldInfo fieldInfo, object owner, string id = "")
         {
             //getting instance which type equals to required
-            var instance = instances.Where(x => x.GetType() == fieldInfo.FieldType).FirstOrDefault();
+            var instance = instances.Where(x => x.GetType() == fieldInfo.FieldType || fieldInfo.FieldType.IsInstanceOfType(x))
+                .FirstOrDefault();
 
             if (instance == null)
             {
