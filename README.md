@@ -41,7 +41,7 @@ Alternatively, merge the snippet to Packages/manifest.json
         }
     ],
     "dependencies": {
-        "com.volumebox.toolbox": "0.0.12"
+        "com.volumebox.toolbox": "0.0.13"
     }
 }
 ```
@@ -64,6 +64,8 @@ Alternatively, merge the snippet to Packages/manifest.json
     `com.solidalloy`
     
     `org.nuget`
+	
+	`com.cysharp`
   
 * click `Save` (or `Apply`)
 * open `My Registries` packages in package manager window

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace VolumeBox.Toolbox.UIInformer
             LayoutRebuilder.ForceRebuildLayoutImmediate(hintBox.LayoutRect);
         }
 
-        public async Task<MessageBoxResult> ShowBox(string message)
+        public async UniTask<MessageBoxResult> ShowBox(string message)
         {
             messageBox.SetAsync();
             messageBox.SetMessage(message);
@@ -44,7 +45,7 @@ namespace VolumeBox.Toolbox.UIInformer
 
             while(!_messageBoxGettedResult)
             {
-                await Task.Yield();
+                await UniTask.Yield();
             }
 
             _messageBoxGettedResult = false;

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace VolumeBox.Toolbox
         /// </summary>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        public static async Task LoadScene(string sceneName, SceneArgs args = null)
+        public static async UniTask LoadScene(string sceneName, SceneArgs args = null)
         {
             if(!DoesSceneExist(sceneName))
             {
@@ -71,7 +72,7 @@ namespace VolumeBox.Toolbox
 
             while (_currentLoadingSceneOperation != null && !_currentLoadingSceneOperation.isDone)
             {
-                await Task.Yield();
+                await UniTask.Yield();
             }
 
             Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
@@ -128,7 +129,7 @@ namespace VolumeBox.Toolbox
         /// Unloads scene if it loaded now. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
         /// </summary>
         /// <param name="sceneName">scene name other than empty string</param>
-        public static async Task UnloadScene(string sceneName)
+        public static async UniTask UnloadScene(string sceneName)
         {
             OpenedScene sceneToUnload = _openedScenes.FirstOrDefault(x => x.SceneDefinition.name == sceneName);
 
@@ -151,13 +152,13 @@ namespace VolumeBox.Toolbox
 
             while (_currentLoadingSceneOperation != null && !_currentUnloadingSceneOperation.isDone)
             {
-                await Task.Yield();
+                await UniTask.Yield();
             }
 
             _currentUnloadingSceneOperation = null;
         }
 
-        private static async Task QueueSceneLoad(string sceneName)
+        private static async UniTask QueueSceneLoad(string sceneName)
         {
             if(!CanLoadSceneNow(sceneName))
             {
@@ -166,7 +167,7 @@ namespace VolumeBox.Toolbox
 
                 while (!unloaded || !loaded)
                 {
-                    await Task.Yield();
+                    await UniTask.Yield();
                 }
             }
         }
