@@ -1050,7 +1050,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeScale: 1
   targetFrameRate: 120
-  initialSceneName: MAIN
+  initialSceneName: Test Scene
   initialSceneArgs: {fileID: 0}
   manualFadeOut: 0
   fadeOutDuration: 0

@@ -30,6 +30,8 @@ namespace VolumeBox.Toolbox
         
         public static bool EditorReady { get; private set; }
 
+        private static ToolboxSettings settings;
+
         static EditorPlayStateHandler()
         {
             EditorApplication.playModeStateChanged += OnStateChanged;
@@ -38,6 +40,11 @@ namespace VolumeBox.Toolbox
 
         private static async void OnStateChanged(PlayModeStateChange state)
         {
+            if(settings == null)
+            {
+                settings = Resources.Load<ToolboxSettings>("Default Toolbox Settings");
+            }
+
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
                 EditorReady = false;
@@ -53,7 +60,7 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            if (state == PlayModeStateChange.EnteredPlayMode)
+            if (state == PlayModeStateChange.EnteredPlayMode && settings.autoResolveScenesAtPlay)
             {
                 EditorReady = false;
                 
