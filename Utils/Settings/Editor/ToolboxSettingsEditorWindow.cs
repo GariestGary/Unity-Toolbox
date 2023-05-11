@@ -1,4 +1,4 @@
-using static UnityEngine.GraphicsBuffer;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using VolumeBox.Toolbox;
@@ -18,7 +18,7 @@ public class ToolboxSettingsEditorWindow: EditorWindow
 
     private void CreateGUI()
     {
-        settings = Resources.Load<ToolboxSettings>("Default Toolbox Settings");
+        settings = Resources.Load<ToolboxSettings>("Toolbox Settings");
     }
 
     private void OnGUI()
@@ -28,3 +28,4 @@ public class ToolboxSettingsEditorWindow: EditorWindow
         editor.Repaint();
     }
 }
+#endif

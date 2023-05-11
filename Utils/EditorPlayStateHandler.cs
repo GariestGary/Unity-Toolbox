@@ -42,8 +42,25 @@ namespace VolumeBox.Toolbox
         {
             if(settings == null)
             {
-                settings = Resources.Load<ToolboxSettings>("Default Toolbox Settings");
+                settings = Resources.Load<ToolboxSettings>("Toolbox Settings");
             }
+
+            if(settings == null)
+            {
+                var newSettings = ScriptableObject.CreateInstance<ToolboxSettings>();
+
+                if(!AssetDatabase.IsValidFolder("Assets/Resources"))
+                {
+                    AssetDatabase.CreateFolder("Assets", "Resources");
+                }
+                
+                AssetDatabase.CreateAsset(newSettings, "Assets/Resources/Toolbox Settings.asset");
+                AssetDatabase.SaveAssets();
+
+                settings = Resources.Load<ToolboxSettings>("Toolbox Settings");
+            }
+
+            var resolveScenes = settings == null ? false : settings.autoResolveScenesAtPlay;
 
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
@@ -60,7 +77,7 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            if (state == PlayModeStateChange.EnteredPlayMode && settings.autoResolveScenesAtPlay)
+            if (state == PlayModeStateChange.EnteredPlayMode && resolveScenes)
             {
                 EditorReady = false;
                 
@@ -73,7 +90,7 @@ namespace VolumeBox.Toolbox
         private static async Task HandleOpenedScenes()
         {
             _scenesOpenedAtStart = new List<string>();
-            Debug.Log("initialized opened scenes handler");
+            Debug.Log("Initialized opened scenes handler");
             int scenesCount = SceneManager.sceneCount;
             bool mainLoaded = false;
 
