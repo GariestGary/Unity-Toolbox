@@ -21,11 +21,11 @@ namespace VolumeBox.Toolbox
 
 		private void CheckSceneSubscribers(string scene)
 		{
-			var sceneSubs = sceneSubscribers.Where(x => x.RelatedSceneName == scene);
+			var sceneSubs = sceneSubscribers.Where(x => x.RelatedSceneName == scene).ToList();
 
-			foreach (var sub in sceneSubs)
+			for (int i = 0; i < sceneSubs.Count; i++)
 			{
-				sceneSubscribers.Remove(sub);
+				sceneSubscribers.Remove(sceneSubs[i]);
 			}
 		}
 

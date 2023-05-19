@@ -79,6 +79,8 @@ namespace VolumeBox.Toolbox
 
             SceneHandlerBase handler = null;
 
+            await UniTask.DelayFrame(1);
+
             GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
 
             //Search for DI bindings
@@ -86,6 +88,7 @@ namespace VolumeBox.Toolbox
             {
                 Resolver.Instance.SearchObjectBindings(obj);
             }
+
 
             //Search for scene handler
             foreach (var obj in sceneObjects)
