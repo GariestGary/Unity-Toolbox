@@ -6,12 +6,14 @@ using System;
 
 public class ToolboxSettingsEditorWindow: EditorWindow
 {
-    private static ToolboxSettings settings;
+    private ToolboxSettings settings;
+    private SerializedObject settingsObject;
+
+    private SerializedProperty resolveAtPlayProperty;
 
     [MenuItem("Toolbox/Settings")]
     public static void ShowMyEditor()
     {
-        // This method is called when the user selects the menu item in the Editor
         EditorWindow wnd = GetWindow<ToolboxSettingsEditorWindow>();
         wnd.titleContent = new GUIContent("Toolbox Settings");
     }
@@ -19,13 +21,27 @@ public class ToolboxSettingsEditorWindow: EditorWindow
     private void CreateGUI()
     {
         settings = Resources.Load<ToolboxSettings>("Toolbox Settings");
+
+        settingsObject = settings == null ? null : new SerializedObject(settings);
+
+        if (settingsObject == null) return;
+
+        resolveAtPlayProperty = settingsObject.FindProperty("autoResolveScenesAtPlay");
     }
 
     private void OnGUI()
     {
-        var editor = Editor.CreateEditor(settings);
-        editor.OnInspectorGUI();
-        editor.Repaint();
+        if (settingsObject == null) return;
+
+        settingsObject.Update();
+
+        GUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Auto Resolve Scenes At Play");
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.PropertyField(resolveAtPlayProperty, GUIContent.none, GUILayout.ExpandWidth(true), GUILayout.Width(25));
+        GUILayout.EndHorizontal();
+
+        settingsObject.ApplyModifiedProperties();
     }
 }
 #endif

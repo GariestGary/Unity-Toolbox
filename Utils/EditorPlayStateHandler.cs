@@ -27,10 +27,12 @@ namespace VolumeBox.Toolbox
         private const string MainSceneName = "MAIN";
 
         private static List<string> _scenesOpenedAtStart;
+        private static ToolboxSettings settings;
         
         public static bool EditorReady { get; private set; }
 
-        private static ToolboxSettings settings;
+        public static event Action EnteredPlayMode;
+        public static event Action ExitedPlayMode;
 
         static EditorPlayStateHandler()
         {
@@ -64,6 +66,8 @@ namespace VolumeBox.Toolbox
 
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
+                ExitedPlayMode?.Invoke();
+
                 EditorReady = false;
                 
                 if (_scenesOpenedAtStart != null && _scenesOpenedAtStart.Count > 0)
@@ -77,13 +81,16 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            if (state == PlayModeStateChange.EnteredPlayMode && resolveScenes)
+            if (state == PlayModeStateChange.EnteredPlayMode)
             {
-                EditorReady = false;
-                
-                await HandleOpenedScenes();
+                EnteredPlayMode?.Invoke();
 
-                EditorReady = true;
+                if (resolveScenes)
+                {
+                    EditorReady = false;
+                    await HandleOpenedScenes();
+                    EditorReady = true;
+                }
             }
         }
         

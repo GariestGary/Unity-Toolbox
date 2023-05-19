@@ -156,6 +156,8 @@ namespace VolumeBox.Toolbox
             }
 
             _currentUnloadingSceneOperation = null;
+
+            Messager.Instance.Send(new SceneUnloadedMessage(sceneName));
         }
 
         private static async UniTask QueueSceneLoad(string sceneName)

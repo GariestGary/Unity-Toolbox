@@ -11,10 +11,23 @@ namespace VolumeBox.Toolbox
 		private List<Subscriber> subscribers = new List<Subscriber>();
 		private List<Subscriber> sceneSubscribers = new List<Subscriber>();
 
+		public List<Subscriber> Subscribers => subscribers;
+		public List<Subscriber> SceneSubscribers => sceneSubscribers;
+
         public void Run()
         {
-            Instance.SubscribeKeeping<SceneUnloadedMessage>(_ => ClearSceneSubscribers());
+            Instance.SubscribeKeeping<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName));
         }
+
+		private void CheckSceneSubscribers(string scene)
+		{
+			var sceneSubs = sceneSubscribers.Where(x => x.RelatedSceneName == scene);
+
+			foreach (var sub in sceneSubs)
+			{
+				sceneSubscribers.Remove(sub);
+			}
+		}
 
         public void ClearSceneSubscribers()
         {
@@ -56,10 +69,10 @@ namespace VolumeBox.Toolbox
 			return sub;
         }
 
-		public Subscriber Subscribe<T>(Action<T> next) where T: Message
+		public Subscriber Subscribe<T>(Action<T> next, string relatedScene = null) where T: Message
 		{
 			Action<object> callback = args => next((T)args);
-			var sub = new Subscriber(typeof(T), callback);
+			var sub = new Subscriber(typeof(T), callback, relatedScene);
             sceneSubscribers.Add(sub);
             return sub;
 		}
