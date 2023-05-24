@@ -15,7 +15,7 @@ namespace VolumeBox.Toolbox
     {
         public static void Resolve(this object mono)
         {
-            Resolver.Instance.Inject(mono);
+            Resolver.Inject(mono);
         }
 
         /// <summary>

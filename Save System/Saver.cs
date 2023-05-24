@@ -1,151 +1,66 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using NaughtyAttributes;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Saver : Singleton<Saver>, IRunner
+    public class Saver: ResourcesToolWrapper<Saver, SaverDataHolder>
     {
-        [SerializeField] private bool useSaves;
-        [Required]
-        [ShowIf(nameof(useSaves))]
-        [SerializeField] private StateProvider stateProvider;
-        [Required]
-        [ShowIf(nameof(useSaves))]
-        [SerializeField] private PlatformFileHandler fileHandler;
-        
-        [ShowIf(nameof(useSaves))]
-        [MinValue(1)] [MaxValue(10)] [SerializeField] private int saveSlotsCount = 1;
+        public PlatformFileHandler FileHandler => Instance.Data.FileHandler;
+        public StateProvider StateProvider => Instance.Data.StateProvider;
+        public int SaveSlotsCount => Instance.Data.SaveSlotsCount;
+        public bool UseSaves => Instance.Data.UseSaves;
+        public SaveSlot CurrentSlot => Instance.Data.CurrentSlot;
 
-        public StateProvider StateProvider => stateProvider;
-        public PlatformFileHandler FileHandler => fileHandler;
-        
-        public bool UseSaves
+        protected override void Clear()
         {
-            get { return useSaves; }
-            set { useSaves = value; }
-        }
-        public int SaveSlotsCount 
-        {
-            get
-            {
-                return saveSlotsCount;
-            }
-            set
-            {
-                if(value < 1)
-                {
-                    saveSlotsCount = 1;
-                }
-                else if(value > 10)
-                {
-                    saveSlotsCount = 10;
-                }
-                else
-                {
-                    saveSlotsCount = value;
-                }
-            }
+            Instance.Data.Clear();
         }
 
-        [ShowIf(nameof(useSaves))][ReadOnly] [SerializeField] private List<SaveSlot> saveSlots;
-
-        [Inject] private Messager msg;
-
-        private SaveSlot currentSlot;
-        
-        public SaveSlot CurrentSlot => currentSlot;
-
-        public void Run()
+        public override string GetDataPath()
         {
-            if (!useSaves) return;
-
-            fileHandler.Run();
-            ResolveSlots();
-            //TODO: msg.Subscribe(Message.SAVE_GAME, _ => Save());
+            return SettingsData.saverResourcesDataPath;
         }
 
-        public void SetFileHandler(PlatformFileHandler handler)
+        protected override void PostLoadRun()
         {
-            fileHandler = handler;
+            Instance.Data.Run();
         }
 
-        public void SetStateProvider(StateProvider provider)
+        public static void SetFileHandler(PlatformFileHandler handler)
         {
-            stateProvider = provider;
+            Instance.Data.SetFileHandler(handler);
         }
 
-        private void ResolveSlots()
+        public static void SetStateProvider(StateProvider provider)
         {
-            if (!useSaves) return;
-
-            saveSlots = new List<SaveSlot>();
-
-            for (var i = 0; i < saveSlotsCount; i++)
-            {
-                SaveSlot slot = fileHandler.LoadGameSlot(i);
-
-                if(slot == null)
-                {
-                    slot = new SaveSlot(null, i);
-                    fileHandler.SaveGameSlot(slot);
-                }
-
-                saveSlots.Add(slot);
-            }
+            Instance.Data.SetStateProvider(provider);
         }
 
-        public void CaptureCurrentState()
+        public static void CaptureCurrentState()
         {
-            if (!useSaves) return;
-
-            if (currentSlot == null) return;
-
-            currentSlot.state = stateProvider.CaptureCurrentState();
+            Instance.Data.CaptureCurrentState();
         }
 
-        public void Save()
+        public static void Save()
         {
-            if (!useSaves) return;
-
-            if (currentSlot == null) return;
-
-            CaptureCurrentState();
-            fileHandler.SaveGameSlot(currentSlot);
+            Instance.Data.Save();
         }
 
-        public void LoadCurrentSlot()
+        public static void LoadCurrentSlot()
         {
-            if (!useSaves) return;
-
-            if (currentSlot == null) return;
-
-            stateProvider.RestoreCurrentState(currentSlot.state);
+            Instance.Data.LoadCurrentSlot();
         }
 
-        public SaveSlot GetSlot(int id)
+        public static SaveSlot GetSlot(int id)
         {
-            if(id >= saveSlotsCount || id < 0) return null;
-            
-            SaveSlot slot = saveSlots.Where(x => x.id == id).FirstOrDefault();
-            return slot;
-        }   
+            return Instance.Data.GetSlot(id);
+        }
 
-        public SaveSlot SelectSlot(int id)
+        public static SaveSlot SelectSlot(int id)
         {
-            SaveSlot s = GetSlot(id);
-
-            if(s != null)
-            {
-                currentSlot = s;
-            }
-
-            return s;
+            return Instance.Data.SelectSlot(id);
         }
     }
 }

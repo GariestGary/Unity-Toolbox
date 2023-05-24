@@ -8,20 +8,20 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField] private List<PoolData> pools;
 
-        private bool _initialized = false;
+        private bool initialized = false;
 
         protected override void OnActivate()
         {
-            if (_initialized) return;
+            if (initialized) return;
 
-            pools.ForEach(p => Pooler.Instance.TryAddPool(p));
+            pools.ForEach(Pooler.TryAddPool);
 
-            _initialized = true;
+            initialized = true;
         }
 
         protected override void Destroyed()
         {
-            pools.ForEach(p => Pooler.Instance.TryRemovePool(p.tag));
+            pools.ForEach(p => Pooler.TryRemovePool(p.tag));
         }
     }
 }

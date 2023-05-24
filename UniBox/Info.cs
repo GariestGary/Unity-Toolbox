@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace VolumeBox.Toolbox.UIInformer
 {
-    public class Info : Singleton<Info>, IRunner
+    public class Info : ToolWrapper<Info>
     {
         [SerializeField] private MessageBox messageBox;
         [SerializeField] private HintBox hintBox;
@@ -58,7 +58,7 @@ namespace VolumeBox.Toolbox.UIInformer
             _messageBoxGettedResult = true;
         }
 
-        public void Run()
+        protected override void Run()
         {
             messageBox.OnButtonClicked += OnMessageBoxClickedCallback;
         }
@@ -66,6 +66,11 @@ namespace VolumeBox.Toolbox.UIInformer
         private void OnDestroy()
         {
             messageBox.OnButtonClicked -= OnMessageBoxClickedCallback;
+        }
+
+        protected override void Clear()
+        {
+            
         }
     }
 }
