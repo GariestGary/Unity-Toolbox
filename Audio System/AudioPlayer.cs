@@ -147,9 +147,9 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class AudioClipInfo
     {
+        public string id;
         public Sprite s;
         public AudioClip clip;
-        public string id;
     }
 
     [Serializable]
