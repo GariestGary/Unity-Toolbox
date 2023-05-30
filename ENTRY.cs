@@ -26,7 +26,9 @@ namespace VolumeBox.Toolbox
 
         private void Awake()
         {
+#pragma warning disable
             Init();
+#pragma warning enable
         }
 
         private async UniTask Init()

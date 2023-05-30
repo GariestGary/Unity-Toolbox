@@ -19,6 +19,8 @@ namespace VolumeBox.Toolbox
         private Vector2 currentScrollPos;
         private float labelsWidth = 110;
 
+        private Color buttonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
+
         private void OnEnable()
         {
             if(target == null)
@@ -52,57 +54,95 @@ namespace VolumeBox.Toolbox
             GUILayout.EndHorizontal();
 
             EditorGUILayout.Space(5);
-            
 
+            EditorGUILayout.BeginVertical();
             currentScrollPos = EditorGUILayout.BeginScrollView(currentScrollPos);
 
             for (int i = 0; i < m_poolsList.arraySize; i++)
             {
-                DrawElement(i);
+                var pool = m_poolsList.GetArrayElementAtIndex(i);
+
+                if (searchValue.IsValuable())
+                {
+                    if (pool.FindPropertyRelative("tag").stringValue.ToLower().Contains(searchValue.ToLower()))
+                    {
+                        DrawElement(pool, m_poolsList, i);
+                    }
+                }
+                else
+                {
+                    DrawElement(pool, m_poolsList, i);
+                }
             }
 
             EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void DrawElement(int index)
+        private void DrawElement(SerializedProperty property, SerializedProperty list, int index)
         {
-            var pool = m_poolsList.GetArrayElementAtIndex(index);
+            EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            EditorGUILayout.BeginHorizontal();
 
-            var tag = pool.FindPropertyRelative("tag");
+            var tag = property.FindPropertyRelative("tag");
 
-            if (searchValue.IsValuable())
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, tag.stringValue, true);
+
+            var oldColor = GUI.backgroundColor;
+            GUI.backgroundColor = buttonColor;
+            if (GUILayout.Button("Delete", GUILayout.Width(50)))
             {
-                if (!tag.stringValue.ToLower().Contains(searchValue.ToLower()))
+                if (EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {tag.stringValue} pool?", "Yes", "Cancel"))
                 {
+                    GUI.backgroundColor = oldColor;
+                    list.DeleteArrayElementAtIndex(index);
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
                     return;
                 }
             }
 
-            EditorGUILayout.BeginHorizontal(GUI.skin.FindStyle("Box"));
+            if(!property.isExpanded)
+            {
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+            }   
+            
+            GUI.backgroundColor = oldColor;
 
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
+
+
 
             EditorGUILayout.BeginVertical();
 
-            
-
+            //Tag draw
             EditorGUILayout.BeginHorizontal();
+
             EditorGUILayout.LabelField("Pool Tag", GUILayout.Width(labelsWidth));
             tag.stringValue = EditorGUILayout.TextField(tag.stringValue);
+
             EditorGUILayout.EndHorizontal();
 
+            //Prefab draw
             EditorGUILayout.BeginHorizontal();
+
             EditorGUILayout.LabelField("Prefab", GUILayout.Width(labelsWidth));
-            var pooledObj = pool.FindPropertyRelative("pooledObject");
+            var pooledObj = property.FindPropertyRelative("pooledObject");
             EditorGUILayout.PropertyField(pooledObj, GUIContent.none);
+
             EditorGUILayout.EndHorizontal();
 
+            //Pool size draw
             EditorGUILayout.BeginHorizontal();
+
             EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
-            var initialSize = pool.FindPropertyRelative("initialSize");
+            var initialSize = property.FindPropertyRelative("initialSize");
             initialSize.intValue = EditorGUILayout.IntField(initialSize.intValue);
+
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
@@ -112,13 +152,12 @@ namespace VolumeBox.Toolbox
             var size = EditorGUIUtility.singleLineHeight * 3 + EditorGUIUtility.standardVerticalSpacing * 2;
             GUILayout.Label(preview, GUILayout.Width(size), GUILayout.Height(size));
 
-            if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(size)))
-            {
-                m_poolsList.DeleteArrayElementAtIndex(index);
-            }
+            EditorGUILayout.EndHorizontal();
+
+
 
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
         }
     }
 }

@@ -14,6 +14,8 @@ namespace VolumeBox.Toolbox
         private float labelSize = 110;
         private string albumSearchValue;
 
+        private Color buttonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
+
         private void OnEnable()
         {
             m_albums = serializedObject.FindProperty("albums");
@@ -21,7 +23,8 @@ namespace VolumeBox.Toolbox
 
         public override void OnInspectorGUI()
         {
-            currentScrollPosition = EditorGUILayout.BeginScrollView(currentScrollPosition);
+            serializedObject.Update();
+
 
             GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
             albumSearchValue = GUILayout.TextField(albumSearchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
@@ -31,7 +34,7 @@ namespace VolumeBox.Toolbox
                 GUI.FocusControl(null);
             }
 
-            if (GUILayout.Button("Add", GUILayout.Width(50)))
+            if (GUILayout.Button("Add Album", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
             {
                 m_albums.InsertArrayElementAtIndex(0);
             }
@@ -39,6 +42,9 @@ namespace VolumeBox.Toolbox
             GUILayout.EndHorizontal();
 
             EditorGUILayout.BeginVertical();
+            currentScrollPosition = EditorGUILayout.BeginScrollView(currentScrollPosition);
+
+            GUILayout.Space(5);
 
             for (int i = 0; i < m_albums.arraySize; i++)
             {
@@ -48,71 +54,118 @@ namespace VolumeBox.Toolbox
                 {
                     if(album.FindPropertyRelative("albumName").stringValue.ToLower().Contains(albumSearchValue.ToLower()))
                     {
-                        DrawAlbum(album);
+                        DrawAlbum(album, m_albums, i);
                     }
                 }
                 else
                 {
-                    DrawAlbum(album);
+                    DrawAlbum(album, m_albums, i);
                 }
             }
 
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndScrollView();
+
+            serializedObject.ApplyModifiedProperties();
         }
 
-        private void DrawAlbum(SerializedProperty property)
+        private void DrawAlbum(SerializedProperty property, SerializedProperty list, int index)
         {
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
 
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, property.FindPropertyRelative("albumName").stringValue, true);
+            EditorGUILayout.BeginHorizontal();
+
+            var albumName = property.FindPropertyRelative("albumName");
+
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, albumName.stringValue, true);
+
+            var oldColor = GUI.backgroundColor;
+            GUI.backgroundColor = buttonColor;
+            if(GUILayout.Button("Delete", GUILayout.Width(50)))
+            {
+                if(EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {albumName} album?", "Yes", "Cancel"))
+                {
+                    GUI.backgroundColor = oldColor;
+                    list.DeleteArrayElementAtIndex(index);
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                    return;
+                }
+            }
+            GUI.backgroundColor = oldColor;
+
+            EditorGUILayout.EndHorizontal();
 
             if (property.isExpanded)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Album Name", GUILayout.Width(labelSize));
-                var name = property.FindPropertyRelative("albumName");
-                name.stringValue = EditorGUILayout.TextField(name.stringValue);
-                EditorGUILayout.EndHorizontal();
+                GUILayout.Space(20);
 
+                EditorGUILayout.BeginVertical();
                 var m_clips = property.FindPropertyRelative("clips");
 
-                GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
-                albumSearchValue = GUILayout.TextField(albumSearchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
-                if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
-                {
-                    albumSearchValue = "";
-                    GUI.FocusControl(null);
-                }
+                GUILayout.Space(8);
 
-                if (GUILayout.Button("Add", GUILayout.Width(50)))
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Album Name", GUILayout.Width(labelSize));
+
+                albumName.stringValue = EditorGUILayout.TextField(albumName.stringValue);
+                
+                if (GUILayout.Button("Add Clip", GUILayout.Width(75)))
                 {
                     m_clips.InsertArrayElementAtIndex(0);
                 }
 
-                GUILayout.EndHorizontal();
+                EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.BeginVertical();
 
+                GUILayout.Space(5);
+
                 for (int i = 0; i < m_clips.arraySize; i++)
                 {
-                    DrawClip(m_clips.GetArrayElementAtIndex(i));
+                    DrawClip(m_clips.GetArrayElementAtIndex(i), m_clips, i);
                 }
 
                 EditorGUILayout.EndVertical();
+
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawClip(SerializedProperty property)
+        private void DrawClip(SerializedProperty property, SerializedProperty list, int index)
         {
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(20);
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
 
-            EditorGUILayout.LabelField(property.FindPropertyRelative("id").stringValue);
+            var clipId = property.FindPropertyRelative("id");
+
+            EditorGUILayout.BeginHorizontal();
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true);
+
+            var oldColor = GUI.backgroundColor;
+            GUI.backgroundColor = buttonColor;
+            if (GUILayout.Button("X", GUILayout.Width(25)))
+            {
+                GUI.backgroundColor = oldColor;
+                list.DeleteArrayElementAtIndex(index);
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+                return;
+            }
+            GUI.backgroundColor = oldColor;
+
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
         }
     }
 }
