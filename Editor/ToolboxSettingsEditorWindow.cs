@@ -13,6 +13,11 @@ namespace VolumeBox.Toolbox
         private AudioPlayerDataHolder audioPlayerDataHolder;
         private SaverDataHolder saverDataHolder;
 
+        private SettingsDataEditor settingsEditor;
+        private PoolerEditor poolerEditor;
+        private SaverEditor saverEditor;
+        private AudioPlayerEditor audioEditor;
+
         private int selectedTab;
 
         [MenuItem("Toolbox/Settings")]
@@ -20,6 +25,17 @@ namespace VolumeBox.Toolbox
         {
             EditorWindow wnd = GetWindow<ToolboxSettingsEditorWindow>();
             wnd.titleContent = new GUIContent("Toolbox Settings");
+        }
+
+        private void OnEnable()
+        {
+            poolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
+            audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
+            saverDataHolder = ResourcesUtils.ResolveScriptable<SaverDataHolder>(SettingsData.saverResourcesDataPath);
+            settingsEditor = (SettingsDataEditor)Editor.CreateEditor(StaticData.Settings);
+            poolerEditor = (PoolerEditor)Editor.CreateEditor(poolerDataHolder);
+            audioEditor = (AudioPlayerEditor)Editor.CreateEditor(audioPlayerDataHolder);
+            saverEditor = (SaverEditor)Editor.CreateEditor(saverDataHolder);
         }
 
         private void OnGUI()
@@ -45,42 +61,25 @@ namespace VolumeBox.Toolbox
 
         private void MainSettingsGUI()
         {
-            var settingsEditor = SettingsDataEditor.CreateEditor(StaticData.Settings);
-            
-            settingsEditor.OnInspectorGUI();
+            settingsEditor?.OnInspectorGUI();
         }
 
         private void PoolerGUI()
         {
-            if (poolerDataHolder == null)
-            {
-                poolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
-            }
-
-            var poolerEditor = PoolerEditor.CreateEditor(poolerDataHolder);
-            poolerEditor.OnInspectorGUI();
+            
+            poolerEditor?.OnInspectorGUI();
         }
 
         private void AudioPlayerGUI()
         {
-            if(audioPlayerDataHolder == null)
-            {
-                audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
-            }
-
-            var audioEditor = AudioPlayerEditor.CreateEditor(audioPlayerDataHolder);
-            audioEditor.OnInspectorGUI();
+            
+            audioEditor?.OnInspectorGUI();
         }
 
         private void SaverGUI()
         {
-            if(saverDataHolder == null)
-            {
-                saverDataHolder = ResourcesUtils.ResolveScriptable<SaverDataHolder>(SettingsData.saverResourcesDataPath);
-            }
-
-            var saverEditor = SaverEditor.CreateEditor(saverDataHolder);
-            saverEditor.OnInspectorGUI();
+            
+            saverEditor?.OnInspectorGUI();
         }
     }
 }

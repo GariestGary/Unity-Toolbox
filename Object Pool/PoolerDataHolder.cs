@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
+    [Serializable]
     public class PoolerDataHolder : ScriptableObject, IRunner, IClear
     {
         [SerializeField] private List<PoolData> poolsList;

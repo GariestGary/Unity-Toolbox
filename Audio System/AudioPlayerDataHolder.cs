@@ -100,9 +100,10 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class AudioAlbum
     {
+        [SerializeField]
         public string albumName;
-        [HideInInspector] public AudioSource source;
-        public List<AudioClipInfo> clips;
+        [HideInInspector, SerializeField] public AudioSource source;
+        [SerializeField] public List<AudioClipInfo> clips;
     }
     
     [Serializable]
