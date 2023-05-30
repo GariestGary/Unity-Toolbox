@@ -24,26 +24,27 @@ namespace VolumeBox.Toolbox
         [Inject] private Messager msg;
 
         public const float DefaultVolume = 1;
+        public const float DefaultPitch = 1;
 
         public void Run()
         {
             msg.SubscribeKeeping<PlayMusicMessage>(x => PlayMusic(x.id, x.volume, x.loop));
             msg.SubscribeKeeping<PlayUIMessage>(x => PlayUI(x.id, x.volume, x.loop));
             msg.SubscribeKeeping<PlayAtmosMessage>(x => PlayAtmos(x.id, x.volume, x.loop));
-            msg.SubscribeKeeping<PlaySoundMessage>(x => PlaySound(x.id, x.volume, x.loop));
+            msg.SubscribeKeeping<PlaySoundMessage>(x => PlaySound(x.id, x.volume, x.loop, x.pitch, x.stopIfPlaying));
             msg.SubscribeKeeping<StopMusicMessage>(_ => StopMusic());
         }
 
-        public void PlaySound(string id, float volume = DefaultVolume, bool loop = false, float pitch = 1)
+        public void PlaySound(string id, float volume = DefaultVolume, bool loop = false, float pitch = 1, bool stopIfPlaying = true)
         {
             AudioClip clip = GetClip(sounds, id);
 
-            PlaySound(clip, volume, loop, pitch);
+            PlaySound(clip, volume, loop, pitch, stopIfPlaying);
         }
 
-        public void PlaySound(AudioClip clip, float volume = DefaultVolume, bool loop = false, float pitch = 1)
+        public void PlaySound(AudioClip clip, float volume = DefaultVolume, bool loop = false, float pitch = 1, bool stopIfPlaying = true)
         {
-            PlayOneShot(soundsSource, clip, volume, pitch);
+            PlayOneShot(soundsSource, clip, volume, pitch, stopIfPlaying);
         }
 
         //ATMOSPHERE
@@ -89,14 +90,14 @@ namespace VolumeBox.Toolbox
             bgMusicSource.Pause();
         }
 
-        public void PlaySoundOneShot(AudioClip clip, float volume = DefaultVolume, float pitch = 1)
+        public void PlaySoundOneShot(AudioClip clip, float volume = DefaultVolume, float pitch = 1, bool stopIfPlaying = true)
         {
-            PlayOneShot(soundsSource, clip, volume, pitch);
+            PlayOneShot(soundsSource, clip, volume, pitch, stopIfPlaying);
         }
 
-        public void PlaySoundOneShot(string id, float volume = DefaultVolume, float pitch = 1)
+        public void PlaySoundOneShot(string id, float volume = DefaultVolume, float pitch = 1, bool stopIfPlaying = true)
         {
-            PlayOneShot(soundsSource, GetClip(sounds, id), volume, pitch);
+            PlayOneShot(soundsSource, GetClip(sounds, id), volume, pitch, stopIfPlaying);
         }
         
 
@@ -113,10 +114,16 @@ namespace VolumeBox.Toolbox
             source.Play();
         }
 
-        public void PlayOneShot(AudioSource source, AudioClip clip, float volume = DefaultVolume, float pitch = 1)
+        public void PlayOneShot(AudioSource source, AudioClip clip, float volume = DefaultVolume, float pitch = 1, bool stopIfPlaying = true)
         {
             if (source == null || clip == null) return;
             source.pitch = pitch;
+
+            if(stopIfPlaying && source.isPlaying)
+            {
+                source.Stop();
+            }
+
             source.PlayOneShot(clip, volume);
         }
 
@@ -181,7 +188,9 @@ namespace VolumeBox.Toolbox
     {
         public string id;
         public float volume = AudioPlayer.DefaultVolume;
+        public float pitch = AudioPlayer.DefaultPitch;
         public bool loop = false;
+        public bool stopIfPlaying = true;
     }
 
     [Serializable]
