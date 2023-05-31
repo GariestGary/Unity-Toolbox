@@ -87,7 +87,7 @@ namespace VolumeBox.Toolbox
 
 
 
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
 
             var tag = property.FindPropertyRelative("tag");
 
@@ -95,17 +95,27 @@ namespace VolumeBox.Toolbox
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = buttonColor;
-            if (GUILayout.Button("Delete", GUILayout.Width(50)))
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(25));
+
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
             {
                 if (EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {tag.stringValue} pool?", "Yes", "Cancel"))
                 {
                     GUI.backgroundColor = oldColor;
                     list.DeleteArrayElementAtIndex(index);
+                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
                     return;
                 }
             }
+
+            GUILayout.FlexibleSpace();
+
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndHorizontal();
 

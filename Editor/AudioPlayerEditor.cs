@@ -76,7 +76,7 @@ namespace VolumeBox.Toolbox
         {
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
 
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
 
             var albumName = property.FindPropertyRelative("albumName");
 
@@ -84,18 +84,28 @@ namespace VolumeBox.Toolbox
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = buttonColor;
-            if(GUILayout.Button("Delete", GUILayout.Width(50)))
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(25));
+
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
             {
                 if(EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {albumName} album?", "Yes", "Cancel"))
                 {
                     GUI.backgroundColor = oldColor;
                     list.DeleteArrayElementAtIndex(index);
+                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
                     return;
                 }
             }
             GUI.backgroundColor = oldColor;
+
+            GUILayout.FlexibleSpace();
+
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndHorizontal();
 
@@ -145,25 +155,32 @@ namespace VolumeBox.Toolbox
         {
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
 
-
-
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
 
             var clipId = property.FindPropertyRelative("id");
             property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true);
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = buttonColor;
-            if (GUILayout.Button("X", GUILayout.Width(25)))
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(15));
+
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
             {
                 GUI.backgroundColor = oldColor;
                 list.DeleteArrayElementAtIndex(index);
-                EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
                 return;
             }
             GUI.backgroundColor = oldColor;
+
+            GUILayout.FlexibleSpace();
+
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndHorizontal();
 

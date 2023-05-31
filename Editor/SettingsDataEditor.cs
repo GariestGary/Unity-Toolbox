@@ -90,6 +90,12 @@ namespace VolumeBox.Toolbox
                 EditorGUILayout.EndHorizontal();
             }
 
+            if(GUILayout.Button("Generate enum"))
+            {
+                List<string> myList = new List<string>() { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+                //EnumGenerator.CreateEnumFromArrays(myList);
+            }
+
             serializedObject.ApplyModifiedProperties();
         }
     }
