@@ -37,6 +37,8 @@ namespace VolumeBox.Toolbox
             if (GUILayout.Button("Add Album", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
             {
                 m_albums.InsertArrayElementAtIndex(0);
+                m_albums.GetArrayElementAtIndex(0).FindPropertyRelative("albumName").stringValue = string.Empty;
+                currentScrollPosition.y = 0;
             }
 
             GUILayout.EndHorizontal();
@@ -115,6 +117,7 @@ namespace VolumeBox.Toolbox
                 if (GUILayout.Button("Add Clip", GUILayout.Width(75)))
                 {
                     m_clips.InsertArrayElementAtIndex(0);
+                    m_clips.GetArrayElementAtIndex(0).FindPropertyRelative("id").stringValue = string.Empty;
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -140,13 +143,13 @@ namespace VolumeBox.Toolbox
 
         private void DrawClip(SerializedProperty property, SerializedProperty list, int index)
         {
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(20);
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
 
-            var clipId = property.FindPropertyRelative("id");
+
 
             EditorGUILayout.BeginHorizontal();
+
+            var clipId = property.FindPropertyRelative("id");
             property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true);
 
             var oldColor = GUI.backgroundColor;
@@ -164,8 +167,34 @@ namespace VolumeBox.Toolbox
 
             EditorGUILayout.EndHorizontal();
 
+            if(property.isExpanded)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(20);
+
+                EditorGUILayout.BeginVertical();
+
+                GUILayout.Space(8);
+
+                //clip id draw
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Clip ID", GUILayout.Width(labelSize));
+                clipId.stringValue = EditorGUILayout.TextField(clipId.stringValue);
+                EditorGUILayout.EndHorizontal();
+
+                //clip reference draw
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Audio Clip", GUILayout.Width(labelSize));
+                var clip = property.FindPropertyRelative("clip");
+                EditorGUILayout.PropertyField(clip, GUIContent.none);
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.EndHorizontal();
+            }
+
             EditorGUILayout.EndVertical();
-            EditorGUILayout.EndHorizontal();
         }
     }
 }

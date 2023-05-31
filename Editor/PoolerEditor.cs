@@ -36,8 +36,6 @@ namespace VolumeBox.Toolbox
         {
             serializedObject.Update();
 
-            EditorGUILayout.Space(5);
-
             GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
             searchValue = GUILayout.TextField(searchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
             if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
@@ -46,9 +44,11 @@ namespace VolumeBox.Toolbox
                 GUI.FocusControl(null);
             }
 
-            if(GUILayout.Button("Add", GUILayout.Width(50)))
+            if(GUILayout.Button("Add Pool", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
             {
                 m_poolsList.InsertArrayElementAtIndex(0);
+                m_poolsList.GetArrayElementAtIndex(0).FindPropertyRelative("tag").stringValue = string.Empty;
+                currentScrollPos.y = 0;
             }
 
             GUILayout.EndHorizontal();
@@ -84,6 +84,9 @@ namespace VolumeBox.Toolbox
         private void DrawElement(SerializedProperty property, SerializedProperty list, int index)
         {
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+
+
+
             EditorGUILayout.BeginHorizontal();
 
             var tag = property.FindPropertyRelative("tag");
@@ -104,59 +107,60 @@ namespace VolumeBox.Toolbox
                 }
             }
 
-            if(!property.isExpanded)
+            EditorGUILayout.EndHorizontal();
+
+
+            GUI.backgroundColor = oldColor;
+            
+            if(property.isExpanded)
             {
+                GUILayout.Space(8);
+
+                EditorGUILayout.BeginHorizontal();
+
+                GUILayout.Space(20);
+
+                EditorGUILayout.BeginVertical();
+
+
+                //Tag draw
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.LabelField("Pool Tag", GUILayout.Width(labelsWidth));
+                tag.stringValue = EditorGUILayout.TextField(tag.stringValue);
+
                 EditorGUILayout.EndHorizontal();
+
+                //Prefab draw
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.LabelField("Prefab", GUILayout.Width(labelsWidth));
+                var pooledObj = property.FindPropertyRelative("pooledObject");
+                EditorGUILayout.PropertyField(pooledObj, GUIContent.none);
+
+                EditorGUILayout.EndHorizontal();
+
+                //Pool size draw
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
+                var initialSize = property.FindPropertyRelative("initialSize");
+                initialSize.intValue = EditorGUILayout.IntField(initialSize.intValue);
+
+                EditorGUILayout.EndHorizontal();
+
+
                 EditorGUILayout.EndVertical();
+
+
+                var preview = AssetPreview.GetAssetPreview(pooledObj.objectReferenceValue);
+                var size = EditorGUIUtility.singleLineHeight * 3 + EditorGUIUtility.standardVerticalSpacing * 2;
+                GUILayout.Label(preview, GUILayout.Width(size), GUILayout.Height(size));
+
+                EditorGUILayout.EndHorizontal();
+
             }   
             
-            GUI.backgroundColor = oldColor;
-
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginHorizontal();
-
-
-
-            EditorGUILayout.BeginVertical();
-
-            //Tag draw
-            EditorGUILayout.BeginHorizontal();
-
-            EditorGUILayout.LabelField("Pool Tag", GUILayout.Width(labelsWidth));
-            tag.stringValue = EditorGUILayout.TextField(tag.stringValue);
-
-            EditorGUILayout.EndHorizontal();
-
-            //Prefab draw
-            EditorGUILayout.BeginHorizontal();
-
-            EditorGUILayout.LabelField("Prefab", GUILayout.Width(labelsWidth));
-            var pooledObj = property.FindPropertyRelative("pooledObject");
-            EditorGUILayout.PropertyField(pooledObj, GUIContent.none);
-
-            EditorGUILayout.EndHorizontal();
-
-            //Pool size draw
-            EditorGUILayout.BeginHorizontal();
-
-            EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
-            var initialSize = property.FindPropertyRelative("initialSize");
-            initialSize.intValue = EditorGUILayout.IntField(initialSize.intValue);
-
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.EndVertical();
-
-
-            var preview = AssetPreview.GetAssetPreview(pooledObj.objectReferenceValue);
-            var size = EditorGUIUtility.singleLineHeight * 3 + EditorGUIUtility.standardVerticalSpacing * 2;
-            GUILayout.Label(preview, GUILayout.Width(size), GUILayout.Height(size));
-
-            EditorGUILayout.EndHorizontal();
-
-
-
-            EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
         }
     }

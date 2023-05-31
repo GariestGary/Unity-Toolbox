@@ -42,8 +42,8 @@ namespace VolumeBox.Toolbox
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Auto Resolve Scenes At Play", GUILayout.Width(labelsWidth));
-            GUILayout.FlexibleSpace();
             m_resolveAtPlay.boolValue = EditorGUILayout.Toggle(m_resolveAtPlay.boolValue, GUILayout.Width(EditorGUIUtility.singleLineHeight));
+            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
