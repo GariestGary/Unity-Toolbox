@@ -18,12 +18,11 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            Messenger.SubscribeKeeping<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playOneShot));
-            Messenger.SubscribeKeeping<PlayAudioDirectly>(x => Play(x.albumName, x.clip, x.volume, x.pitch, x.loop, x.playOneShot));
+            Messenger.SubscribeKeeping<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType));
             Messenger.SubscribeKeeping<StopAudioMessage>(x => StopAudio(x.albumName));
         }
 
-        public void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, bool oneShot = false)
+        public void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var album = GetAlbum(source);
 
@@ -31,39 +30,53 @@ namespace VolumeBox.Toolbox
 
             if (clip == null) return;
 
-            Play(source, clip, volume, pitch, loop, oneShot);
+            Play(source, clip, volume, pitch, loop, playType);
         }
 
-        public void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, bool oneShot = false)
+        public void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var album = GetAlbum(source);
             
             if (album == null || clip == null) return;
 
-            Play(album.source, clip, volume, pitch, loop, oneShot);
+            Play(album.source, clip, volume, pitch, loop, playType);
         }
 
-        public void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, bool oneShot = false)
+        public void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             if (source == null || clip == null)
             {
                 return;
             }
-            
-            if (oneShot)
-            {
-                source.PlayOneShot(clip, volume);   
-            }
-            else
-            {
-                source.Stop();
 
-                source.loop = loop;
-                source.clip = clip;
-                source.volume = volume;
-                source.pitch = pitch;
-
-                source.Play();
+            switch (playType)
+            {
+                case PlayType.STOP_THEN_PLAY:
+                    source.Stop();
+                    source.loop = loop;
+                    source.clip = clip;
+                    source.volume = volume;
+                    source.pitch = pitch;
+                    source.Play();
+                    break;
+                case PlayType.ONE_SHOT:
+                    source.PlayOneShot(clip, volume);
+                    break;
+                case PlayType.NO_INTERRUPT:
+                    if (source.isPlaying) return;
+                    else
+                    {
+                        source.Stop();
+                        source.loop = loop;
+                        source.clip = clip;
+                        source.volume = volume;
+                        source.pitch = pitch;
+                        source.Play();
+                    }
+                    break;
+                default:
+                    source.PlayOneShot(clip, volume);
+                    break;
             }
         }
 
@@ -97,6 +110,13 @@ namespace VolumeBox.Toolbox
         }
     }
 
+    public enum PlayType
+    {
+        STOP_THEN_PLAY,
+        ONE_SHOT,
+        NO_INTERRUPT
+    }
+
     [Serializable]
     public class AudioAlbum
     {
@@ -121,18 +141,7 @@ namespace VolumeBox.Toolbox
         public float volume = 1;
         public float pitch = 1;
         public bool loop = false;
-        public bool playOneShot = false;
-    }
-
-    [Serializable]
-    public class PlayAudioDirectly : Message
-    {
-        public string albumName;
-        public AudioClip clip;
-        public float volume = 1;
-        public float pitch = 1;
-        public bool loop = false;
-        public bool playOneShot = false;
+        public PlayType playType = PlayType.ONE_SHOT;
     }
 
     [Serializable]
