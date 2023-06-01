@@ -23,6 +23,10 @@ namespace VolumeBox.Toolbox
             _openedScenes = new List<OpenedScene>();
             _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            Messager.Instance.SubscribeKeeping<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive));
+            Messager.Instance.SubscribeKeeping<UnloadSceneMessage>(m => UnloadScene(m.sceneName));
+            Messager.Instance.SubscribeKeeping<UnloadAllScenesMessage>(_ => UnloadAllScenes());
         }
 
         /// <summary>
@@ -58,7 +62,7 @@ namespace VolumeBox.Toolbox
         /// </summary>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        public static async UniTask LoadScene(string sceneName, SceneArgs args = null)
+        public static async UniTask LoadScene(string sceneName, SceneArgs args = null, bool isAdditive = true)
         {
             if(!DoesSceneExist(sceneName))
             {
@@ -67,6 +71,11 @@ namespace VolumeBox.Toolbox
             }
 
             await QueueSceneLoad(sceneName);
+
+            if(!isAdditive)
+            {
+                await UnloadAllScenes();
+            }
 
             _currentLoadingSceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
@@ -200,6 +209,23 @@ namespace VolumeBox.Toolbox
             return false;
         }
 
+        public static async UniTask UnloadAllScenes()
+        {
+            var unloadings = new List<UniTask>();
+
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var sc = SceneManager.GetSceneAt(i);
+
+                if (sc.name != "MAIN")
+                {
+                    unloadings.Add(UnloadScene(sc.name));
+                }
+            }
+
+            await UniTask.WhenAll(unloadings);
+        }
+
         private class OpenedScene
         {
             public Scene SceneDefinition { get; }
@@ -215,10 +241,28 @@ namespace VolumeBox.Toolbox
         }
     }
 
-    
 
- #region Traveler's class messages
-    public class UnloadScene: Message { }
+
+    #region Traveler's class messages
+
+    [Serializable]
+    public class UnloadSceneMessage: Message
+    {
+        public string sceneName;
+    }
+
+    public class UnloadAllScenesMessage: Message
+    {
+
+    }
+
+    [Serializable]
+    public class LoadSceneMessage: Message
+    {
+        public string sceneName;
+        public SceneArgs args;
+        public bool additive;
+    }
 
     [Serializable]
     public abstract class SceneMessage: Message
