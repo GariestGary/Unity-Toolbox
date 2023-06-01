@@ -8,81 +8,86 @@ using NaughtyAttributes;
 
 namespace VolumeBox.Toolbox
 {
-    public class Resolver : Singleton<Resolver>, IRunner
+    public class Resolver : ToolWrapper<Resolver>
     {
-        [Required]
         [SerializeField] private GameObject instancesRoot;
+        
+        private static List<object> _instances;
+        private static Type _injectAttributeType;
+        private static List<SceneBinding> _currentSceneInstances;
 
-        private List<object> instances;
-        private Type injectAttributeType;
-        private List<SceneBinding> currentSceneInstances = new List<SceneBinding>();
-
-        public void Run()
+        protected override void Run()
         {
-            injectAttributeType = typeof(InjectAttribute);
+            _injectAttributeType = typeof(InjectAttribute);
 
-            instances = new List<object>();
+            _instances = new List<object>();
+            _currentSceneInstances = new List<SceneBinding>();
 
-            if(instancesRoot != null)
+            Messenger.SubscribeKeeping<SceneBindingMessage>(x => _currentSceneInstances = x.instances.ToList());
+            Messenger.SubscribeKeeping<SceneUnloadedMessage>(x => _currentSceneInstances.RemoveAll(y => y.sceneName == x.SceneName));
+            
+            AddMonoInstancesFromRoot(instancesRoot);
+        }
+
+        private void AddMonoInstancesFromRoot(GameObject root)
+        {
+            if(root != null)
             {
-                var newInstances = instancesRoot.GetComponents<MonoBehaviour>().ToList();
+                var newInstances = root.GetComponents<MonoBehaviour>().ToList();
                 
                 foreach (var instance in newInstances)
                 {
-                    instances.Add(instance);
+                    _instances.Add(instance);
                 }
             }
-
-            Messager.Instance.SubscribeKeeping<SceneBindingMessage>(x => currentSceneInstances = x.instances.ToList());
-            Messager.Instance.SubscribeKeeping<SceneUnloadedMessage>(_ => currentSceneInstances.Clear());
         }
 
-        public void SearchObjectBindings(GameObject obj)
+        public static void AddBindingsFromObject(GameObject obj)
         {
             foreach (var cb in obj.GetComponentsInChildren<ComponentBinding>(true))
             {
                 if (cb.Context != null)
                 {
-                    SceneBinding newBind = new SceneBinding() { instance = cb.Context, id = cb.Id };
+                    SceneBinding newBind = new SceneBinding() { Instance = cb.Context, id = cb.Id };
                     
                     if (cb.ThisSceneOnly)
                     {
-                        currentSceneInstances.Add(newBind);
+                        _currentSceneInstances.Add(newBind);
                     }
                     else
                     {
-                        instances.Add(newBind);
+                        _instances.Add(newBind);
                     }
                     
                 }
             }
         }
 
-        public void InjectInstances()
+        public static void InjectInstances()
         {
-            foreach(var instance in instances)
+            foreach(var instance in _instances)
             {
                 Inject(instance);
             }
         }
 
-        public void AddInstance(object instance)
+        public static void AddInstance(object instance)
         {
-            if(instances.Where(x => x.GetType() == instance.GetType()).Any()) 
+            if(_instances.Any(x => x.GetType() == instance.GetType())) 
             {
                 Debug.LogWarning($"Resolver already contains {instance.GetType()}");
             }
             else
             {
-                instances.Add(instance);
+                _instances.Add(instance);
             }
         }
 
-        public void RemoveInstance(object instance)
+        public static void RemoveInstance(object instance)
         {
-            if(instances.Contains(instance))
+            if(_instances.Contains(instance))
             {
-                instances.Remove(instance);
+                _instances.Remove(instance);
             }
             else
             {
@@ -90,7 +95,7 @@ namespace VolumeBox.Toolbox
             }
         }
     
-        public void Inject(GameObject obj)
+        public static void Inject(GameObject obj)
         {
             //Getting all monos from gameobject
             Component[] monosToInject = obj.GetComponentsInChildren<Component>(true);
@@ -101,7 +106,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public void Inject(object obj)
+        public static void Inject(object obj)
         {
             if(obj == null) return;
 
@@ -120,14 +125,14 @@ namespace VolumeBox.Toolbox
                 if(fields.Count() > 0)
                 {
                     fields = fields
-                    .Where(f => f.GetCustomAttributes(injectAttributeType, true).Any());
+                    .Where(f => f.GetCustomAttributes(_injectAttributeType, true).Any());
                 }
 
                 foreach(var field in fields)
                 {
                     string id = "";
 
-                    if (currentSceneInstances.Count > 0)
+                    if (_currentSceneInstances.Count > 0)
                     {
                         id = field.GetCustomAttribute<InjectAttribute>(true).ID;
                     }
@@ -137,15 +142,15 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public T GetInstance<T>()
+        public static T GetInstance<T>()
         {
-            return (T)instances.Where(i => i is T).FirstOrDefault();
+            return (T)_instances.Where(i => i is T).FirstOrDefault();
         }
 
-        private void ResolveField(FieldInfo fieldInfo, object owner, string id = "")
+        private static void ResolveField(FieldInfo fieldInfo, object owner, string id = "")
         {
             //getting instance which type equals to required
-            var instance = instances.Where(x => x.GetType() == fieldInfo.FieldType || fieldInfo.FieldType.IsInstanceOfType(x))
+            var instance = _instances.Where(x => x.GetType() == fieldInfo.FieldType || fieldInfo.FieldType.IsInstanceOfType(x))
                 .FirstOrDefault();
 
             if (instance == null)
@@ -154,16 +159,16 @@ namespace VolumeBox.Toolbox
                 
                 if (string.IsNullOrEmpty(id))
                 {
-                    binding = currentSceneInstances.Where(x => x.instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
+                    binding = _currentSceneInstances.Where(x => x.Instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
                 }
                 else
                 {
-                    binding = currentSceneInstances.Where(x => x.id == id && x.instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
+                    binding = _currentSceneInstances.Where(x => x.id == id && x.Instance.GetType() == fieldInfo.FieldType).FirstOrDefault();
                 }
 
                 if (binding != null)
                 {
-                    instance = binding.instance;
+                    instance = binding.Instance;
                 }
             }
 
@@ -184,12 +189,21 @@ namespace VolumeBox.Toolbox
                 Debug.LogError($"Failed converting {instance.GetType()} to {fieldInfo.FieldType}");
             }
         }
+
+        protected override void Clear()
+        {
+            _instances.Clear();
+            _instances = null;
+            _currentSceneInstances.Clear();
+            _currentSceneInstances = null;
+        }
     }
 
     [System.Serializable]
     public class SceneBinding
     {
-        public object instance;
+        public string sceneName;
+        public object Instance;
         public string id;
     }
 

@@ -12,7 +12,7 @@ public class MessageSender : MonoCached
     {
         foreach (var message in _messages)
         {
-            Messager.Instance.Send(message.CurrentTypeInstance);
+            Messenger.Send(message.CurrentTypeInstance);
         }
     }
 

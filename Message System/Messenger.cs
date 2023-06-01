@@ -6,20 +6,20 @@ using VolumeBox.Toolbox;
 
 namespace VolumeBox.Toolbox
 {
-	public class Messager: Singleton<Messager>, IRunner
+	public class Messenger: ToolWrapper<Messenger>
 	{
-		private List<Subscriber> subscribers = new List<Subscriber>();
-		private List<Subscriber> sceneSubscribers = new List<Subscriber>();
+		private static List<Subscriber> subscribers = new List<Subscriber>();
+		private static List<Subscriber> sceneSubscribers = new List<Subscriber>();
 
-		public List<Subscriber> Subscribers => subscribers;
-		public List<Subscriber> SceneSubscribers => sceneSubscribers;
+		public static List<Subscriber> Subscribers => subscribers;
+		public static List<Subscriber> SceneSubscribers => sceneSubscribers;
 
-        public void Run()
+        protected override void Run()
         {
-            Instance.SubscribeKeeping<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName));
+            SubscribeKeeping<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName));
         }
 
-		private void CheckSceneSubscribers(string scene)
+		private static void CheckSceneSubscribers(string scene)
 		{
 			var sceneSubs = sceneSubscribers.Where(x => x.RelatedSceneName == scene).ToList();
 
@@ -29,17 +29,17 @@ namespace VolumeBox.Toolbox
 			}
 		}
 
-        public void ClearSceneSubscribers()
+        public static void ClearSceneSubscribers()
         {
             sceneSubscribers.Clear();
         }
 
-        public void ClearKeepingSubscribers()
+        public static void ClearKeepingSubscribers()
         {
 	        subscribers.Clear();
         }
 
-        public void RemoveSubscriber(Subscriber subscriber)
+        public static void RemoveSubscriber(Subscriber subscriber)
         {
 	        if(subscriber == null) return;
 	        
@@ -60,8 +60,7 @@ namespace VolumeBox.Toolbox
 	        }
         }
         
-
-        public Subscriber SubscribeKeeping<T>(Action<T> next) where T: Message
+        public static Subscriber SubscribeKeeping<T>(Action<T> next) where T: Message
         {
 			Action<object> callback = args => next((T)args);
 			var sub = new Subscriber(typeof(T), callback);
@@ -69,7 +68,7 @@ namespace VolumeBox.Toolbox
 			return sub;
         }
 
-		public Subscriber Subscribe<T>(Action<T> next, string relatedScene = null) where T: Message
+		public static Subscriber Subscribe<T>(Action<T> next, string relatedScene = null) where T: Message
 		{
 			Action<object> callback = args => next((T)args);
 			var sub = new Subscriber(typeof(T), callback, relatedScene);
@@ -77,15 +76,14 @@ namespace VolumeBox.Toolbox
             return sub;
 		}
 
-
-		public void Send<T>() where T: Message
+		public static void Send<T>() where T: Message
 		{
 			var message = (T)Activator.CreateInstance(typeof(T));
 
 			Send(message);
         }
 
-		public void Send<T>(T message) where T: Message
+		public static void Send<T>(T message) where T: Message
 		{
 			if(message == null)
 			{
@@ -101,5 +99,12 @@ namespace VolumeBox.Toolbox
 			});
         }
 
-    }
+		protected override void Clear()
+		{
+			subscribers.Clear();
+			subscribers = null;
+			sceneSubscribers.Clear();
+			sceneSubscribers = null;
+		}
+	}
 }

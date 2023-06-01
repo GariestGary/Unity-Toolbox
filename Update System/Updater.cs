@@ -10,12 +10,14 @@ using UnityEngine.Profiling;
 
 namespace VolumeBox.Toolbox
 {
-    public class Updater : Singleton<Updater>, IRunner
+    public class Updater : ToolWrapper<Updater>
     {
+        #pragma warning disable
         private static float timeScale = 1;
         private static float delta;
+        #pragma warning restore
         
-        public float UnscaledDelta => Time.deltaTime;
+        public static float UnscaledDelta => Time.deltaTime;
         public static float TimeScale
         {
             get
@@ -44,28 +46,33 @@ namespace VolumeBox.Toolbox
         public static event Action<float> FixedProcessTick;
         public static event Action<float> LateProcessTick;
 
-        private MethodInfo riseMethod;
-        private MethodInfo readyMethod;
-        private MethodInfo subscribeProcessMethod;
+        private static MethodInfo riseMethod;
+        private static MethodInfo readyMethod;
+        private static MethodInfo subscribeProcessMethod;
 
-        public void Run()
+        protected override void Run()
         {
             riseMethod = typeof(MonoCached).GetMethod("OnRise", BindingFlags.NonPublic | BindingFlags.Instance);
             readyMethod = typeof(MonoCached).GetMethod("OnReady", BindingFlags.NonPublic | BindingFlags.Instance);
             subscribeProcessMethod = typeof(MonoCached).GetMethod("HandleProcessSubscribe", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
+        protected override void Clear()
+        {
+            
+        }
+
         /// <summary>
         /// Injects given GameObjects, rises and ready them, and then adds them to process
         /// </summary>
         /// <param name="objs">Array of GameObjects</param>
-        public void InitializeObjects(GameObject[] objs)
+        public static void InitializeObjects(GameObject[] objs)
         {
             foreach(var obj in objs)
             {
                 if (obj == null) return;
 
-                Resolver.Instance.Inject(obj);
+                Resolver.Inject(obj);
 
                 MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
@@ -104,11 +111,11 @@ namespace VolumeBox.Toolbox
         /// Injects given GameObject, rises and ready it, and then adds it to process
         /// </summary>
         /// <param name="obj"></param>
-        public void InitializeObject(GameObject obj)
+        public static void InitializeObject(GameObject obj)
         {
             if (obj == null) return;
 
-            Resolver.Instance.Inject(obj);
+            Resolver.Inject(obj);
 
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
@@ -128,11 +135,11 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        public void InitializeMono(MonoCached mono)
+        public static void InitializeMono(MonoCached mono)
         {
             if (mono == null) return;
 
-            Resolver.Instance.Inject(mono);
+            Resolver.Inject(mono);
             InvokeRise(mono);
             InvokeReady(mono);
             InvokeProcessSubscription(mono);
@@ -140,17 +147,17 @@ namespace VolumeBox.Toolbox
         
 
         #region Invoke Reflection Methods
-        private void InvokeRise(MonoCached mono)
+        private static void InvokeRise(MonoCached mono)
         {
             riseMethod.Invoke(mono, null);
         }
 
-        private void InvokeReady(MonoCached mono)
+        private static void InvokeReady(MonoCached mono)
         {
             readyMethod.Invoke(mono, null);
         }
 
-        private void InvokeProcessSubscription(MonoCached mono)
+        private static void InvokeProcessSubscription(MonoCached mono)
         {
             subscribeProcessMethod.Invoke(mono, null);
         }

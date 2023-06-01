@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox
 {
-    public class Traveler : CachedSingleton<Traveler>, IRunner
+    public class Traveler : ToolWrapper<Traveler>
     {
         private static AsyncOperation _currentUnloadingSceneOperation;
         private static AsyncOperation _currentLoadingSceneOperation;
@@ -18,7 +18,7 @@ namespace VolumeBox.Toolbox
         private static MethodInfo _onLoadMethod;
         private static MethodInfo _onUnloadMethod;
 
-        public void Run()
+        protected override void Run()
         {
             _openedScenes = new List<OpenedScene>();
             _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -27,6 +27,11 @@ namespace VolumeBox.Toolbox
             Messager.Instance.SubscribeKeeping<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive));
             Messager.Instance.SubscribeKeeping<UnloadSceneMessage>(m => UnloadScene(m.sceneName));
             Messager.Instance.SubscribeKeeping<UnloadAllScenesMessage>(_ => UnloadAllScenes());
+        }
+
+        protected override void Clear()
+        {
+            
         }
 
         /// <summary>
@@ -95,7 +100,7 @@ namespace VolumeBox.Toolbox
             //Search for DI bindings
             foreach (var obj in sceneObjects)
             {
-                Resolver.Instance.SearchObjectBindings(obj);
+                Resolver.AddBindingsFromObject(obj);
             }
 
 
@@ -118,7 +123,7 @@ namespace VolumeBox.Toolbox
             }
             else
             {
-                Updater.Instance.InitializeMono(handler);
+                Updater.InitializeMono(handler);
                 
                 if (_onLoadMethod != null)
                 {
@@ -130,11 +135,11 @@ namespace VolumeBox.Toolbox
 
             var parameters = new object[] { };
 
-            Updater.Instance.InitializeObjects(sceneObjects);
+            Updater.InitializeObjects(sceneObjects);
 
             _currentLoadingSceneOperation = null;
 
-            Messager.Instance.Send(new SceneOpenedMessage(sceneName));
+            Messenger.Send(new SceneOpenedMessage(sceneName));
         }
 
         /// <summary>
@@ -153,7 +158,7 @@ namespace VolumeBox.Toolbox
 
             await QueueSceneLoad(sceneName);
 
-            Messager.Instance.Send(new SceneUnloadingMessage(sceneName));
+            Messenger.Send(new SceneUnloadingMessage(sceneName));
 
             if (_onUnloadMethod != null && sceneToUnload.Handler != null)
             {
@@ -169,7 +174,7 @@ namespace VolumeBox.Toolbox
 
             _currentUnloadingSceneOperation = null;
 
-            Messager.Instance.Send(new SceneUnloadedMessage(sceneName));
+            Messenger.Send(new SceneUnloadedMessage(sceneName));
         }
 
         private static async UniTask QueueSceneLoad(string sceneName)

@@ -21,14 +21,19 @@ namespace VolumeBox.Toolbox
 
 #if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod]
-        private void PlayStateChanged()
+        private static void PlayStateChanged()
         {
+            
+
             EditorApplication.playModeStateChanged += OnStateChanged;
         }
 
-        private async void OnStateChanged(PlayModeStateChange state)
+        private static void OnStateChanged(PlayModeStateChange state)
         {
-            FadeOutFor(0);
+            if (!Fader.HasInstance) return;
+#pragma warning disable
+            Instance.FadeOutFor(0);
+#pragma warning restore
         }
 #endif
 
@@ -66,7 +71,16 @@ namespace VolumeBox.Toolbox
             _fading = false;
         }
 
+#if UNITY_EDITOR
+        private void OnDestroy()
+        {
+            EditorApplication.playModeStateChanged -= OnStateChanged;
+        }
+#endif
+        
+#pragma warning disable
         protected async virtual Task FadeInForTask(float duration) { }
         protected async virtual Task FadeOutForTask(float duration) { }
+#pragma warning restore
     }
 }

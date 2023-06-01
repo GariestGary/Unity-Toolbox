@@ -27,8 +27,7 @@ namespace VolumeBox.Toolbox
         private const string MainSceneName = "MAIN";
 
         private static List<string> _scenesOpenedAtStart;
-        private static ToolboxSettings settings;
-        
+
         public static bool EditorReady { get; private set; }
 
         public static event Action EnteredPlayMode;
@@ -42,28 +41,6 @@ namespace VolumeBox.Toolbox
 
         private static async void OnStateChanged(PlayModeStateChange state)
         {
-            if(settings == null)
-            {
-                settings = Resources.Load<ToolboxSettings>("Toolbox Settings");
-            }
-
-            if(settings == null)
-            {
-                var newSettings = ScriptableObject.CreateInstance<ToolboxSettings>();
-
-                if(!AssetDatabase.IsValidFolder("Assets/Resources"))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Resources");
-                }
-                
-                AssetDatabase.CreateAsset(newSettings, "Assets/Resources/Toolbox Settings.asset");
-                AssetDatabase.SaveAssets();
-
-                settings = Resources.Load<ToolboxSettings>("Toolbox Settings");
-            }
-
-            var resolveScenes = settings == null ? false : settings.autoResolveScenesAtPlay;
-
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
                 ExitedPlayMode?.Invoke();
@@ -85,7 +62,7 @@ namespace VolumeBox.Toolbox
             {
                 EnteredPlayMode?.Invoke();
 
-                if (resolveScenes)
+                if (StaticData.Settings.AutoResolveScenesAtPlay)
                 {
                     EditorReady = false;
                     await HandleOpenedScenes();
@@ -97,7 +74,6 @@ namespace VolumeBox.Toolbox
         private static async Task HandleOpenedScenes()
         {
             _scenesOpenedAtStart = new List<string>();
-            Debug.Log("Initialized opened scenes handler");
             int scenesCount = SceneManager.sceneCount;
             bool mainLoaded = false;
 

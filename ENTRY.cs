@@ -7,120 +7,87 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using VolumeBox.Toolbox.UIInformer;
+using Cysharp.Threading.Tasks;
 
 namespace VolumeBox.Toolbox
 {   
     public class ENTRY : MonoBehaviour
     {
-        [Foldout("Time and Framerate")] 
-        [SerializeField] [Range(0, 1)] 
-        private float timeScale;
-        
-        [Foldout("Time and Framerate")] 
-        [SerializeField]
-        [Range(1, 900)]
-        private int targetFrameRate;
-        
-        [Scene]
-        [Foldout("Initial Scene")]
-        [SerializeField] 
-        private string initialSceneName;
-        [Foldout("Initial Scene")]
-        [SerializeField] 
-        private SceneArgs initialSceneArgs;
-        [SerializeField, Foldout("Initial Scene")]
-        private bool manualFadeOut;
-        [SerializeField, HideIf(nameof(manualFadeOut))]
-        private float fadeOutDuration;
-        
-        [ReadOnly] public bool Autocompile;
-        public UnityEvent onLoadEvent;
-        
+        private SettingsData settings => StaticData.Settings;
+
         private AudioPlayer audioPlayer;
         private Resolver resolver;
-        private Messager messager;
+        private Messenger messenger;
         private Traveler traveler;
         private Updater updater;
         private Pooler pooler;
         private Saver saver;
         private Info info; 
 
-        private void OnValidate() 
+        private void Awake()
         {
-            if(updater != null)
-            {
-                Updater.TimeScale = timeScale;
-            }          
+#pragma warning disable
+            Init();
+#pragma warning enable
         }
-        
-#if UNITY_EDITOR
-        [Button("Switch Autocompile")]
-        public void SwitchAutocompile()
-        {
-            Autocompile = !Autocompile;
-            EditorPrefs.SetBool("kAutoRefresh", Autocompile);
-        }
-#endif
 
-        private async void Awake()
+        private async UniTask Init()
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             while (!EditorPlayStateHandler.EditorReady)
             {
-                await Task.Yield();
+                await UniTask.Yield();
             }
-            #endif
-            
-            Application.targetFrameRate = targetFrameRate;
+#endif
 
-            resolver = GetComponent<Resolver>();
-            
-            audioPlayer = GetComponent<AudioPlayer>();
-            messager = GetComponent<Messager>();
-            traveler = GetComponent<Traveler>();
-            updater = GetComponent<Updater>();
-            pooler = GetComponent<Pooler>();
-            saver = GetComponent<Saver>();
-            info = GetComponent<Info>();
+            Application.targetFrameRate = settings.TargetFrameRate;
 
+            Resolver.Instance.RunInternal();
 
-            resolver.Run();
-            resolver.AddInstance(resolver);
+            Resolver.AddInstance(Resolver.Instance);
 
-            resolver.AddInstance(audioPlayer);
-            resolver.AddInstance(messager);
-            resolver.AddInstance(traveler);
-            resolver.AddInstance(updater);
-            resolver.AddInstance(pooler);
-            resolver.AddInstance(saver);
-            resolver.AddInstance(info);
+            Resolver.AddInstance(AudioPlayer.Instance);
+            Resolver.AddInstance(Messenger.Instance);
+            Resolver.AddInstance(Traveler.Instance);
+            Resolver.AddInstance(Updater.Instance);
+            Resolver.AddInstance(Pooler.Instance);
+            Resolver.AddInstance(Saver.Instance);
+            Resolver.AddInstance(Info.Instance);
 
-            resolver.InjectInstances();
+            Resolver.InjectInstances();
 
-            audioPlayer.Run();
-            messager.Run();
-            traveler.Run();
-            updater.Run();
-            pooler.Run();
-            saver.Run();
-            info.Run();
+            AudioPlayer.Instance.RunInternal();
+            Messenger.Instance.RunInternal();
+            Traveler.Instance.RunInternal();
+            Updater.Instance.RunInternal();
+            Pooler.Instance.RunInternal();
+            Saver.Instance.RunInternal();
+            Info.Instance.RunInternal();
 
-            updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
+            Updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 
-            if(!string.IsNullOrEmpty(initialSceneName) || initialSceneName != "MAIN")
+            await Fader.In(0);
+
+            if (!string.IsNullOrEmpty(settings.InitialSceneName) || settings.InitialSceneName != "MAIN")
             {
-                await Traveler.LoadScene(initialSceneName, initialSceneArgs);
+                await Traveler.LoadScene(settings.InitialSceneName, settings.InitialSceneArgs);
 
-                if(!manualFadeOut)
+                if (!settings.ManualFadeOut)
                 {
-                    await Fader.Out(fadeOutDuration);
+                    await Fader.Out(settings.FadeOutDuration);
                 }
             }
         }
 
-        private void Start() 
+        private void OnDisable()
         {
-            onLoadEvent?.Invoke();
+            AudioPlayer.Instance.ClearInternal();
+            Messenger.Instance.ClearInternal();
+            Traveler.Instance.ClearInternal();
+            Updater.Instance.ClearInternal();
+            Pooler.Instance.ClearInternal();
+            Saver.Instance.ClearInternal();
+            Info.Instance.ClearInternal();
         }
     }
 }
