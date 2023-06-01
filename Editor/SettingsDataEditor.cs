@@ -10,7 +10,7 @@ namespace VolumeBox.Toolbox
     [CustomEditor(typeof(SettingsData))]
     public class SettingsDataEditor: Editor
     {
-        private float labelsWidth = 175;
+        private float labelsWidth = 150;
 
         private SerializedProperty m_resolveAtPlay;
         private SerializedProperty m_timeScale;
@@ -67,9 +67,8 @@ namespace VolumeBox.Toolbox
             }
 
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Initial Scene", GUILayout.Width(labelsWidth));
-            selectedScene = EditorGUILayout.Popup(selectedScene, optionDataList.ToArray());
-            m_initialSceneName.stringValue = optionDataList[selectedScene];
+            //EditorGUILayout.LabelField("Initial Scene", GUILayout.Width(labelsWidth));
+            EditorGUILayout.PropertyField(m_initialSceneName);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -88,12 +87,6 @@ namespace VolumeBox.Toolbox
                 EditorGUILayout.LabelField("Fade Out Duration", GUILayout.Width(labelsWidth));
                 m_fadeOutDuration.floatValue = EditorGUILayout.FloatField(m_fadeOutDuration.floatValue);
                 EditorGUILayout.EndHorizontal();
-            }
-
-            if(GUILayout.Button("Generate enum"))
-            {
-                List<string> myList = new List<string>() { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-                //EnumGenerator.CreateEnumFromArrays(myList);
             }
 
             serializedObject.ApplyModifiedProperties();

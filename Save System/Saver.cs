@@ -15,7 +15,7 @@ namespace VolumeBox.Toolbox
 
         protected override void Clear()
         {
-            Instance.Data.Clear();
+            Instance?.Data?.Clear();
         }
 
         public override string GetDataPath()

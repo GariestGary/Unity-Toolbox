@@ -36,9 +36,9 @@ namespace VolumeBox.Toolbox
 
             if (GUILayout.Button("Add Album", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
             {
-                m_albums.InsertArrayElementAtIndex(0);
-                m_albums.GetArrayElementAtIndex(0).FindPropertyRelative("albumName").stringValue = string.Empty;
-                currentScrollPosition.y = 0;
+                m_albums.InsertArrayElementAtIndex(m_albums.arraySize - 1);
+                m_albums.GetArrayElementAtIndex(m_albums.arraySize - 1).FindPropertyRelative("albumName").stringValue = string.Empty;
+                currentScrollPosition.y = float.MaxValue;
             }
 
             GUILayout.EndHorizontal();
@@ -123,7 +123,16 @@ namespace VolumeBox.Toolbox
                 EditorGUILayout.LabelField("Album Name", GUILayout.Width(labelSize));
 
                 albumName.stringValue = EditorGUILayout.TextField(albumName.stringValue);
-                
+
+                GUILayout.Space(25);
+
+                var useSeparateSource = property.FindPropertyRelative("useSeparateSource");
+
+                EditorGUILayout.LabelField("Use Separate Audio Source", GUILayout.Width(labelSize + 50));
+                useSeparateSource.boolValue = EditorGUILayout.Toggle(useSeparateSource.boolValue, GUILayout.Width(EditorGUIUtility.singleLineHeight));
+
+                GUILayout.Space(25);
+
                 if (GUILayout.Button("Add Clip", GUILayout.Width(75)))
                 {
                     m_clips.InsertArrayElementAtIndex(0);

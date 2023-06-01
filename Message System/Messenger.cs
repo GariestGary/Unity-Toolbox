@@ -101,9 +101,9 @@ namespace VolumeBox.Toolbox
 
 		protected override void Clear()
 		{
-			subscribers.Clear();
+			subscribers?.Clear();
 			subscribers = null;
-			sceneSubscribers.Clear();
+			sceneSubscribers?.Clear();
 			sceneSubscribers = null;
 		}
 	}

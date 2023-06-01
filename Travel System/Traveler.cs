@@ -24,9 +24,11 @@ namespace VolumeBox.Toolbox
             _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
 
+#pragma warning disable
             Messenger.SubscribeKeeping<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive));
             Messenger.SubscribeKeeping<UnloadSceneMessage>(m => UnloadScene(m.sceneName));
             Messenger.SubscribeKeeping<UnloadAllScenesMessage>(_ => UnloadAllScenes());
+#pragma warning enable
         }
 
         protected override void Clear()

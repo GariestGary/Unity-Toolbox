@@ -28,12 +28,22 @@ namespace VolumeBox.Toolbox
 
             var clip = GetClip(album.clips, id);
 
-            if (clip == null) return;
+            if(album == null)
+            {
+                Debug.LogWarning($"Album named {source} not found");
+                return;
+            }
+
+            if (clip == null)
+            {
+                Debug.LogWarning($"Clip named {id} not found");
+                return;
+            }
 
             Play(source, clip, volume, pitch, loop, playType);
         }
 
-        public void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        private void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var album = GetAlbum(source);
             
@@ -42,7 +52,7 @@ namespace VolumeBox.Toolbox
             Play(album.source, clip, volume, pitch, loop, playType);
         }
 
-        public void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        private void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             if (source == null || clip == null)
             {
@@ -123,6 +133,7 @@ namespace VolumeBox.Toolbox
         [SerializeField]
         public string albumName;
         [HideInInspector, SerializeField] public AudioSource source;
+        [SerializeField] public bool useSeparateSource;
         [SerializeField] public List<AudioClipInfo> clips;
     }
     

@@ -68,7 +68,7 @@ namespace VolumeBox.Toolbox
 
             await Fader.In(0);
 
-            if (!string.IsNullOrEmpty(settings.InitialSceneName) || settings.InitialSceneName != "MAIN")
+            if (!string.IsNullOrEmpty(settings.InitialSceneName) && settings.InitialSceneName != "MAIN")
             {
                 await Traveler.LoadScene(settings.InitialSceneName, settings.InitialSceneArgs);
 

@@ -5,6 +5,7 @@ namespace VolumeBox.Toolbox
     public class AudioPlayer: ResourcesToolWrapper<AudioPlayer, AudioPlayerDataHolder>
     {
         [SerializeField] private Transform audioSourcesRoot;
+
         public override string GetDataPath()
         {
             return SettingsData.audioPlayerResourcesDataPath;
@@ -14,11 +15,22 @@ namespace VolumeBox.Toolbox
         {
             Data.Run();
 
-            foreach(var album in Data.Albums)
+            var obj = new GameObject("Default Audio Source");
+            obj.transform.SetParent(audioSourcesRoot);
+            var defaultSource = obj.AddComponent<AudioSource>();
+
+            foreach (var album in Data.Albums)
             {
-                var obj = new GameObject($"{album.albumName} Audio Source", typeof(AudioSource));
-                obj.transform.SetParent(audioSourcesRoot);
-                album.source = obj.GetComponent<AudioSource>();
+                if(album.useSeparateSource)
+                {
+                    var newSourceObj = new GameObject($"{album.albumName} Audio Source");
+                    newSourceObj.transform.SetParent(audioSourcesRoot);
+                    album.source = newSourceObj.AddComponent<AudioSource>();
+                }
+                else
+                {
+                    album.source = defaultSource;
+                }
             }
         }
 
@@ -30,16 +42,6 @@ namespace VolumeBox.Toolbox
         public static void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             Instance.Data.Play(source, id, volume, pitch, loop, playType);
-        }
-
-        public static void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
-        {
-            Instance.Data.Play(source, clip, volume, pitch, loop, playType);
-        }
-
-        public static void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
-        {
-            Instance.Data.Play(source, clip, volume, pitch, loop, playType);
         }
 
         public void StopAudio(string source)

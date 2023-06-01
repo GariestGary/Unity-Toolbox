@@ -41,6 +41,11 @@ namespace VolumeBox.Toolbox
 
             LinkedList<PooledGameObject> objectPoolList = new LinkedList<PooledGameObject>();
 
+            if(poolToAdd.initialSize <= 0)
+            {
+                poolToAdd.initialSize = 1;
+            }
+
             for (int j = 0; j < poolToAdd.initialSize; j++)
             {
                 CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
