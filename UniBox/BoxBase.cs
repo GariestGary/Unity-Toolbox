@@ -12,10 +12,12 @@ namespace VolumeBox.Toolbox.UIInformer
         [SerializeField] protected float fadeInDuration;
         [SerializeField] protected float fadeOutDuration;
         [SerializeField] protected bool canChangeWhenOpened;
-        
+
         public UnityEvent<string> MessageTextEvent;
-        
+        public UnityEvent<string> HeaderCaptionEvent;
+
         protected string _currentMessage;
+        protected string _currentHeaderCaption;
 
         private bool _opened;
         private Coroutine fadeInCoroutine;
@@ -26,19 +28,25 @@ namespace VolumeBox.Toolbox.UIInformer
 
         protected bool CanChange => (_opened && canChangeWhenOpened) || !_opened;
 
+        public void SetHeaderCaption(string caption)
+        {
+            _currentHeaderCaption = caption;
+            HeaderCaptionEvent.Invoke(_currentHeaderCaption);
+        }
+
         public void SetMessage(string message)
         {
             _currentMessage = message;
             MessageTextEvent.Invoke(_currentMessage);
         }
-        
+
         public bool Show()
         {
-            if(!CanChange) return false;
+            if (!CanChange) return false;
 
-            if(fadeOutCoroutine != null)
+            if (fadeOutCoroutine != null)
                 StopCoroutine(fadeOutCoroutine);
-            if(fadeInCoroutine != null)
+            if (fadeInCoroutine != null)
                 StopCoroutine(fadeInCoroutine);
 
             fadeInCoroutine = StartCoroutine(FadeInCoroutine());

@@ -15,11 +15,37 @@ namespace VolumeBox.Toolbox.UIInformer
 
         private bool _messageBoxGettedResult;
 
-        public void ShowBox(string message, Action okAction = null, Action cancelAction = null)
+        public void ShowBox(string message, Action okAction, Action cancelAction = null, string headerCaption = null, string okCaption = null, string cancelCaption = null, Color? okColor = null, Color? cancelColor = null)
         {
             messageBox.SetMessage(message);
             messageBox.SetCancelAction(cancelAction);
             messageBox.SetOkAction(okAction);
+
+            if(headerCaption.IsValuable())
+            {
+                messageBox.SetHeaderCaption(headerCaption);
+            }
+
+            if (okCaption.IsValuable())
+            {
+                messageBox.SetOkCaption(okCaption);
+            }
+
+            if(cancelCaption.IsValuable())
+            {
+                messageBox.SetCancelCaption(cancelCaption);
+            }
+
+            if(okColor.HasValue)
+            {
+                messageBox.SetOkColor(okColor.Value);
+            }
+
+            if(cancelColor.HasValue)
+            {
+                messageBox.SetCancelColor(cancelColor.Value);
+            }
+
             messageBox.Show();
             LayoutRebuilder.ForceRebuildLayoutImmediate(messageBox.Rect);
         }
