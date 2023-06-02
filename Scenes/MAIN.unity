@@ -578,6 +578,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  HeaderCaptionEvent:
+    m_PersistentCalls:
+      m_Calls: []
   selfFadeOutDuration: 1.5
   defaultDelay: 1
 --- !u!222 &140365667
@@ -1048,8 +1051,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56ca6f40469ebc0498a0fecd8c45dd76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeScale: 1
-  targetFrameRate: 120
+  timeScale: 0
+  targetFrameRate: 0
   initialSceneName: Test Scene
   initialSceneArgs: {fileID: 0}
   manualFadeOut: 0
@@ -1143,10 +1146,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 708d11dbeffadb348b400b8644410ecc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bgMusicSource: {fileID: 155358600}
-  uiSource: {fileID: 314777514}
-  atmosphereSource: {fileID: 1529264683}
-  soundsSource: {fileID: 56211399}
+  bgMusicSource: {fileID: 0}
+  uiSource: {fileID: 0}
+  atmosphereSource: {fileID: 0}
+  soundsSource: {fileID: 0}
   music: []
   ui: []
   atmos: []
@@ -1239,7 +1242,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 400, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 800, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &439952502
@@ -2249,8 +2252,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  HeaderCaptionEvent:
+    m_PersistentCalls:
+      m_Calls: []
   okButton: {fileID: 1406173038}
   cancelButton: {fileID: 26346729}
+  okImage: {fileID: 1406173041}
+  cancelImage: {fileID: 26346732}
+  okText: {fileID: 1049548996}
+  cancelText: {fileID: 1818523945}
+  defaultOkCaption: OK
+  defaultCancelCaption: Cancel
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1445041451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2333,7 +2346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
