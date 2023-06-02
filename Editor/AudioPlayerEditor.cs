@@ -36,7 +36,15 @@ namespace VolumeBox.Toolbox
 
             if (GUILayout.Button("Add Album", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
             {
-                m_albums.InsertArrayElementAtIndex(m_albums.arraySize - 1);
+                if(m_albums.arraySize <= 0)
+                {
+                    m_albums.InsertArrayElementAtIndex(0);
+                }
+                else
+                {
+                    m_albums.InsertArrayElementAtIndex(m_albums.arraySize - 1);
+                }
+
                 m_albums.GetArrayElementAtIndex(m_albums.arraySize - 1).FindPropertyRelative("albumName").stringValue = string.Empty;
                 currentScrollPosition.y = float.MaxValue;
             }
