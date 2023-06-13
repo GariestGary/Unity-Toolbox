@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    [CreateAssetMenu(menuName = "VolumeBox/Toolbox/Settings")]
     public class SettingsData : ScriptableObject
     {
         [SerializeField]

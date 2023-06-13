@@ -27,6 +27,9 @@ namespace VolumeBox.Toolbox
 
         public override void OnInspectorGUI()
         {
+            DrawDefaultInspector();
+            return;
+
             EditorGUILayout.BeginVertical();
 
             EditorGUILayout.BeginHorizontal();

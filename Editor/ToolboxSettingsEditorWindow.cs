@@ -32,6 +32,7 @@ namespace VolumeBox.Toolbox
             poolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
             saverDataHolder = ResourcesUtils.ResolveScriptable<SaverDataHolder>(SettingsData.saverResourcesDataPath);
+
             settingsEditor = (SettingsDataEditor)Editor.CreateEditor(StaticData.Settings);
             poolerEditor = (PoolerEditor)Editor.CreateEditor(poolerDataHolder);
             audioEditor = (AudioPlayerEditor)Editor.CreateEditor(audioPlayerDataHolder);

@@ -21,7 +21,7 @@ namespace VolumeBox.Toolbox
         private Traveler traveler;
         private Updater updater;
         private Pooler pooler;
-        private Saver saver;
+        //private Saver saver;
         private Info info; 
 
         private void Awake()
@@ -51,7 +51,7 @@ namespace VolumeBox.Toolbox
             Resolver.AddInstance(Traveler.Instance);
             Resolver.AddInstance(Updater.Instance);
             Resolver.AddInstance(Pooler.Instance);
-            Resolver.AddInstance(Saver.Instance);
+            //Resolver.AddInstance(Saver.Instance);
             Resolver.AddInstance(Info.Instance);
 
             Resolver.InjectInstances();
@@ -61,7 +61,7 @@ namespace VolumeBox.Toolbox
             Traveler.Instance.RunInternal();
             Updater.Instance.RunInternal();
             Pooler.Instance.RunInternal();
-            Saver.Instance.RunInternal();
+            //Saver.Instance.RunInternal();
             Info.Instance.RunInternal();
 
             Updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
@@ -86,7 +86,7 @@ namespace VolumeBox.Toolbox
             Traveler.Instance.ClearInternal();
             Updater.Instance.ClearInternal();
             Pooler.Instance.ClearInternal();
-            Saver.Instance.ClearInternal();
+            //Saver.Instance.ClearInternal();
             Info.Instance.ClearInternal();
         }
     }
