@@ -12,40 +12,40 @@ namespace VolumeBox.Toolbox
 
         public bool? GetBool(string id)
         {
-            return (bool?)GetValue(id, PropertyType.Bool);
+            return GetValue(id, PropertyType.Bool)?.boolData;
         }
 
         public int? GetInt(string id)
         {
-            return (int?)GetValue(id, PropertyType.Integer);
+            return GetValue(id, PropertyType.Integer)?.integerData;
         }
 
         public float? GetFloat(string id) 
         {
-            return (float?)GetValue(id, PropertyType.Float);
+            return GetValue(id, PropertyType.Float)?.floatData;
         }
 
         public Vector2? GetVector2(string id)
         {
-            return (Vector2?)GetValue(id, PropertyType.Vector2);
+            return GetValue(id, PropertyType.Vector2)?.vector2Data;
         }
 
         public Vector3? GetVector3 (string id) 
         {
-            return (Vector3?)GetValue(id,PropertyType.Vector3);
+            return GetValue(id,PropertyType.Vector3)?.vector3Data;
         }
 
         public Vector4? GetVector4(string id)
         {
-            return (Vector4?)GetValue(id,PropertyType.Vector4);
+            return GetValue(id, PropertyType.Vector4)?.vector4Data;
         }
 
         public string GetString(string id) 
         {
-            return (string)GetValue(id, PropertyType.String);
+            return GetValue(id, PropertyType.String)?.stringData;
         }
 
-        public object GetValue(string id, PropertyType type)
+        private Property GetValue(string id, PropertyType type)
         {
             var props = properties.Where(p => p.id == id && p.type == type).ToList();
 

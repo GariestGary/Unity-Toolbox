@@ -6,7 +6,7 @@ namespace VolumeBox.Toolbox
 {
     public class Saver: ResourcesToolWrapper<Saver, SaverDataHolder>
     {
-        public PropertiesDatabase Database => Data.Database;
+        public static PropertiesDatabase Database => Instance.Data.Database;
 
         public override string GetDataPath()
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -27,7 +28,22 @@ namespace VolumeBox.Toolbox
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            serializedObject.Update();
+            GUILayout.Space(8);
+
+            serializedObject.DrawInspectorExcept("m_Script");
+
+            GUILayout.Space(8);
+
+            var m_database = serializedObject.FindProperty("database");
+
+            if(m_database.objectReferenceValue != null)
+            {
+                SerializedObject mso_database = new SerializedObject(m_database.objectReferenceValue);
+                mso_database.DrawInspectorExcept("m_Script");
+            }
+            serializedObject.ApplyModifiedProperties();
+            //DrawDefaultInspector();
             return;
 
             EditorGUILayout.BeginVertical();
