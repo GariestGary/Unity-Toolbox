@@ -117,11 +117,11 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private static bool IsMainSceneCorrectInBuild()
+        public static bool IsMainSceneCorrectInBuild()
         {
             if (EditorBuildSettings.scenes.Length <= 0 || (EditorBuildSettings.scenes[0].path != DevelopmentSceneAssetPath && EditorBuildSettings.scenes[0].path != ProductionSceneAssetPath))
             {
-                Debug.LogWarning("MAIN scene is not in build setting or it's index not 0. You can fix this from Toolbox/Init MAIN scene");
+                //Debug.LogWarning("MAIN scene is not in build setting or it's index not 0. You can fix this from Toolbox/Init MAIN scene");
                 return false;
             }
 
@@ -143,7 +143,6 @@ namespace VolumeBox.Toolbox
             return DevelopmentScenePath;
         }
 
-        [MenuItem("Toolbox/Init MAIN Scene")]
         public static async void InitializeMain()
         {
             var scenes = EditorBuildSettings.scenes.ToList();
@@ -188,7 +187,6 @@ namespace VolumeBox.Toolbox
             Debug.Log("MAIN scene initialized");
         }
 
-        [MenuItem("Toolbox/Open MAIN Scene")]
         public static async void OpenMainScene()
         {
             if(!IsMainSceneCorrectInBuild()) return;

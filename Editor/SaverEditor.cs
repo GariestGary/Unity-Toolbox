@@ -3,76 +3,75 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VolumeBox.Toolbox
 {
     [CustomEditor(typeof(SaverDataHolder))]
     public class SaverEditor : Editor
     {
-        private SerializedProperty m_useSaves;
-        private SerializedProperty m_stateProvider;
-        private SerializedProperty m_fileHandler;
-        private SerializedProperty m_slotsCount;
-        private SerializedProperty m_slots;
+        private SerializedProperty m_database;
 
-        private Vector2 currentScrollPosition;
-        private const float LABEL_SIZE = 125;
+        private Vector2 _currentScrollPosition;
+
+        private Color buttonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
 
         private void OnEnable()
         {
-            m_useSaves = serializedObject.FindProperty("useSaves");
-            m_stateProvider = serializedObject.FindProperty("stateProvider");
-            m_fileHandler = serializedObject.FindProperty("fileHandler");
-            m_slotsCount = serializedObject.FindProperty("saveSlotsCount");
+            m_database = serializedObject.FindProperty("database");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            GUILayout.Space(8);
 
-            serializedObject.DrawInspectorExcept("m_Script");
+            EditorGUILayout.PropertyField(m_database);
 
-            GUILayout.Space(8);
+            GUILayout.Space(5);
 
-            var m_database = serializedObject.FindProperty("database");
+            _currentScrollPosition = GUILayout.BeginScrollView(_currentScrollPosition);
 
-            if(m_database.objectReferenceValue != null)
+            if (m_database.objectReferenceValue != null)
             {
-                SerializedObject mso_database = new SerializedObject(m_database.objectReferenceValue);
-                mso_database.DrawInspectorExcept("m_Script");
+                var databaseObject = new SerializedObject(m_database.objectReferenceValue);
+
+                databaseObject.Update();
+
+                var props = databaseObject.FindProperty("properties");
+
+                for (int i = 0; i < props.arraySize; i++)
+                {
+                    EditorGUILayout.BeginHorizontal(GUI.skin.FindStyle("Box"), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+
+                    EditorGUILayout.PropertyField(props.GetArrayElementAtIndex(i));
+
+                    var oldColor = GUI.backgroundColor;
+                    GUI.backgroundColor = buttonColor;
+
+                    if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
+                    {
+                        props.DeleteArrayElementAtIndex(i);
+                    }
+
+                    GUI.backgroundColor = oldColor;
+
+                    EditorGUILayout.EndHorizontal();
+
+                    GUILayout.Space(5);
+                }
+
+
+                if (GUILayout.Button(EditorGUIUtility.IconContent("CreateAddNew"), GUILayout.Height(30)))
+                {
+                    props.InsertArrayElementAtIndex(Mathf.Clamp(props.arraySize - 1, 0, int.MaxValue));
+                }
+
+                databaseObject.ApplyModifiedProperties();
             }
+
+            GUILayout.EndScrollView();
+
             serializedObject.ApplyModifiedProperties();
-            //DrawDefaultInspector();
-            return;
-
-            EditorGUILayout.BeginVertical();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Use Saves", GUILayout.Width(LABEL_SIZE));
-            m_useSaves.boolValue = EditorGUILayout.Toggle(m_useSaves.boolValue, GUILayout.Width(25));
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("State Provider", GUILayout.Width(LABEL_SIZE));
-            EditorGUILayout.PropertyField(m_stateProvider, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("File Handler", GUILayout.Width(LABEL_SIZE));
-            EditorGUILayout.PropertyField(m_fileHandler, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Save Slots Count", GUILayout.Width(LABEL_SIZE));
-            m_slotsCount.intValue = EditorGUILayout.IntField(m_slotsCount.intValue, GUILayout.Width(25));
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.EndVertical();
         }
-
-
     }
 }
