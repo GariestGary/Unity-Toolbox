@@ -16,7 +16,6 @@ namespace VolumeBox.Toolbox
         private SettingsData settings => StaticData.Settings;
 
         private AudioPlayer audioPlayer;
-        private Resolver resolver;
         private Messenger messenger;
         private Traveler traveler;
         private Updater updater;
@@ -39,23 +38,6 @@ namespace VolumeBox.Toolbox
                 await UniTask.Yield();
             }
 #endif
-
-            Application.targetFrameRate = settings.TargetFrameRate;
-
-            Resolver.Instance.RunInternal();
-
-            Resolver.AddInstance(Resolver.Instance);
-
-            Resolver.AddInstance(AudioPlayer.Instance);
-            Resolver.AddInstance(Messenger.Instance);
-            Resolver.AddInstance(Traveler.Instance);
-            Resolver.AddInstance(Updater.Instance);
-            Resolver.AddInstance(Pooler.Instance);
-            Resolver.AddInstance(Saver.Instance);
-            Resolver.AddInstance(Info.Instance);
-
-            Resolver.InjectInstances();
-
             AudioPlayer.Instance.RunInternal();
             Messenger.Instance.RunInternal();
             Traveler.Instance.RunInternal();

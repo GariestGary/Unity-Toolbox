@@ -99,13 +99,6 @@ namespace VolumeBox.Toolbox
 
             GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
 
-            //Search for DI bindings
-            foreach (var obj in sceneObjects)
-            {
-                Resolver.AddBindingsFromObject(obj);
-            }
-
-
             //Search for scene handler
             foreach (var obj in sceneObjects)
             {

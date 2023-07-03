@@ -42,19 +42,11 @@ namespace VolumeBox.Toolbox
         }
         public static float Delta => delta;
 
-        public static event Action<float> ProcessTick;
-        public static event Action<float> FixedProcessTick;
-        public static event Action<float> LateProcessTick;
-
-        private static MethodInfo riseMethod;
-        private static MethodInfo readyMethod;
-        private static MethodInfo subscribeProcessMethod;
+        private List<MonoCached> monos = new List<MonoCached>();
 
         protected override void Run()
         {
-            riseMethod = typeof(MonoCached).GetMethod("OnRise", BindingFlags.NonPublic | BindingFlags.Instance);
-            readyMethod = typeof(MonoCached).GetMethod("OnReady", BindingFlags.NonPublic | BindingFlags.Instance);
-            subscribeProcessMethod = typeof(MonoCached).GetMethod("HandleProcessSubscribe", BindingFlags.NonPublic | BindingFlags.Instance);
+            
         }
 
         protected override void Clear()
@@ -72,12 +64,15 @@ namespace VolumeBox.Toolbox
             {
                 if (obj == null) return;
 
-                Resolver.Inject(obj);
-
                 MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
                 foreach (var mono in objMonos)
                 {
+                    if(Instance.monos.Contains(mono))
+                    {
+                        continue;
+                    }
+
                     InvokeRise(mono);
                 }
             }
@@ -90,6 +85,11 @@ namespace VolumeBox.Toolbox
 
                 foreach (var mono in objMonos)
                 {
+                    if (Instance.monos.Contains(mono))
+                    {
+                        continue;
+                    }
+
                     InvokeReady(mono);
                 }
             }
@@ -102,7 +102,12 @@ namespace VolumeBox.Toolbox
 
                 foreach (var mono in objMonos)
                 {
-                    InvokeProcessSubscription(mono);
+                    if (Instance.monos.Contains(mono))
+                    {
+                        continue;
+                    }
+
+                    Instance.monos.Add(mono);
                 }
             }
         }
@@ -115,51 +120,65 @@ namespace VolumeBox.Toolbox
         {
             if (obj == null) return;
 
-            Resolver.Inject(obj);
-
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
             foreach (var mono in objMonos)
             {
+                if (Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
                 InvokeRise(mono);
             }
 
             foreach (var mono in objMonos)
             {
+                if (Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
                 InvokeReady(mono);
             }
 
             foreach (var mono in objMonos)
             {
-                InvokeProcessSubscription(mono);
+                if (Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
+                Instance.monos.Add(mono);
             }
         }
 
         public static void InitializeMono(MonoCached mono)
         {
-            if (mono == null) return;
+            if (mono == null && !Instance.monos.Contains(mono)) return;
 
-            Resolver.Inject(mono);
             InvokeRise(mono);
             InvokeReady(mono);
-            InvokeProcessSubscription(mono);
+            Instance.monos.Add(mono);
+        }
+
+        public static void RemoveMonoFromUpdate(MonoCached mono)
+        {
+            if (mono == null) return;
+
+            Instance.monos.Remove(mono);
         }
         
 
         #region Invoke Reflection Methods
         private static void InvokeRise(MonoCached mono)
         {
-            riseMethod.Invoke(mono, null);
+            mono.ProcessInternal(3, 0);
         }
 
         private static void InvokeReady(MonoCached mono)
         {
-            readyMethod.Invoke(mono, null);
-        }
-
-        private static void InvokeProcessSubscription(MonoCached mono)
-        {
-            subscribeProcessMethod.Invoke(mono, null);
+            mono.ProcessInternal(4, 0);
         }
         #endregion
 
@@ -167,18 +186,30 @@ namespace VolumeBox.Toolbox
         private void Update()
         {
             delta = Time.deltaTime * TimeScale;
-            ProcessTick?.Invoke(delta);
+
+            for (int i = 0; i < monos.Count; i++)
+            {
+                monos[i].ProcessInternal(0, delta);
+
+            }
         }
 
         private void FixedUpdate()
         {
             float fixedDelta = Time.fixedDeltaTime * timeScale;
-            FixedProcessTick?.Invoke(fixedDelta);  
+
+            for (int i = 0; i < monos.Count; i++)
+            {
+                monos[i].ProcessInternal(1, fixedDelta);
+            }
         }
 
         private void LateUpdate()
         {
-            LateProcessTick?.Invoke(delta);
+            for (int i = 0; i < monos.Count; i++)
+            {
+                monos[i].ProcessInternal(2, delta);
+            }
         }
         #endregion
     }

@@ -105,8 +105,6 @@ namespace VolumeBox.Toolbox
                 return null;
             }
 
-            Resolver.Inject(obj);
-
             //Setting transform
             obj.GameObject.transform.position = position;
             obj.GameObject.transform.rotation = rotation;
@@ -132,8 +130,6 @@ namespace VolumeBox.Toolbox
         public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             GameObject inst = GameObject.Instantiate(prefab, position, rotation, parent);
-        
-            Resolver.AddBindingsFromObject(inst);
 
             Updater.InitializeObject(inst);
 
@@ -160,8 +156,6 @@ namespace VolumeBox.Toolbox
 
         public GameObject ManualSpawn(GameObject obj, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
         {
-            Resolver.Inject(obj);
-
             //Setting transform
             obj.transform.position = position;
             obj.transform.rotation = rotation;
@@ -239,7 +233,6 @@ namespace VolumeBox.Toolbox
             GameObject poolObj = Instantiate(obj, objectPoolParent);
 
             Updater.InitializeObject(poolObj);
-            Resolver.Inject(poolObj);
 
             poolObj.Disable();
 

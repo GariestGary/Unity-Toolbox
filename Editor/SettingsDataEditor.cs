@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -53,9 +54,10 @@ namespace VolumeBox.Toolbox
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Target Frame Rate", GUILayout.Width(labelsWidth));
+            selectedFramerate = frameRateOptions.ToList().IndexOf(m_targetFrameRate.intValue.ToString());
             selectedFramerate = EditorGUILayout.Popup(selectedFramerate, frameRateOptions);
 
-            m_targetFrameRate.intValue = int.Parse(frameRateOptions[selectedFramerate]);
+            m_targetFrameRate.intValue = 120;
 
             GUILayout.EndHorizontal();
             var optionDataList = new List<string>();

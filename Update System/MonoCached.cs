@@ -86,20 +86,6 @@ namespace VolumeBox.Toolbox
         }
         #endregion
 
-        private void HandleProcessSubscribe()
-        {
-            Updater.ProcessTick += ProcessInvokeControl;
-            Updater.FixedProcessTick += FixedProcessInvokeControl;
-            Updater.LateProcessTick += LateProcessInvokeControl;
-        }
-
-        private void HandleProcessUnsubscribe()
-        {
-            Updater.ProcessTick -= ProcessInvokeControl;
-            Updater.FixedProcessTick -= FixedProcessInvokeControl;
-            Updater.LateProcessTick -= LateProcessInvokeControl;
-        }
-
         private void OnRise()
         {
             if (raised) return;
@@ -118,7 +104,31 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
-        private void ProcessInvokeControl(float extDelta)
+        public void ProcessInternal(int type, float delta)
+        {
+            if (type == 0)
+            {
+                ProcessControl(delta);
+            }
+            else if(type == 1)
+            {
+                FixedProcessControl(delta);
+            }
+            else if(type == 2)
+            {
+                LateProcessControl(delta);
+            }
+            else if(type == 3)
+            {
+                OnRise();
+            }
+            else if(type == 4)
+            {
+                OnReady();
+            }
+        }
+
+        private void ProcessControl(float extDelta)
         {
             if (Interval > 0)
             {
@@ -137,7 +147,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private void FixedProcessInvokeControl(float extFixedDelta)
+        private void FixedProcessControl(float extFixedDelta)
         {
             if (Interval > 0)
             {
@@ -154,7 +164,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private void LateProcessInvokeControl(float extDelta)
+        private void LateProcessControl(float extDelta)
         {
             if (Interval > 0)
             {
@@ -301,7 +311,7 @@ namespace VolumeBox.Toolbox
             
             if(upd == null) return;
 
-            HandleProcessUnsubscribe();
+            //TODO: HandleProcessUnsubscribe();
             
             Destroyed();
         }

@@ -13,11 +13,6 @@ namespace VolumeBox.Toolbox
 {
     public static class ToolboxExtensions
     {
-        public static void Resolve(this object mono)
-        {
-            Resolver.Inject(mono);
-        }
-
         /// <summary>
         /// Gets index of first active toggle (you need to place all toggles as children of group)
         /// </summary>

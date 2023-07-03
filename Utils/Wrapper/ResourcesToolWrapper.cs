@@ -7,6 +7,10 @@ namespace VolumeBox.Toolbox
     {
         protected T1 Data;
         
+        /// <summary>
+        /// For internal use
+        /// </summary>
+        /// <returns></returns>
         public abstract string GetDataPath();
 
         protected sealed override void Run()

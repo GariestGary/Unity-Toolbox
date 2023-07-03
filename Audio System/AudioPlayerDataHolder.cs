@@ -14,8 +14,6 @@ namespace VolumeBox.Toolbox
 
         public List<AudioAlbum> Albums => albums;
 
-        [Inject] private Messenger msg;
-
         public void Run()
         {
             Messenger.SubscribeKeeping<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType));

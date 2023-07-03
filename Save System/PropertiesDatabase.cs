@@ -10,6 +10,7 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField] private List<Property> properties;
 
+        #region GETTERS
         public bool? GetBool(string id)
         {
             return GetValue(id, PropertyType.Bool)?.boolData;
@@ -44,6 +45,12 @@ namespace VolumeBox.Toolbox
         {
             return GetValue(id, PropertyType.String)?.stringData;
         }
+        #endregion
+
+        #region SETTERS
+
+
+        #endregion
 
         private Property GetValue(string id, PropertyType type)
         {
