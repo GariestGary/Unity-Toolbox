@@ -1,14 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace VolumeBox.Toolbox
 {
-    [CustomEditor(typeof(SaverDataHolder))]
-    public class SaverEditor : Editor
+    [CustomEditor(typeof(DatabaseDataHolder))]
+    public class DatabaseEditor : Editor
     {
         private SerializedProperty m_database;
 
@@ -18,7 +15,7 @@ namespace VolumeBox.Toolbox
 
         private void OnEnable()
         {
-            m_database = serializedObject.FindProperty("database");
+            m_database = serializedObject.FindProperty("properties");
         }
 
         public override void OnInspectorGUI()
@@ -75,3 +72,4 @@ namespace VolumeBox.Toolbox
         }
     }
 }
+#endif

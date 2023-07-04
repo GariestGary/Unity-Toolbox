@@ -1,18 +1,16 @@
-using NaughtyAttributes;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class SaverDataHolder: ScriptableObject, IRunner, IClear
+    public class DatabaseDataHolder: ScriptableObject, IRunner, IClear
     {
-        [SerializeField] private PropertiesDatabase database;
+        [SerializeField] private PropertiesDatabase properties;
 
         private List<SceneData> sceneDatas = new List<SceneData>();
 
-        public PropertiesDatabase Database => database;
+        public PropertiesDatabase Properties => properties;
 
         public void Clear()
         {

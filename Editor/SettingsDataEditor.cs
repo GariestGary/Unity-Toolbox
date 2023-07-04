@@ -1,10 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace VolumeBox.Toolbox
 {
@@ -23,8 +21,6 @@ namespace VolumeBox.Toolbox
 
         private int selectedFramerate;
         private int selectedScene;
-
-        private string[] frameRateOptions = new string[9] { "5", "10", "15", "30", "60", "75", "120", "144", "165" };
 
         private void OnEnable()
         {
@@ -54,12 +50,9 @@ namespace VolumeBox.Toolbox
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Target Frame Rate", GUILayout.Width(labelsWidth));
-            selectedFramerate = frameRateOptions.ToList().IndexOf(m_targetFrameRate.intValue.ToString());
-            selectedFramerate = EditorGUILayout.Popup(selectedFramerate, frameRateOptions);
-
-            m_targetFrameRate.intValue = 120;
-
+            m_targetFrameRate.intValue = EditorGUILayout.IntField(GUIContent.none, m_targetFrameRate.intValue);
             GUILayout.EndHorizontal();
+
             var optionDataList = new List<string>();
 
             for (int i = 0; i < SceneManager.sceneCountInBuildSettings; ++i)
@@ -118,3 +111,4 @@ namespace VolumeBox.Toolbox
         }
     }
 }
+#endif

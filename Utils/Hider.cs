@@ -1,13 +1,9 @@
 #if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
     using UnityEngine;
     using UnityEditor;
-    using System.Linq;
 
     public class Hider : EditorWindow 
     {

@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
+#if UNITY_EDITOR
 using System.Linq;
 using UnityEditor;
-using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
@@ -45,3 +43,4 @@ namespace VolumeBox.Toolbox
         }
     }
 }
+#endif

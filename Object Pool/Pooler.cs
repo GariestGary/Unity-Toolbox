@@ -29,6 +29,11 @@ namespace VolumeBox.Toolbox
             Instance.Data.TryAddPool(poolToAdd);
         }
 
+        public static void TryAddPool(string tag, GameObject prefab, int capacity)
+        {
+            Instance.Data.TryAddPool(tag, prefab, capacity);
+        }
+
         public static void TryRemovePool(string tag)
         {
             Instance.Data.TryRemovePool(tag);

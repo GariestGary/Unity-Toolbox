@@ -1,11 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -175,3 +169,4 @@ namespace VolumeBox.Toolbox
         }
     }
 }
+#endif

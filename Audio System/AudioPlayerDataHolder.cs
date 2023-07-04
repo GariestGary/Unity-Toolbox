@@ -1,10 +1,7 @@
-using NaughtyAttributes;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using VolumeBox.Toolbox;
 
 namespace VolumeBox.Toolbox
 {
@@ -16,8 +13,8 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            Messenger.SubscribeKeeping<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType));
-            Messenger.SubscribeKeeping<StopAudioMessage>(x => StopAudio(x.albumName));
+            Messenger.Subscribe<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType));
+            Messenger.Subscribe<StopAudioMessage>(x => StopAudio(x.albumName));
         }
 
         public void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)

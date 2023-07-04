@@ -2,11 +2,8 @@
 using System.Threading.Tasks;
 using UnityEditor;
 #endif
-using NaughtyAttributes;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using VolumeBox.Toolbox.UIInformer;
 using Cysharp.Threading.Tasks;
 
 namespace VolumeBox.Toolbox
@@ -20,8 +17,7 @@ namespace VolumeBox.Toolbox
         private Traveler traveler;
         private Updater updater;
         private Pooler pooler;
-        private Saver saver;
-        private Info info; 
+        private Database saver;
 
         private void Awake()
         {
@@ -43,8 +39,7 @@ namespace VolumeBox.Toolbox
             Traveler.Instance.RunInternal();
             Updater.Instance.RunInternal();
             Pooler.Instance.RunInternal();
-            Saver.Instance.RunInternal();
-            Info.Instance.RunInternal();
+            Database.Instance.RunInternal();
 
             Updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 
@@ -68,8 +63,7 @@ namespace VolumeBox.Toolbox
             Traveler.Instance.ClearInternal();
             Updater.Instance.ClearInternal();
             Pooler.Instance.ClearInternal();
-            Saver.Instance.ClearInternal();
-            Info.Instance.ClearInternal();
+            Database.Instance.ClearInternal();
         }
     }
 }

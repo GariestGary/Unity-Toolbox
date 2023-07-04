@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.Search;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -232,3 +230,4 @@ namespace VolumeBox.Toolbox
         }
     }
 }
+#endif

@@ -33,13 +33,16 @@ namespace VolumeBox.Toolbox
 
         public void TryAddPool(PoolData poolToAdd)
         {
-            if (pools.Any(x => x.tag == poolToAdd.tag))
+            for (int i = 0; i < pools.Count; i++)
             {
-                Debug.LogWarning("Pool with tag " + poolToAdd.tag + " already exist's");
-                return;
+                if (pools[i].tag == poolToAdd.tag)
+                {
+                    Debug.LogWarning("Pool with tag " + poolToAdd.tag + " already exist's");
+                    return;
+                }
             }
 
-            LinkedList<PooledGameObject> objectPoolList = new LinkedList<PooledGameObject>();
+            Queue<PooledGameObject> objectPoolList = new Queue<PooledGameObject>();
 
             if(poolToAdd.initialSize <= 0)
             {
@@ -64,7 +67,16 @@ namespace VolumeBox.Toolbox
 
         public void TryRemovePool(string tag)
         {
-            var poolToRemove = pools.FirstOrDefault(p => p.tag == tag);
+            Pool poolToRemove = null;// pools.FirstOrDefault(p => p.tag == tag);
+
+            for (int i = 0; i < pools.Count; i++)
+            {
+                if (pools[i].tag == tag)
+                {
+                    poolToRemove = pools[i];
+                    break;
+                }
+            }
 
             if (poolToRemove == null) return;
 
@@ -80,23 +92,31 @@ namespace VolumeBox.Toolbox
         public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
         {
             //Returns null if object pool with specified tag doesn't exists
-            if (!pools.Any(x => x.tag == poolTag))
+            Pool p = null;
+
+            for (int i = 0; i < pools.Count; i++)
+            {
+                if (pools[i].tag.Equals(poolTag))
+                {
+                    p = pools[i];
+                    break;
+                }
+            }
+
+            if(p == null)
             {
                 Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exists");
                 return null;
             }
 
-            Pool p = pools.First(x => x.tag == poolTag);
-
             //Create new object if last in list is active
-            if (p.objects.Last.Value.Used)
+            if (p.objects.Peek().Used)
             {
-                CreateNewPoolObject(p.objects.Last.Value.GameObject, p.objects);
+                CreateNewPoolObject(p.objects.Peek().GameObject, p.objects);
             }
 
             //Take last object
-            PooledGameObject obj = p.objects.Last.Value;
-            p.objects.RemoveLast();
+            PooledGameObject obj = p.objects.Dequeue();
 
             //Return null if last object is null;
             if (obj == null)
@@ -106,16 +126,17 @@ namespace VolumeBox.Toolbox
             }
 
             //Setting transform
-            obj.GameObject.transform.position = position;
-            obj.GameObject.transform.rotation = rotation;
-            obj.GameObject.transform.SetParent(parent);
+            var t = obj.GameObject.transform;
+            t.position = position;
+            t.rotation = rotation;
+            t.SetParent(parent);
             obj.GameObject.Enable();
 
             //Call all spawn methods in gameobject
             CallSpawns(obj.GameObject, data);
 
             //Add object back to start
-            p.objects.AddFirst(obj);
+            p.objects.Enqueue(obj);
 
             if (spawnAction != null)
             {
@@ -175,17 +196,36 @@ namespace VolumeBox.Toolbox
                 return false;
             }
 
-            Pool p = pools.FirstOrDefault(x => x.objects.Any(g => g.GameObject == objectToDespawn));
-
+            Pool p = null;
             PooledGameObject pgo = null;
+
+            for (int i = 0; i < pools.Count; i++)
+            {
+                bool found = false;
+
+                for (int j = 0; j < pools[i].objects.Count; j++)
+                {
+                    var objToCheck = pools[i].objects.ElementAt(j);
+
+                    if (objToCheck.GameObject == objectToDespawn)
+                    {
+                        pgo = objToCheck;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(found)
+                {
+                    p = pools[i];
+                    break;
+                }
+            }
+
             
             if (p == null)
             {
                 return false;
-            }
-            else
-            {
-                pgo = p.objects.FirstOrDefault(x => x.GameObject == objectToDespawn);
             }
 
             return TryDespawn(pgo, delay);
@@ -228,7 +268,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private GameObject CreateNewPoolObject(GameObject obj, LinkedList<PooledGameObject> pool)
+        private GameObject CreateNewPoolObject(GameObject obj, Queue<PooledGameObject> pool)
         {
             GameObject poolObj = Instantiate(obj, objectPoolParent);
 
@@ -242,7 +282,7 @@ namespace VolumeBox.Toolbox
                 Used = false
             };
             
-            pool.AddLast(pgo);
+            pool.Enqueue(pgo);
 
             return poolObj;
         }
@@ -291,14 +331,14 @@ namespace VolumeBox.Toolbox
         private sealed class Pool
         {
             public string tag;
-            public LinkedList<PooledGameObject> objects;
+            public Queue<PooledGameObject> objects;
 
-            public Pool(string tag, LinkedList<PooledGameObject> objects = null)
+            public Pool(string tag, Queue<PooledGameObject> objects = null)
             {
                 this.tag = tag;
                 if(objects == null)
                 {
-                    this.objects = new LinkedList<PooledGameObject>();
+                    this.objects = new Queue<PooledGameObject>();
                 }
                 else
                 {

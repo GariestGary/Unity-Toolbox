@@ -8,6 +8,8 @@ public class MessageSender : MonoCached
 {
     [SerializeField] private List<MessageToSend> _messages;
 
+    private int _prevMessagesCount = 1;
+
     public void Send()
     {
         foreach (var message in _messages)
@@ -20,6 +22,11 @@ public class MessageSender : MonoCached
     {
         if(_messages == null) return;
         
+        if(_messages.Count > _prevMessagesCount)
+        {
+            _messages[_messages.Count - 1].CurrentTypeInstance = null;
+        }
+
         foreach (var message in _messages)
         {
             if (message.CurrentTypeInstance == null || message.CurrentTypeInstance.GetType() != message.MessageType.Type)
@@ -34,8 +41,8 @@ public class MessageSender : MonoCached
                 }
             }
         }
-        
-        
+
+        _prevMessagesCount = _messages.Count;
     }
 
     [Serializable]

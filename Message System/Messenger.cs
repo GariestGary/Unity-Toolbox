@@ -2,37 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using VolumeBox.Toolbox;
 
 namespace VolumeBox.Toolbox
 {
-	public class Messenger: ToolWrapper<Messenger>
+    public class Messenger: ToolWrapper<Messenger>
 	{
 		private static List<Subscriber> subscribers = new List<Subscriber>();
-		private static List<Subscriber> sceneSubscribers = new List<Subscriber>();
 
 		public static List<Subscriber> Subscribers => subscribers;
-		public static List<Subscriber> SceneSubscribers => sceneSubscribers;
 
         protected override void Run()
         {
-            SubscribeKeeping<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName));
+            Subscribe<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName));
         }
 
 		private static void CheckSceneSubscribers(string scene)
 		{
-			var sceneSubs = sceneSubscribers.Where(x => x.RelatedSceneName == scene).ToList();
+			var sceneSubs = subscribers.Where(x => x.BindedObject != null && x.BindedObject.scene.name == scene).ToList();
 
 			for (int i = 0; i < sceneSubs.Count; i++)
 			{
-				sceneSubscribers.Remove(sceneSubs[i]);
+				subscribers.Remove(sceneSubs[i]);
 			}
 		}
-
-        public static void ClearSceneSubscribers()
-        {
-            sceneSubscribers.Clear();
-        }
 
         public static void ClearKeepingSubscribers()
         {
@@ -47,11 +39,11 @@ namespace VolumeBox.Toolbox
 
 	        if (sub == null)
 	        {
-		        sub = sceneSubscribers.FirstOrDefault(x => x == subscriber);
+		        sub = subscribers.FirstOrDefault(x => x == subscriber);
 
 		        if (sub != null)
 		        {
-			        sceneSubscribers.Remove(sub);
+			        subscribers.Remove(sub);
 		        }
 	        }
 	        else
@@ -59,20 +51,12 @@ namespace VolumeBox.Toolbox
 		        subscribers.Remove(sub);
 	        }
         }
-        
-        public static Subscriber SubscribeKeeping<T>(Action<T> next) where T: Message
-        {
-			Action<object> callback = args => next((T)args);
-			var sub = new Subscriber(typeof(T), callback);
-			subscribers.Add(sub);
-			return sub;
-        }
 
-		public static Subscriber Subscribe<T>(Action<T> next, string relatedScene = null) where T: Message
+		public static Subscriber Subscribe<T>(Action<T> next, GameObject bind = null) where T: Message
 		{
 			Action<object> callback = args => next((T)args);
-			var sub = new Subscriber(typeof(T), callback, relatedScene);
-            sceneSubscribers.Add(sub);
+			var sub = new Subscriber(typeof(T), callback, bind);
+            subscribers.Add(sub);
             return sub;
 		}
 
@@ -91,7 +75,7 @@ namespace VolumeBox.Toolbox
 			}
 
 			var receivers = subscribers.Where(x => x.Type == message.GetType());
-			receivers = receivers.Concat(sceneSubscribers.Where(x => x.Type == message.GetType()));
+			receivers = receivers.Concat(subscribers.Where(x => x.Type == message.GetType()));
 
 			receivers.ToList().ForEach(x =>
 			{
@@ -103,8 +87,6 @@ namespace VolumeBox.Toolbox
 		{
 			subscribers?.Clear();
 			subscribers = null;
-			sceneSubscribers?.Clear();
-			sceneSubscribers = null;
 		}
 	}
 }

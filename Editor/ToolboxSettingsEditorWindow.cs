@@ -1,21 +1,18 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using VolumeBox.Toolbox;
-using System;
 
 namespace VolumeBox.Toolbox
 {
-    
     public class ToolboxSettingsEditorWindow: EditorWindow
     {
         private PoolerDataHolder poolerDataHolder;
         private AudioPlayerDataHolder audioPlayerDataHolder;
-        private SaverDataHolder saverDataHolder;
+        private DatabaseDataHolder saverDataHolder;
 
         private SettingsDataEditor settingsEditor;
         private PoolerEditor poolerEditor;
-        private SaverEditor saverEditor;
+        private DatabaseEditor saverEditor;
         private AudioPlayerEditor audioEditor;
 
         private int selectedTab;
@@ -31,12 +28,12 @@ namespace VolumeBox.Toolbox
         {
             poolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
-            saverDataHolder = ResourcesUtils.ResolveScriptable<SaverDataHolder>(SettingsData.saverResourcesDataPath);
+            saverDataHolder = ResourcesUtils.ResolveScriptable<DatabaseDataHolder>(SettingsData.saverResourcesDataPath);
 
             settingsEditor = (SettingsDataEditor)Editor.CreateEditor(StaticData.Settings);
             poolerEditor = (PoolerEditor)Editor.CreateEditor(poolerDataHolder);
             audioEditor = (AudioPlayerEditor)Editor.CreateEditor(audioPlayerDataHolder);
-            saverEditor = (SaverEditor)Editor.CreateEditor(saverDataHolder);
+            saverEditor = (DatabaseEditor)Editor.CreateEditor(saverDataHolder);
         }
 
         private void OnGUI()

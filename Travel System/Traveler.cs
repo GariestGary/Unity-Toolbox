@@ -3,10 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox
 {
@@ -25,9 +23,9 @@ namespace VolumeBox.Toolbox
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
 
 #pragma warning disable
-            Messenger.SubscribeKeeping<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive));
-            Messenger.SubscribeKeeping<UnloadSceneMessage>(m => UnloadScene(m.sceneName));
-            Messenger.SubscribeKeeping<UnloadAllScenesMessage>(_ => UnloadAllScenes());
+            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive));
+            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.sceneName));
+            Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes());
 #pragma warning enable
         }
 
