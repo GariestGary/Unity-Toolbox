@@ -304,6 +304,25 @@ namespace VolumeBox.Toolbox
             {
                 foreach (var obj in pools[i].objects)
                 {
+                    if(obj == null)
+                    {
+                        continue;
+                    }
+
+                    if(obj.GameObject == null)
+                    {
+                        continue;
+                    }
+
+                    if(obj.GameObject.scene == null)
+                    {
+                        continue;
+                    }
+                    else if(!obj.GameObject.scene.name.IsValuable())
+                    {
+                        continue;
+                    }
+
                     if (obj.GameObject.scene.name == unloadedSceneName && obj.Used)
                     {
                         TryDespawn(obj);
