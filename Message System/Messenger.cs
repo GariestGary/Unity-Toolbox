@@ -75,7 +75,6 @@ namespace VolumeBox.Toolbox
 			}
 
 			var receivers = Subscribers.Where(x => x.Type == message.GetType());
-			receivers = receivers.Concat(Subscribers.Where(x => x.Type == message.GetType()));
 
 			receivers.ToList().ForEach(x =>
 			{
