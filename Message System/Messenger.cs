@@ -7,9 +7,9 @@ namespace VolumeBox.Toolbox
 {
     public class Messenger: ToolWrapper<Messenger>
 	{
-		private static List<Subscriber> subscribers = new List<Subscriber>();
+		private List<Subscriber> subscribers = new List<Subscriber>();
 
-		public static List<Subscriber> Subscribers => subscribers;
+		public static List<Subscriber> Subscribers => Instance.subscribers;
 
         protected override void Run()
         {
@@ -18,37 +18,37 @@ namespace VolumeBox.Toolbox
 
 		private static void CheckSceneSubscribers(string scene)
 		{
-			var sceneSubs = subscribers.Where(x => x.BindedObject != null && x.BindedObject.scene.name == scene).ToList();
+			var sceneSubs = Subscribers.Where(x => x.BindedObject != null && x.BindedObject.scene.name == scene).ToList();
 
 			for (int i = 0; i < sceneSubs.Count; i++)
 			{
-				subscribers.Remove(sceneSubs[i]);
+				Subscribers.Remove(sceneSubs[i]);
 			}
 		}
 
         public static void ClearKeepingSubscribers()
         {
-	        subscribers.Clear();
+	        Subscribers.Clear();
         }
 
         public static void RemoveSubscriber(Subscriber subscriber)
         {
 	        if(subscriber == null) return;
 	        
-	        Subscriber sub = subscribers.FirstOrDefault(x => x == subscriber);
+	        Subscriber sub = Subscribers.FirstOrDefault(x => x == subscriber);
 
 	        if (sub == null)
 	        {
-		        sub = subscribers.FirstOrDefault(x => x == subscriber);
+		        sub = Subscribers.FirstOrDefault(x => x == subscriber);
 
 		        if (sub != null)
 		        {
-			        subscribers.Remove(sub);
+			        Subscribers.Remove(sub);
 		        }
 	        }
 	        else
 	        {
-		        subscribers.Remove(sub);
+		        Subscribers.Remove(sub);
 	        }
         }
 
@@ -56,7 +56,7 @@ namespace VolumeBox.Toolbox
 		{
 			Action<object> callback = args => next((T)args);
 			var sub = new Subscriber(typeof(T), callback, bind);
-            subscribers.Add(sub);
+            Subscribers.Add(sub);
             return sub;
 		}
 
@@ -74,8 +74,8 @@ namespace VolumeBox.Toolbox
 				message = (T)Activator.CreateInstance(typeof(T));
 			}
 
-			var receivers = subscribers.Where(x => x.Type == message.GetType());
-			receivers = receivers.Concat(subscribers.Where(x => x.Type == message.GetType()));
+			var receivers = Subscribers.Where(x => x.Type == message.GetType());
+			receivers = receivers.Concat(Subscribers.Where(x => x.Type == message.GetType()));
 
 			receivers.ToList().ForEach(x =>
 			{
