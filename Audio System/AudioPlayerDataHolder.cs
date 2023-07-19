@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace VolumeBox.Toolbox
 {
@@ -13,8 +14,8 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            Messenger.Subscribe<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType));
-            Messenger.Subscribe<StopAudioMessage>(x => StopAudio(x.albumName));
+            Messenger.Subscribe<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType), null, true);
+            Messenger.Subscribe<StopAudioMessage>(x => StopAudio(x.albumName), null, true);
         }
 
         public void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
@@ -129,6 +130,7 @@ namespace VolumeBox.Toolbox
         public string albumName;
         [HideInInspector, SerializeField] public AudioSource source;
         [SerializeField] public bool useSeparateSource;
+        [SerializeField] public AudioMixerGroup mixerGroup;
         [SerializeField] public List<AudioClipInfo> clips;
     }
     

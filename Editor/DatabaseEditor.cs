@@ -28,7 +28,11 @@ namespace VolumeBox.Toolbox
 
             _currentScrollPosition = GUILayout.BeginScrollView(_currentScrollPosition);
 
-            if (m_database.objectReferenceValue != null)
+            if (m_database.objectReferenceValue == null)
+            {
+                GUILayout.Label("Create new database by right clicking in project window and then Create -> Toolbox -> Properties Database");
+            }
+            else
             {
                 var databaseObject = new SerializedObject(m_database.objectReferenceValue);
 

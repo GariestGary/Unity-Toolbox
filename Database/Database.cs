@@ -84,12 +84,12 @@ namespace VolumeBox.Toolbox
 
         protected override void Clear()
         {
-            base.Data.Clear();
+            base.Data?.Clear();
         }
 
         protected override void PostLoadRun()
         {
-            base.Data.Run();
+            base.Data?.Run();
         }
     }
 }

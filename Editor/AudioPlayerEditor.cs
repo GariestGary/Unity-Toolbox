@@ -97,7 +97,7 @@ namespace VolumeBox.Toolbox
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
             {
-                if(EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {albumName} album?", "Yes", "Cancel"))
+                if(EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {albumName.stringValue} album?", "Yes", "Cancel"))
                 {
                     GUI.backgroundColor = oldColor;
                     list.DeleteArrayElementAtIndex(index);
@@ -142,10 +142,24 @@ namespace VolumeBox.Toolbox
                 if (GUILayout.Button("Add Clip", GUILayout.Width(75)))
                 {
                     m_clips.InsertArrayElementAtIndex(0);
-                    m_clips.GetArrayElementAtIndex(0).FindPropertyRelative("id").stringValue = string.Empty;
+                    var newClip = m_clips.GetArrayElementAtIndex(0);
+                    newClip.isExpanded = false;
+                    newClip.FindPropertyRelative("id").stringValue = string.Empty;
                 }
 
                 EditorGUILayout.EndHorizontal();
+                
+                if(useSeparateSource.boolValue)
+                {
+                    GUILayout.Space(5);
+
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.LabelField("Mixer Group", GUILayout.Width(labelSize));
+                    EditorGUILayout.PropertyField(property.FindPropertyRelative("mixerGroup"), GUIContent.none);
+
+                    EditorGUILayout.EndHorizontal();
+                }
 
                 EditorGUILayout.BeginVertical();
 

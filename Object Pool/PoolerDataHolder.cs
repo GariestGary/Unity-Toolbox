@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using NaughtyAttributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,9 +15,19 @@ namespace VolumeBox.Toolbox
 
         private Transform objectPoolParent;
         private List<Pool> pools = new List<Pool>();
+        private GameObjectRemovedMessage _removeMessage;
 
         public void Run()
         {
+#pragma warning disable
+            RunAsync();
+#pragma warning enable
+        }
+
+        private async UniTask RunAsync()
+        {
+            objectPoolParent = new GameObject("Pool Parent").transform;
+
             pools = new List<Pool>();
 
             foreach (var t in poolsList)
@@ -23,16 +35,19 @@ namespace VolumeBox.Toolbox
                 TryAddPool(t);
             }
 
-            Messenger.Subscribe<SceneUnloadingMessage>(m => HandleSceneUnload(m.SceneName));
-        }
+            Messenger.Subscribe<SceneUnloadingMessage>(m => HandleSceneUnload(m.SceneName), null, true);
 
-        public void SetPoolParent(Transform parent)
-        {
-            objectPoolParent = parent;
+            _removeMessage = new GameObjectRemovedMessage();
         }
 
         public void TryAddPool(PoolData poolToAdd)
         {
+            if(poolToAdd.pooledObject == null)
+            {
+                Debug.LogWarning($"Pool with tag {poolToAdd.tag} has no prefab setted");
+                return;
+            }
+
             for (int i = 0; i < pools.Count; i++)
             {
                 if (pools[i].tag == poolToAdd.tag)
@@ -150,7 +165,7 @@ namespace VolumeBox.Toolbox
         
         public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
-            GameObject inst = GameObject.Instantiate(prefab, position, rotation, parent);
+            GameObject inst = UnityEngine.Object.Instantiate(prefab, position, rotation, parent);
 
             Updater.InitializeObject(inst);
 
@@ -174,22 +189,8 @@ namespace VolumeBox.Toolbox
                 }
             }
         }
-
-        public GameObject ManualSpawn(GameObject obj, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
-        {
-            //Setting transform
-            obj.transform.position = position;
-            obj.transform.rotation = rotation;
-            obj.transform.SetParent(parent);
-            obj.Enable();
-
-            //Call all spawn methods in gameobject
-            CallSpawns(obj, data);
-
-            return obj;
-        }
         
-        public bool TryDespawn(GameObject objectToDespawn, float delay = 0)
+        public bool TryDespawn(GameObject objectToDespawn)
         {
             if (objectToDespawn == null)
             {
@@ -228,43 +229,35 @@ namespace VolumeBox.Toolbox
                 return false;
             }
 
-            return TryDespawn(pgo, delay);
+            return TryDespawn(pgo);
         }
 
-        private bool TryDespawn(PooledGameObject pgo, float delay = 0)
+        private bool TryDespawn(PooledGameObject pgo)
         {
             if (pgo == null || !pgo.Used)
             {
                 return true;
             }
 
-            if (delay < 0) delay = 0;
+            pgo.Used = false;
+            ReturnToPool(pgo.GameObject);
 
-            if (delay == 0)
-            {
-                pgo.Used = false;
-                ReturnToPool(pgo.GameObject);
-            }
-            else
-            {
-                CoroutineStarter.Instance.StartCoroutine(DespawnCoroutine(pgo, delay));
-            }
+            _removeMessage.Obj = pgo.GameObject;
+            _removeMessage.RemoveType = GameObjectRemoveType.Despawned;
+            Messenger.Send(_removeMessage);
 
             return true;
         }
 
-        public void DespawnOrDestroy(GameObject obj, float delay = 0)
+        public void DespawnOrDestroy(GameObject obj)
         {
-            if (!TryDespawn(obj, delay))
+            if (!TryDespawn(obj))
             {
-                if (delay > 0)
-                {
-                    CoroutineStarter.Instance.StartCoroutine(DestroyCoroutine(obj, delay));
-                }
-                else
-                {
-                    Destroy(obj);
-                }
+                Destroy(obj);
+
+                _removeMessage.Obj = obj;
+                _removeMessage.RemoveType = GameObjectRemoveType.Destroyed;
+                Messenger.Send(_removeMessage);
             }
         }
 
@@ -285,13 +278,6 @@ namespace VolumeBox.Toolbox
             pool.Enqueue(pgo);
 
             return poolObj;
-        }
-
-        private IEnumerator DestroyCoroutine(GameObject obj, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-
-            Destroy(obj);
         }
 
         private IEnumerator DespawnCoroutine(PooledGameObject objectToDespawn, float delay)
@@ -368,6 +354,19 @@ namespace VolumeBox.Toolbox
         public GameObject pooledObject;
         public int initialSize;
     }
+
+    public class GameObjectRemovedMessage: Message
+    {
+        public GameObject Obj;
+        public GameObjectRemoveType RemoveType;
+    }
+
+    public enum GameObjectRemoveType
+    {
+        Destroyed,
+        Despawned
+    }
 }
+
 
 

@@ -9,54 +9,54 @@ namespace VolumeBox.Toolbox
 	{
 		private List<Subscriber> subscribers = new List<Subscriber>();
 
-		public static List<Subscriber> Subscribers => Instance.subscribers;
-
         protected override void Run()
         {
-            Subscribe<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName));
+            Subscribe<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName), null, true);
+			Subscribe<GameObjectRemovedMessage>(m => CheckRemovedObject(m.Obj), null, true);
         }
 
 		private static void CheckSceneSubscribers(string scene)
 		{
-			var sceneSubs = Subscribers.Where(x => x.BindedObject != null && x.BindedObject.scene.name == scene).ToList();
+			Instance.subscribers.RemoveAll(x => x.HasBind && x.BindedObject == null);
+
+			var sceneSubs = Instance.subscribers.Where(x => x.BindedObject != null && x.BindedObject.scene.name == scene).ToList();
 
 			for (int i = 0; i < sceneSubs.Count; i++)
 			{
-				Subscribers.Remove(sceneSubs[i]);
+				RemoveSubscriber(sceneSubs[i]);
 			}
 		}
 
-        public static void ClearKeepingSubscribers()
+		private static void CheckRemovedObject(GameObject obj)
+		{
+			var bindedSub = Instance.subscribers.FirstOrDefault(x => x.HasBind && x.BindedObject == obj);
+
+			if(bindedSub is not null)
+			{
+				RemoveSubscriber(bindedSub);
+			}
+		}
+
+        public static void ClearSubscribers()
         {
-	        Subscribers.Clear();
+			Instance.subscribers.RemoveAll(s => !s.Keep);
         }
 
         public static void RemoveSubscriber(Subscriber subscriber)
         {
 	        if(subscriber == null) return;
 	        
-	        Subscriber sub = Subscribers.FirstOrDefault(x => x == subscriber);
-
-	        if (sub == null)
-	        {
-		        sub = Subscribers.FirstOrDefault(x => x == subscriber);
-
-		        if (sub != null)
-		        {
-			        Subscribers.Remove(sub);
-		        }
-	        }
-	        else
-	        {
-		        Subscribers.Remove(sub);
-	        }
+	        if(Instance.subscribers.Contains(subscriber))
+			{
+				Instance.subscribers.Remove(subscriber);
+			}
         }
 
-		public static Subscriber Subscribe<T>(Action<T> next, GameObject bind = null) where T: Message
+		public static Subscriber Subscribe<T>(Action<T> next, GameObject bind = null, bool keep = false) where T: Message
 		{
 			Action<object> callback = args => next((T)args);
-			var sub = new Subscriber(typeof(T), callback, bind);
-            Subscribers.Add(sub);
+			var sub = new Subscriber(typeof(T), callback, bind, keep);
+            Instance.subscribers.Add(sub);
             return sub;
 		}
 
@@ -74,10 +74,25 @@ namespace VolumeBox.Toolbox
 				message = (T)Activator.CreateInstance(typeof(T));
 			}
 
-			var receivers = Subscribers.Where(x => x.Type == message.GetType());
+			var receivers = Instance.subscribers.Where(x => x.Type == message.GetType());
 
 			receivers.ToList().ForEach(x =>
 			{
+				try
+				{
+					if(x.HasBind && (x.BindedObject == null))// || x.BindedObject.transform == ))
+					{
+						RemoveSubscriber(x);
+						return;
+					}
+				}
+				catch
+				{
+					RemoveSubscriber(x);
+					return;
+
+				}
+
 				x.Callback.Invoke(message);
 			});
         }

@@ -12,10 +12,6 @@ namespace VolumeBox.Toolbox
 
         protected override void PostLoadRun()
         {
-            var objectPoolParent = new GameObject().transform;
-            objectPoolParent.name = "Pool Parent";
-            Data.SetPoolParent(objectPoolParent);
-            
             Data.Run();
         }
 
@@ -77,19 +73,14 @@ namespace VolumeBox.Toolbox
             return Instance.Data.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
         }
 
-        public static GameObject ManualSpawn(GameObject obj, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
-        {
-            return Instance.Data.ManualSpawn(obj, position, rotation, parent, data);
-        }
-
         /// <summary>
         /// Removes GameObject from scene and returns it to pool
         /// </summary>
         /// <param name="objectToDespawn">object to despawn</param>
         /// <param name="delay">delay before despawning</param>
-        public static bool TryDespawn(GameObject objectToDespawn, float delay = 0)
+        public static bool TryDespawn(GameObject objectToDespawn)
         {
-            return Instance.Data.TryDespawn(objectToDespawn, delay);
+            return Instance.Data.TryDespawn(objectToDespawn);
         }
 
         /// <summary>
@@ -97,9 +88,9 @@ namespace VolumeBox.Toolbox
         /// </summary>
         /// <param name="obj">GameObject to despawn or destroy</param>
         /// <param name="delay">Delay before despawning or destroying</param>
-        public static void DespawnOrDestroy(GameObject obj, float delay = 0)
+        public static void DespawnOrDestroy(GameObject obj)
         {
-            Instance.Data.DespawnOrDestroy(obj, delay);
+            Instance.Data.DespawnOrDestroy(obj);
         }
     }
 }

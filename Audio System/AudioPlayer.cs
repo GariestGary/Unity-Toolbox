@@ -5,6 +5,7 @@ namespace VolumeBox.Toolbox
     public class AudioPlayer: ResourcesToolWrapper<AudioPlayer, AudioPlayerDataHolder>
     {
         [SerializeField] private Transform audioSourcesRoot;
+        [SerializeField] private AudioSource defaultAudioSource;
 
         public override string GetDataPath()
         {
@@ -15,10 +16,6 @@ namespace VolumeBox.Toolbox
         {
             Data.Run();
 
-            var obj = new GameObject("Default Audio Source");
-            obj.transform.SetParent(audioSourcesRoot);
-            var defaultSource = obj.AddComponent<AudioSource>();
-
             foreach (var album in Data.Albums)
             {
                 if(album.useSeparateSource)
@@ -26,10 +23,11 @@ namespace VolumeBox.Toolbox
                     var newSourceObj = new GameObject($"{album.albumName} Audio Source");
                     newSourceObj.transform.SetParent(audioSourcesRoot);
                     album.source = newSourceObj.AddComponent<AudioSource>();
+                    album.source.outputAudioMixerGroup = album.mixerGroup;
                 }
                 else
                 {
-                    album.source = defaultSource;
+                    album.source = defaultAudioSource;
                 }
             }
         }
