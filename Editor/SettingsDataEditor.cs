@@ -50,7 +50,20 @@ namespace VolumeBox.Toolbox
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Target Frame Rate", GUILayout.Width(labelsWidth));
-            m_targetFrameRate.intValue = EditorGUILayout.IntField(GUIContent.none, m_targetFrameRate.intValue);
+            var oldFramerate = m_targetFrameRate.intValue;
+            var newFramerate = EditorGUILayout.IntField(GUIContent.none, m_targetFrameRate.intValue);
+            m_targetFrameRate.intValue = newFramerate;
+
+            if(newFramerate < 0)
+            {
+                newFramerate = 0;
+            }
+
+            if(oldFramerate != newFramerate)
+            {
+                ENTRY.UpdateTargetFramerate(newFramerate);
+            }
+
             GUILayout.EndHorizontal();
 
             var optionDataList = new List<string>();

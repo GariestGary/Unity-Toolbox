@@ -54,6 +54,13 @@ namespace VolumeBox.Toolbox
                     await Fader.Out(settings.FadeOutDuration);
                 }
             }
+
+            Application.targetFrameRate = settings.TargetFrameRate;
+        }
+
+        public static void UpdateTargetFramerate(int value)
+        {
+            Application.targetFrameRate = value;
         }
 
         private void OnDisable()
