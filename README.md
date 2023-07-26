@@ -41,7 +41,7 @@ Alternatively, merge the snippet to Packages/manifest.json
         }
     ],
     "dependencies": {
-        "com.volumebox.toolbox": "0.1.3"
+        "com.volumebox.toolbox": "0.1.4"
     }
 }
 ```
