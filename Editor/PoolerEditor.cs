@@ -30,6 +30,8 @@ namespace VolumeBox.Toolbox
         {
             serializedObject.Update();
 
+            EditorGUI.BeginChangeCheck();
+
             GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
             searchValue = GUILayout.TextField(searchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
             if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
@@ -73,6 +75,13 @@ namespace VolumeBox.Toolbox
             EditorGUILayout.EndVertical();
 
             serializedObject.ApplyModifiedProperties();
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
         }
 
         private void DrawElement(SerializedProperty property, SerializedProperty list, int index)

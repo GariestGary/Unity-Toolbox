@@ -23,7 +23,7 @@ namespace VolumeBox.Toolbox
         {
             serializedObject.Update();
 
-
+            EditorGUI.BeginChangeCheck();
             GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
             albumSearchValue = GUILayout.TextField(albumSearchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
             if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
@@ -76,6 +76,13 @@ namespace VolumeBox.Toolbox
             EditorGUILayout.EndScrollView();
 
             serializedObject.ApplyModifiedProperties();
+
+            if(EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
         }
 
         private void DrawAlbum(SerializedProperty property, SerializedProperty list, int index)

@@ -22,6 +22,8 @@ namespace VolumeBox.Toolbox
         {
             serializedObject.Update();
 
+            EditorGUI.BeginChangeCheck();
+
             EditorGUILayout.PropertyField(m_database);
 
             GUILayout.Space(5);
@@ -70,9 +72,17 @@ namespace VolumeBox.Toolbox
                 databaseObject.ApplyModifiedProperties();
             }
 
+
             GUILayout.EndScrollView();
 
             serializedObject.ApplyModifiedProperties();
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
         }
     }
 }

@@ -37,6 +37,8 @@ namespace VolumeBox.Toolbox
         {
             serializedObject.Update();
 
+            EditorGUI.BeginChangeCheck();
+
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Resolve Scenes On Play", GUILayout.Width(labelsWidth));
             m_resolveAtPlay.boolValue = EditorGUILayout.Toggle(m_resolveAtPlay.boolValue, GUILayout.Width(EditorGUIUtility.singleLineHeight));
@@ -118,9 +120,14 @@ namespace VolumeBox.Toolbox
                 }
             }
 
-
-
             serializedObject.ApplyModifiedProperties();
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
         }
     }
 }
