@@ -307,7 +307,7 @@ namespace VolumeBox.Toolbox
             
             if(upd == null) return;
 
-            //TODO: HandleProcessUnsubscribe();
+            Updater.RemoveMonoFromUpdate(this);
             
             Destroyed();
         }

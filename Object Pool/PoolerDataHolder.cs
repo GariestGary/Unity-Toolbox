@@ -312,8 +312,6 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        //TODO: separate pool component with self objects, that destroys when scene unloads
-
         private sealed class Pool
         {
             public string tag;
