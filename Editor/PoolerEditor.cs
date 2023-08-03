@@ -32,9 +32,9 @@ namespace VolumeBox.Toolbox
 
             EditorGUI.BeginChangeCheck();
 
-            GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
-            searchValue = GUILayout.TextField(searchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
-            if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
+            EditorGUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
+            searchValue = EditorGUILayout.TextField(searchValue, GUI.skin.FindStyle("ToolbarSearchTextField"));
+            if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSearchCancelButton")))
             {
                 searchValue = "";
                 GUI.FocusControl(null);
@@ -47,7 +47,7 @@ namespace VolumeBox.Toolbox
                 currentScrollPos.y = 0;
             }
 
-            GUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(5);
 
@@ -127,11 +127,11 @@ namespace VolumeBox.Toolbox
             
             if(property.isExpanded)
             {
-                GUILayout.Space(8);
+                EditorGUILayout.Space(8);
 
                 EditorGUILayout.BeginHorizontal();
 
-                GUILayout.Space(20);
+                EditorGUILayout.Space(20);
 
                 EditorGUILayout.BeginVertical();
 

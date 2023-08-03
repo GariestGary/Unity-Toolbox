@@ -25,8 +25,8 @@ namespace VolumeBox.Toolbox
 
             EditorGUI.BeginChangeCheck();
             GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
-            albumSearchValue = GUILayout.TextField(albumSearchValue, GUI.skin.FindStyle("ToolbarSeachTextField"));
-            if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
+            albumSearchValue = GUILayout.TextField(albumSearchValue, GUI.skin.FindStyle("ToolbarSearchTextField"));
+            if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSearchCancelButton")))
             {
                 albumSearchValue = "";
                 GUI.FocusControl(null);
