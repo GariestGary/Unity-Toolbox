@@ -15,7 +15,7 @@ namespace VolumeBox.Toolbox
     [InitializeOnLoad]
     public static class EditorPlayStateHandler
     {
-        private const string DevelopmentSceneAssetPath = "Assets/Plugins/Unity Toolbox/Scenes/MAIN.unity";
+        private const string DevelopmentSceneAssetPath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
         private const string DevelopmentScenePath = "Plugins/Unity Toolbox/Scenes/MAIN.unity";
         
         private const string ProductionSceneAssetPath = "Assets/Scenes/MAIN.unity";
