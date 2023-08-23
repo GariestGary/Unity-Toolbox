@@ -1,7 +1,8 @@
 #if UNITY_EDITOR
-using System.Threading.Tasks;
 using UnityEditor;
 #endif
+
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
@@ -58,12 +59,28 @@ namespace VolumeBox.Toolbox
             Application.targetFrameRate = settings.TargetFrameRate;
         }
 
+#if UNITY_EDITOR
+        [RuntimeInitializeOnLoadMethod]
+        private static void PlayStateChanged()
+        {
+            EditorApplication.playModeStateChanged += OnStateChanged;
+        }
+
+        private static void OnStateChanged(PlayModeStateChange state)
+        {
+            if(state == PlayModeStateChange.ExitingPlayMode)
+            {
+                ClearAll();
+            }
+        }
+#endif
+
         public static void UpdateTargetFramerate(int value)
         {
             Application.targetFrameRate = value;
         }
 
-        private void OnDisable()
+        private static void ClearAll()
         {
             AudioPlayer.Instance.ClearInternal();
             Messenger.Instance.ClearInternal();
@@ -71,6 +88,11 @@ namespace VolumeBox.Toolbox
             Updater.Instance.ClearInternal();
             Pooler.Instance.ClearInternal();
             Database.Instance.ClearInternal();
+        }
+
+        private void OnApplicationQuit()
+        {
+            ClearAll();
         }
     }
 }

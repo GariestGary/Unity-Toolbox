@@ -24,7 +24,7 @@ namespace VolumeBox.Toolbox
 
         private static void OnStateChanged(PlayModeStateChange state)
         {
-            if (!Fader.HasInstance) return;
+            if (!HasInstance) return;
 #pragma warning disable
             Instance.FadeOutFor(0);
 #pragma warning restore

@@ -303,10 +303,6 @@ namespace VolumeBox.Toolbox
         {
             if(!Updater.HasInstance) return;
 
-            Updater upd = Updater.Instance;
-            
-            if(upd == null) return;
-
             Updater.RemoveMonoFromUpdate(this);
             
             Destroyed();
