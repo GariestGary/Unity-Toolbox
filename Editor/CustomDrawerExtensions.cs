@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEditor;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     public static class CustomDrawerExtensions
     {

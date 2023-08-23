@@ -4,10 +4,10 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(SettingsData))]
-    public class SettingsDataEditor: Editor
+    public class SettingsDataEditor: UnityEditor.Editor
     {
         private float labelsWidth = 150;
 

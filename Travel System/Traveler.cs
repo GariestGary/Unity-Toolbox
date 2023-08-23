@@ -63,8 +63,11 @@ namespace VolumeBox.Toolbox
         }
 
         /// <summary>
-        /// Loads scene with given name and args. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// Loads scene with given name and args.
         /// </summary>
+        /// <remarks>
+        /// It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// </remarks>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
         public static async UniTask LoadScene(string sceneName, SceneArgs args = null, bool isAdditive = true)
@@ -238,8 +241,6 @@ namespace VolumeBox.Toolbox
             }
         }
     }
-
-
 
     #region Traveler's class messages
 

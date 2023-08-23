@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     [CustomPropertyDrawer(typeof(Property))]
     public class PropertyDataDrawer : PropertyDrawer

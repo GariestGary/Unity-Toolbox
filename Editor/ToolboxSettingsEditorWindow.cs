@@ -1,8 +1,9 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using VolumeBox.Toolbox;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     public class ToolboxSettingsEditorWindow: EditorWindow
     {
@@ -30,10 +31,10 @@ namespace VolumeBox.Toolbox
             audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
             saverDataHolder = ResourcesUtils.ResolveScriptable<DatabaseDataHolder>(SettingsData.saverResourcesDataPath);
 
-            settingsEditor = (SettingsDataEditor)Editor.CreateEditor(StaticData.Settings);
-            poolerEditor = (PoolerEditor)Editor.CreateEditor(poolerDataHolder);
-            audioEditor = (AudioPlayerEditor)Editor.CreateEditor(audioPlayerDataHolder);
-            saverEditor = (DatabaseEditor)Editor.CreateEditor(saverDataHolder);
+            settingsEditor = (SettingsDataEditor)UnityEditor.Editor.CreateEditor(StaticData.Settings);
+            poolerEditor = (PoolerEditor)UnityEditor.Editor.CreateEditor(poolerDataHolder);
+            audioEditor = (AudioPlayerEditor)UnityEditor.Editor.CreateEditor(audioPlayerDataHolder);
+            saverEditor = (DatabaseEditor)UnityEditor.Editor.CreateEditor(saverDataHolder);
         }
 
         private void OnGUI()

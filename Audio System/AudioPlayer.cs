@@ -34,7 +34,7 @@ namespace VolumeBox.Toolbox
 
         protected override void Clear()
         {
-            Data.Clear();
+            Data?.Clear();
         }
 
         public static void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)

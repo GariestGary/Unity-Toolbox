@@ -2,10 +2,10 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(AudioPlayerDataHolder))]
-    public class AudioPlayerEditor: Editor
+    public class AudioPlayerEditor: UnityEditor.Editor
     {
         private SerializedProperty m_albums;
         private Vector2 currentScrollPosition;

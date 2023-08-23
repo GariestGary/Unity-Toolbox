@@ -15,7 +15,7 @@ namespace VolumeBox.Toolbox
     [InitializeOnLoad]
     public static class EditorPlayStateHandler
     {
-        private const string DevelopmentSceneAssetPath = "Assets/Plugins/Unity Toolbox/Scenes/MAIN.unity";
+        private const string DevelopmentSceneAssetPath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
         private const string DevelopmentScenePath = "Plugins/Unity Toolbox/Scenes/MAIN.unity";
         
         private const string ProductionSceneAssetPath = "Assets/Scenes/MAIN.unity";
@@ -119,7 +119,10 @@ namespace VolumeBox.Toolbox
 
         public static bool IsMainSceneCorrectInBuild()
         {
-            if (EditorBuildSettings.scenes.Length <= 0 || (EditorBuildSettings.scenes[0].path != DevelopmentSceneAssetPath && EditorBuildSettings.scenes[0].path != ProductionSceneAssetPath))
+            var length = EditorBuildSettings.scenes.Length;
+            var path = EditorBuildSettings.scenes[0].path;
+
+            if (length <= 0 || (path != DevelopmentSceneAssetPath && path != ProductionSceneAssetPath))
             {
                 //Debug.LogWarning("MAIN scene is not in build setting or it's index not 0. You can fix this from Toolbox/Init MAIN scene");
                 return false;

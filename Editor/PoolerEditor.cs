@@ -2,10 +2,10 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(PoolerDataHolder))]
-    public class PoolerEditor : Editor
+    public class PoolerEditor : UnityEditor.Editor
     {
         private PoolerDataHolder pooler;
         private SerializedProperty m_poolsList;

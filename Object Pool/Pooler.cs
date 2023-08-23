@@ -17,7 +17,7 @@ namespace VolumeBox.Toolbox
 
         protected override void Clear()
         {
-            Data.Clear();
+            Data?.Clear();
         }
 
         public static void TryAddPool(PoolData poolToAdd)

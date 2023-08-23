@@ -2,10 +2,10 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace VolumeBox.Toolbox
+namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(DatabaseDataHolder))]
-    public class DatabaseEditor : Editor
+    public class DatabaseEditor : UnityEditor.Editor
     {
         private SerializedProperty m_database;
 
