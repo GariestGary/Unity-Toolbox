@@ -11,7 +11,7 @@ public class MessengerTest
 {
     private string message;
 
-    [UnityTest]
+    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
     public IEnumerator MessengerReactTest()
     {
         message = "null";
@@ -25,7 +25,7 @@ public class MessengerTest
         yield return null;
     }
 
-    [UnityTest]
+    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
     public IEnumerator MessengerSceneHandleTest()
     {
         Messenger.ClearSubscribers();
@@ -55,9 +55,12 @@ public class MessengerTest
         yield return null;
     }
 
-    [UnityTest]
+    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
     public IEnumerator MessengerObjectBindTest()
     {
+        Messenger.Instance.RunInternal();
+        Pooler.Instance.RunInternal();
+
         Messenger.ClearSubscribers();
 
         var obj = new GameObject("A");

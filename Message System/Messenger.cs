@@ -29,7 +29,7 @@ namespace VolumeBox.Toolbox
 
 		private static void CheckRemovedObject(GameObject obj)
 		{
-			var bindedSub = Instance.subscribers.FirstOrDefault(x => x.HasBind && x.BindedObject == obj);
+			var bindedSub = Instance.subscribers.Where(x => x.HasBind && x.BindedObject == obj).FirstOrDefault();
 
 			if(bindedSub is not null)
 			{

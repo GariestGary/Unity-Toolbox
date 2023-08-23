@@ -65,6 +65,7 @@ namespace VolumeBox.Toolbox
                             instance = singleton.AddComponent<T>();
                         }
                     }
+                    
                     return instance;
                 }
             } 
