@@ -107,60 +107,63 @@ namespace VolumeBox.Toolbox
         public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
         {
             //Returns null if object pool with specified tag doesn't exists
-            Pool poolToSpawn = null;
+            Pool poolToUse = null;
 
             for (int i = 0; i < pools.Count; i++)
             {
                 if (pools[i].tag.Equals(poolTag))
                 {
-                    poolToSpawn = pools[i];
+                    poolToUse = pools[i];
                     break;
                 }
             }
 
-            if(poolToSpawn == null)
+            if(poolToUse == null)
             {
                 Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exists");
                 return null;
             }
-
-            //get unused obj or create it
-            var pooledGOToSpawn = poolToSpawn.objects.FirstOrDefault(o => !o.Used);
+            
+			//get first unused obj
+            var objToSpawn = poolToUse.objects.Where(o => !o.Used).FirstOrDefault();
 
             //Create new object if last in list is active
-            if (pooledGOToSpawn is null)
+            if (objToSpawn is null)
             {
-                CreateNewPoolObject(poolToSpawn.objects[0].GameObject, poolToSpawn.objects);
+                CreateNewPoolObject(poolToUse.objects[0].GameObject, poolToUse.objects);
+                objToSpawn = poolToUse.objects.Where(o => !o.Used).FirstOrDefault();
             }
 
-            PooledGameObject obj = poolToSpawn.objects.FirstOrDefault(o => !o.Used);
-
-            //Return null if no unused objects
-            if (obj == null)
+            //Return null if last object is null;
+            if (objToSpawn == null)
             {
                 Debug.Log("object from pool " + poolTag + " you trying to spawn is null");
                 return null;
             }
 
             //Setting transform
-            var t = obj.GameObject.transform;
+            var t = objToSpawn.GameObject.transform;
             t.SetParent(parent);
-            t.rotation = rotation;
-            t.position = position;
             t.localPosition = Vector3.zero;
-            obj.GameObject.Enable();
+            t.localScale = Vector3.one;
+            t.position = position;
+            t.rotation = rotation;
+            objToSpawn.GameObject.Enable();
 
             //Call all spawn methods in gameobject
-            CallSpawns(obj.GameObject, data);
+            CallSpawns(objToSpawn.GameObject, data);
+
+            //Add object back to start
+            poolToUse.objects.Add(objToSpawn);
 
             if (spawnAction != null)
             {
-                spawnAction.Invoke(obj.GameObject);
+                spawnAction.Invoke(objToSpawn.GameObject);
             }
 
-            obj.Used = true;
+            objToSpawn.Used = true;
             
-            return obj.GameObject;
+            return objToSpawn.GameObject;
         }
         
         public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
