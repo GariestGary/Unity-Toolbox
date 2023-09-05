@@ -350,7 +350,7 @@ namespace VolumeBox.Toolbox
         public void Clear()
         {
             objectPoolParent = null;
-            pools.Clear();
+            pools?.Clear();
             pools = null;
         }
     }
