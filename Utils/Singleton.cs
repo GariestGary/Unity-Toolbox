@@ -31,7 +31,7 @@ namespace VolumeBox.Toolbox
         { 
             get
             {
-                if (reinstantiateIfDestroyed && destroyed) return null;
+                if (!reinstantiateIfDestroyed && destroyed) return null;
                 
                 lock (lockObject)
                 {
@@ -91,7 +91,7 @@ namespace VolumeBox.Toolbox
         { 
             get 
             {
-                if (reinstantiateIfDestroyed && destroyed) return null;
+                if (!reinstantiateIfDestroyed && destroyed) return null;
 
                 lock (lockObject)
                 {
