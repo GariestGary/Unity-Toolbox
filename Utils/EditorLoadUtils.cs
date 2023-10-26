@@ -13,10 +13,10 @@ using UnityEngine.SceneManagement;
 namespace VolumeBox.Toolbox
 {
     [InitializeOnLoad]
-    public static class EditorPlayStateHandler
+    public static class EditorLoadUtils
     {
         private const string DevelopmentSceneAssetPath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
-        private const string DevelopmentScenePath = "Plugins/Unity Toolbox/Scenes/MAIN.unity";
+        private const string DevelopmentScenePath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
         
         private const string ProductionSceneAssetPath = "Assets/Scenes/MAIN.unity";
         private const string ProductionScenePath = "Scenes/MAIN.unity";
@@ -33,10 +33,19 @@ namespace VolumeBox.Toolbox
         public static event Action EnteredPlayMode;
         public static event Action ExitedPlayMode;
 
-        static EditorPlayStateHandler()
+        public const string PackageVersion = "0.2.4";
+
+        static EditorLoadUtils()
         {
             EditorApplication.playModeStateChanged += OnStateChanged;
             IsMainSceneCorrectInBuild();
+        }
+        
+        public static async Task<bool> IsDevelopmentMode()
+        {
+            var currentPath = await GetCurrentMainScenePath();
+
+            return currentPath != PackageScenePath;
         }
 
         private static async void OnStateChanged(PlayModeStateChange state)

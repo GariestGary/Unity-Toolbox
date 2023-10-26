@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -38,6 +38,7 @@ namespace VolumeBox.Toolbox.Editor
             serializedObject.Update();
 
             EditorGUI.BeginChangeCheck();
+
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Resolve Scenes On Play", GUILayout.Width(labelsWidth));
@@ -100,25 +101,6 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             GUILayout.Space(5);
-
-            if (!EditorPlayStateHandler.IsMainSceneCorrectInBuild())
-            {
-                Debug.LogError("There's an issue with MAIN scene, please open Toolbox Settings window to fix this");
-
-                EditorGUILayout.HelpBox("MAIN scene is not in build setting or it's index not 0. You can fix this by pressing button below. It may take a while", MessageType.Error);
-
-                if(GUILayout.Button("Initialize MAIN Scene"))
-                {
-                    EditorPlayStateHandler.InitializeMain();
-                }
-            }
-            else
-            {
-                if(GUILayout.Button("Open MAIN Scene"))
-                {
-                    EditorPlayStateHandler.OpenMainScene();
-                }
-            }
 
             serializedObject.ApplyModifiedProperties();
 

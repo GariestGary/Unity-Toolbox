@@ -30,7 +30,7 @@ namespace VolumeBox.Toolbox
         private async UniTask Init()
         {
 #if UNITY_EDITOR
-            while (!EditorPlayStateHandler.EditorReady)
+            while (!EditorLoadUtils.EditorReady)
             {
                 await UniTask.Yield();
             }

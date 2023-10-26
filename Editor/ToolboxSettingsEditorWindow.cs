@@ -39,7 +39,7 @@ namespace VolumeBox.Toolbox.Editor
 
         private void OnGUI()
         {
-            selectedTab = GUILayout.Toolbar(selectedTab, new string[] {"Main Settings", "Pooler", "Audio Player", "Saver" });
+            selectedTab = GUILayout.Toolbar(selectedTab, new string[] {"Main Settings", "Pooler", "Audio Player", "Saver" }, GUILayout.Height(35));
 
             switch (selectedTab)
             {

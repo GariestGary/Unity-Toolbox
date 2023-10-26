@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,13 +14,12 @@ namespace VolumeBox.Toolbox
         [SerializeField] protected bool useFade;
 
         protected bool _fading;
+        protected CancellationTokenSource _cancellationTokenSource;
 
 #if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod]
         private static void PlayStateChanged()
         {
-            
-
             EditorApplication.playModeStateChanged += OnStateChanged;
         }
 
@@ -31,37 +32,45 @@ namespace VolumeBox.Toolbox
         }
 #endif
 
-        public static async Task In(float duration)
+        public static async UniTask In(float duration)
         {
             await Instance.FadeInFor(duration);
         }
 
-        public static async Task Out(float duration)
+        public static async UniTask Out(float duration)
         {
             await Instance.FadeOutFor(duration);
         }
 
-        private async Task FadeInFor(float duration)
+        private async UniTask FadeInFor(float duration)
         {
             if (!useFade || duration <= 0 || _fading)
             {
                 return;
             }
 
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new();
+
             _fading = true;
-            await FadeInForTask(duration);
+            await FadeInForAsync(duration, _cancellationTokenSource.Token);
             _fading = false;
         }
 
-        private async Task FadeOutFor(float duration)
+        private async UniTask FadeOutFor(float duration)
         {
             if (!useFade || duration <= 0 || _fading)
             {
                 return;
             }
 
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new();
+
             _fading = true;
-            await FadeOutForTask(duration);
+            await FadeOutForAsync(duration, _cancellationTokenSource.Token);
             _fading = false;
         }
 
@@ -73,8 +82,8 @@ namespace VolumeBox.Toolbox
 #endif
         
 #pragma warning disable
-        protected async virtual Task FadeInForTask(float duration) { }
-        protected async virtual Task FadeOutForTask(float duration) { }
+        protected async virtual UniTask FadeInForAsync(float duration, CancellationToken token) { }
+        protected async virtual UniTask FadeOutForAsync(float duration, CancellationToken token) { }
 #pragma warning restore
     }
 }

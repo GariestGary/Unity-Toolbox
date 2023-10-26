@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -10,11 +12,10 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField] private CanvasGroup canvasGroup;
 
-        protected async override Task FadeInForTask(float fadeInDuration)
+        protected async override UniTask FadeInForAsync(float fadeInDuration, CancellationToken token)
         {
             if (canvasGroup == null) return;
 
-            StopCoroutine(nameof(FadeOutForTask));
             canvasGroup.SetInteractions(true);
 
             float alpha = canvasGroup.alpha;
@@ -22,28 +23,36 @@ namespace VolumeBox.Toolbox
 
             while (alpha < 1)
             {
+                if(token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 stack += Time.deltaTime / fadeInDuration;
                 alpha = Mathf.Lerp(0, 1, stack);
                 canvasGroup.alpha = alpha;
-                await Task.Yield();
+                await UniTask.Yield();
             }
         }
 
-        protected async override Task FadeOutForTask(float fadeOutDuration)
+        protected async override UniTask FadeOutForAsync(float fadeOutDuration, CancellationToken token)
         {
             if (canvasGroup == null) return;
-
-            StopCoroutine(nameof(FadeInForTask));
 
             float alpha = canvasGroup.alpha;
             float stack = 0;
 
             while (alpha > 0)
             {
+                if(token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 stack += Time.deltaTime / fadeOutDuration;
                 alpha = Mathf.Lerp(1, 0, stack);
                 canvasGroup.alpha = alpha;
-                await Task.Yield();
+                await UniTask.Yield();
             }
             
             canvasGroup.SetInteractions(false);
