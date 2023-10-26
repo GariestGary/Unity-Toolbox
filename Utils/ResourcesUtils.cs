@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
 #endif
 using UnityEngine;
@@ -42,7 +42,7 @@ namespace VolumeBox.Toolbox
                 AssetDatabase.CreateAsset(tool, fullAssetPath);
                 AssetDatabase.SaveAssets();
             }
-            #endif
+#endif
 
             return tool as T;
         }

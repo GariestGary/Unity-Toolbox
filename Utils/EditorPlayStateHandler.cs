@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -120,11 +120,17 @@ namespace VolumeBox.Toolbox
         public static bool IsMainSceneCorrectInBuild()
         {
             var length = EditorBuildSettings.scenes.Length;
-            var path = EditorBuildSettings.scenes[0].path;
 
-            if (length <= 0 || (path != DevelopmentSceneAssetPath && path != ProductionSceneAssetPath))
+            if (length <= 0)
             {
                 //Debug.LogWarning("MAIN scene is not in build setting or it's index not 0. You can fix this from Toolbox/Init MAIN scene");
+                return false;
+            }
+
+            var path = EditorBuildSettings.scenes[0].path;
+
+            if(path != DevelopmentSceneAssetPath && path != ProductionSceneAssetPath)
+            {
                 return false;
             }
 

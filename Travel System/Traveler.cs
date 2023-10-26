@@ -78,7 +78,7 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            await QueueSceneLoad(sceneName);
+            await WaitForLoadingOperationsEnd(sceneName);
 
             if(!isAdditive)
             {
@@ -87,10 +87,14 @@ namespace VolumeBox.Toolbox
 
             _currentLoadingSceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
+            Messenger.Send(new SceneLoadingMessage(sceneName));
+
             while (_currentLoadingSceneOperation != null && !_currentLoadingSceneOperation.isDone)
             {
                 await UniTask.Yield();
             }
+
+            Messenger.Send(new SceneLoadedMessage(sceneName));
 
             Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
 
@@ -135,6 +139,9 @@ namespace VolumeBox.Toolbox
 
             _currentLoadingSceneOperation = null;
 
+            //temp fix for situations when TryGetSceneHandler returns null after receiving SceneOpenedMessage
+            await UniTask.DelayFrame(1);
+
             Messenger.Send(new SceneOpenedMessage(sceneName));
         }
 
@@ -152,7 +159,7 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
-            await QueueSceneLoad(sceneName);
+            await WaitForLoadingOperationsEnd(sceneName);
 
             Messenger.Send(new SceneUnloadingMessage(sceneName));
 
@@ -173,7 +180,7 @@ namespace VolumeBox.Toolbox
             Messenger.Send(new SceneUnloadedMessage(sceneName));
         }
 
-        private static async UniTask QueueSceneLoad(string sceneName)
+        private static async UniTask WaitForLoadingOperationsEnd(string sceneName)
         {
             if(!CanLoadSceneNow(sceneName))
             {
@@ -345,23 +352,6 @@ namespace VolumeBox.Toolbox
 
         }
     }
-
-    [Serializable]
-    public class GameplaySceneOpenedMessage : SceneMessage
-    {
-        public GameplaySceneOpenedMessage(string sceneName) : base(sceneName)
-        {
-        }
-
-        public GameplaySceneOpenedMessage()
-        {
-
-        }
-    }
-
-    public class UIOpenedMessage: Message { }
-
-    public class UIClosedMessage: Message { }
 
     #endregion
 }
