@@ -73,6 +73,7 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUILayout.EndVertical();
 
+
             EditorGUILayout.EndScrollView();
 
             serializedObject.ApplyModifiedProperties();
@@ -241,6 +242,24 @@ namespace VolumeBox.Toolbox.Editor
                 var clip = property.FindPropertyRelative("clip");
                 EditorGUILayout.PropertyField(clip, GUIContent.none);
                 EditorGUILayout.EndHorizontal();
+
+                var audioClip = clip.objectReferenceValue as AudioClip;
+                var waveHeight = 20;
+
+                if (audioClip != null)
+                {
+                    for (int i = 0; i < audioClip.channels; i++)
+                    {
+
+                    }
+                    EditorGUILayout.BeginHorizontal();
+
+                    var width = GUILayoutUtility.GetLastRect().width;
+
+                    var waveFormTex = AudioUtility.GetWaveFormFast(audioClip, 0, 0, audioClip.samples, width, waveHeight);
+                    //GUILayout.Label(waveFormTex);
+                    EditorGUILayout.EndHorizontal();
+                }
 
                 EditorGUILayout.EndVertical();
 

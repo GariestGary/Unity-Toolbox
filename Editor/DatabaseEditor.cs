@@ -63,7 +63,6 @@ namespace VolumeBox.Toolbox.Editor
                     GUILayout.Space(5);
                 }
 
-
                 if (GUILayout.Button(EditorGUIUtility.IconContent("CreateAddNew"), GUILayout.Height(30)))
                 {
                     props.InsertArrayElementAtIndex(Mathf.Clamp(props.arraySize - 1, 0, int.MaxValue));

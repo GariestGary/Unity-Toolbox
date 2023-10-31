@@ -19,7 +19,6 @@ namespace VolumeBox.Toolbox.Editor
             EditorApplication.update += InitialShow;
         }
 
-        [MenuItem("Toolbox/Setup Screen")]
         private static void InitialShow()
         {
 #pragma warning disable
@@ -29,19 +28,21 @@ namespace VolumeBox.Toolbox.Editor
 
         private static void InitialShowAsync()
         {
-            if (!Application.isPlaying)
+            if (!Application.isPlaying && !StaticData.HasSettings)
             {
-                m_HeaderTex = Resources.Load<Sprite>("Icons/toolbox_banner").texture;
-
-                GetWindow<InitialScreenWindow>(true, "Toolbox Setup");
+                OpenWindow();
                 EditorApplication.update -= InitialShow;
             }
         }
 
+        [MenuItem("Toolbox/Setup Screen")]
+        public static void OpenWindow()
+        {
+            GetWindow<InitialScreenWindow>(true, "Toolbox Setup");
+        }
+
         private void OnEnable()
         {
-            
-
             this.position = new Rect((Screen.width / 2.0f) - WindowWidth / 2, (Screen.height / 2.0f) - WindowHeight / 2, WindowWidth, WindowHeight);
             this.minSize = new Vector2(WindowWidth, WindowHeight);
             this.maxSize = new Vector2(WindowWidth, WindowHeight);
@@ -49,7 +50,12 @@ namespace VolumeBox.Toolbox.Editor
 
         private void OnGUI()
         {
-            Rect headerRect = GUILayoutUtility.GetRect(480, 125);
+            if(m_HeaderTex == null)
+            {
+                m_HeaderTex = Resources.Load<Sprite>("Icons/toolbox_banner").texture;
+            }
+
+            Rect headerRect = GUILayoutUtility.GetRect(480, 137.14f);
             GUI.DrawTexture(headerRect, m_HeaderTex);
 
             var buttonStyle = new GUIStyle(GUI.skin.button);
@@ -77,6 +83,19 @@ namespace VolumeBox.Toolbox.Editor
             if(GUILayout.Button("Open Toolbox Settings", buttonStyle, GUILayout.Height(45)))
             {
                 GetWindow<ToolboxSettingsEditorWindow>(false, "Toolbox Settings");
+            }
+
+            string buttonCaption = "Recreate Settings Data";
+
+            if(!StaticData.HasSettings)
+            {
+                buttonCaption = "Create Settings Data";
+                EditorGUILayout.HelpBox("Toolbox requires settings data files to be created in Resources folder. Click button below to create them", MessageType.Info);
+            }
+
+            if(GUILayout.Button(buttonCaption, buttonStyle, GUILayout.Height(45)))
+            {
+                ToolboxSettingsEditorWindow.CreateAssets();
             }
         }
 

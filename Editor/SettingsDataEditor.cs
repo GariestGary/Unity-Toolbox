@@ -78,7 +78,6 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             GUILayout.BeginHorizontal();
-            //EditorGUILayout.LabelField("Initial Scene", GUILayout.Width(labelsWidth));
             EditorGUILayout.PropertyField(m_initialSceneName);
             GUILayout.EndHorizontal();
 
