@@ -7,7 +7,6 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(PoolerDataHolder))]
     public class PoolerEditor : UnityEditor.Editor
     {
-        private PoolerDataHolder pooler;
         private SerializedProperty m_poolsList;
         private string searchValue;
         private Vector2 currentScrollPos;
@@ -22,7 +21,6 @@ namespace VolumeBox.Toolbox.Editor
                 return;
             }
 
-            pooler = (PoolerDataHolder)target;
             m_poolsList = serializedObject.FindProperty("poolsList");
         }
 
@@ -32,24 +30,23 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUI.BeginChangeCheck();
 
-            EditorGUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
-            searchValue = EditorGUILayout.TextField(searchValue, GUI.skin.FindStyle("ToolbarSearchTextField"));
-            if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSearchCancelButton")))
+            DrawSearchHeader(ref searchValue, m_poolsList, ref currentScrollPos.y);
+
+            EditorGUILayout.Space(5);
+
+            EditorGUILayout.BeginHorizontal();
+
+            if(GUILayout.Button("Expand All"))
             {
-                searchValue = "";
-                GUI.FocusControl(null);
+                SetExpandedStateForAll(true);
             }
 
-            if(GUILayout.Button("Add Pool", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
+            if(GUILayout.Button("Collapse All"))
             {
-                m_poolsList.InsertArrayElementAtIndex(0);
-                m_poolsList.GetArrayElementAtIndex(0).FindPropertyRelative("tag").stringValue = string.Empty;
-                currentScrollPos.y = 0;
+                SetExpandedStateForAll(false);
             }
 
             EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.Space(5);
 
             EditorGUILayout.BeginVertical();
             currentScrollPos = EditorGUILayout.BeginScrollView(currentScrollPos);
@@ -62,12 +59,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if (pool.FindPropertyRelative("tag").stringValue.ToLower().Contains(searchValue.ToLower()))
                     {
-                        DrawElement(pool, m_poolsList, i);
+                        DrawElement(pool, m_poolsList, i, labelsWidth);
                     }
                 }
                 else
                 {
-                    DrawElement(pool, m_poolsList, i);
+                    DrawElement(pool, m_poolsList, i, labelsWidth);
                 }
             }
 
@@ -84,7 +81,35 @@ namespace VolumeBox.Toolbox.Editor
             }
         }
 
-        private void DrawElement(SerializedProperty property, SerializedProperty list, int index)
+        private void SetExpandedStateForAll(bool value)
+        {
+            for (int i = 0; i < m_poolsList.arraySize; i++)
+            {
+                m_poolsList.GetArrayElementAtIndex(i).isExpanded = value;
+            }
+        }
+
+        public static void DrawSearchHeader(ref string searchValue, SerializedProperty poolsList, ref float currentScrollPosY)
+        {
+            EditorGUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
+            searchValue = EditorGUILayout.TextField(searchValue, GUI.skin.FindStyle("ToolbarSearchTextField"));
+            if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSearchCancelButton")))
+            {
+                searchValue = "";
+                GUI.FocusControl(null);
+            }
+
+            if (GUILayout.Button("Add Pool", GUILayout.Width(80), GUILayout.ExpandHeight(true)))
+            {
+                poolsList.InsertArrayElementAtIndex(0);
+                poolsList.GetArrayElementAtIndex(0).FindPropertyRelative("tag").stringValue = string.Empty;
+                currentScrollPosY = 0;
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        public static void DrawElement(SerializedProperty property, SerializedProperty list, int index, float labelsWidth)
         {
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
 
@@ -97,7 +122,7 @@ namespace VolumeBox.Toolbox.Editor
             property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, tag.stringValue, true);
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = buttonColor;
+            GUI.backgroundColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
 
             EditorGUILayout.BeginVertical(GUILayout.Width(25));
 

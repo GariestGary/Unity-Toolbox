@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox
 
         private bool initialized = false;
 
-        protected override void OnActivate()
+        protected override void Rise()
         {
             if (initialized) return;
 

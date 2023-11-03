@@ -48,6 +48,11 @@ namespace VolumeBox.Toolbox
                 return;
             }
 
+            if(pools == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < pools.Count; i++)
             {
                 if (pools[i].tag == poolToAdd.tag)
@@ -83,6 +88,11 @@ namespace VolumeBox.Toolbox
         public void TryRemovePool(string tag)
         {
             Pool poolToRemove = null;// pools.FirstOrDefault(p => p.tag == tag);
+
+            if(pools == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < pools.Count; i++)
             {

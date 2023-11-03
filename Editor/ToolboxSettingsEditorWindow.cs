@@ -119,6 +119,11 @@ namespace VolumeBox.Toolbox.Editor
             
             saverEditor?.OnInspectorGUI();
         }
+
+        private void OnLostFocus()
+        {
+            AudioUtils.StopAllPreviewClips();
+        }
     }
 }
 #endif

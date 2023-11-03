@@ -1,4 +1,7 @@
 #if UNITY_EDITOR
+using System;
+using System.Reflection;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -47,7 +50,26 @@ namespace VolumeBox.Toolbox.Editor
                 currentScrollPosition.y = float.MaxValue;
             }
 
+            if(GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Width(20), GUILayout.ExpandHeight(true)))
+            {
+                AudioUtils.StopAllPreviewClips();
+            }
+
             GUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Expand All"))
+            {
+                SetExpandedStateForAll(true);
+            }
+
+            if (GUILayout.Button("Collapse All"))
+            {
+                SetExpandedStateForAll(false);
+            }
+
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginVertical();
             currentScrollPosition = EditorGUILayout.BeginScrollView(currentScrollPosition);
@@ -83,6 +105,15 @@ namespace VolumeBox.Toolbox.Editor
                 EditorUtility.SetDirty(target);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
+            }
+        }
+
+        private void SetExpandedStateForAll(bool value)
+        {
+            for (int i = 0; i < m_albums.arraySize; i++)
+            {
+                var album = m_albums.GetArrayElementAtIndex(i);
+                album.isExpanded = value;
             }
         }
 
@@ -171,6 +202,30 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.BeginVertical();
 
+                EditorGUILayout.BeginHorizontal();
+
+                if (GUILayout.Button("Expand All", GUILayout.Width(100)))
+                {
+                    for (int j = 0; j < m_clips.arraySize; j++)
+                    {
+                        var clip = m_clips.GetArrayElementAtIndex(j);
+
+                        clip.isExpanded = true;
+                    }
+                }
+
+                if (GUILayout.Button("Collapse All", GUILayout.Width(100)))
+                {
+                    for (int j = 0; j < m_clips.arraySize; j++)
+                    {
+                        var clip = m_clips.GetArrayElementAtIndex(j);
+
+                        clip.isExpanded = false;
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
+
                 GUILayout.Space(5);
 
                 for (int i = 0; i < m_clips.arraySize; i++)
@@ -242,31 +297,53 @@ namespace VolumeBox.Toolbox.Editor
                 var clip = property.FindPropertyRelative("clip");
                 EditorGUILayout.PropertyField(clip, GUIContent.none);
                 EditorGUILayout.EndHorizontal();
-
-                var audioClip = clip.objectReferenceValue as AudioClip;
-                var waveHeight = 20;
-
-                if (audioClip != null)
+                GUILayout.Space(8);
+                EditorGUILayout.BeginHorizontal();
+                if(GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.ExpandWidth(true)))
                 {
-                    for (int i = 0; i < audioClip.channels; i++)
-                    {
-
-                    }
-                    EditorGUILayout.BeginHorizontal();
-
-                    var width = GUILayoutUtility.GetLastRect().width;
-
-                    var waveFormTex = AudioUtility.GetWaveFormFast(audioClip, 0, 0, audioClip.samples, width, waveHeight);
-                    //GUILayout.Label(waveFormTex);
-                    EditorGUILayout.EndHorizontal();
+                    AudioUtils.StopAllPreviewClips();
+                    AudioUtils.PlayPreviewClip(clip.objectReferenceValue as AudioClip);
                 }
 
+                if(GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.ExpandWidth(true)))
+                {
+                    AudioUtils.StopAllPreviewClips();
+                }
+                EditorGUILayout.EndHorizontal();
+
+                //var audioClip = clip.objectReferenceValue as AudioClip;
+                //var waveHeight = 20;
+
+                //if (audioClip != null)
+                //{
+                //    for (int i = 0; i < audioClip.channels; i++)
+                //    {
+
+                //    }
+                //    EditorGUILayout.BeginHorizontal();
+
+                //    var width = GUILayoutUtility.GetLastRect().width;
+
+                //    var waveFormTex = AudioUtility.GetWaveFormFast(audioClip, 0, 0, audioClip.samples, width, waveHeight);
+                //    //GUILayout.Label(waveFormTex);
+                //    EditorGUILayout.EndHorizontal();
+                //}
+
                 EditorGUILayout.EndVertical();
+
+                var previewSize = 75;
+                var preview = AssetPreview.GetAssetPreview(clip.objectReferenceValue);
+                GUILayout.Label(preview, GUILayout.Width(previewSize), GUILayout.Height(previewSize));
 
                 EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndVertical();
+        }
+
+        private void OnDisable()
+        {
+            AudioUtils.StopAllPreviewClips();
         }
     }
 }
