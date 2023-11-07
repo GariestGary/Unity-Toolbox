@@ -20,6 +20,16 @@ namespace VolumeBox.Toolbox
             Data?.Clear();
         }
 
+        public static void ForceGarbageCollectorWork()
+        {
+            Instance.Data.ForceGarbageCollector();
+        }
+
+        public static int GetPoolObjectsCount(string poolTag)
+        {
+            return Instance.Data.GetPoolObjectsCount(poolTag);
+        }
+
         public static void TryAddPool(PoolData poolToAdd)
         {
             Instance.Data.TryAddPool(poolToAdd);

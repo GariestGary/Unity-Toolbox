@@ -199,6 +199,8 @@ namespace VolumeBox.Toolbox
                 {
                     await UniTask.Yield();
                 }
+
+                await UniTask.DelayFrame(1);
             }
         }
 

@@ -11,6 +11,7 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class PoolerDataHolder : ScriptableObject, IRunner, IClear
     {
+        [SerializeField] private float m_GarbageCollectorWorkInterval = 10;
         [SerializeField] private List<PoolData> poolsList;
 
         private Transform objectPoolParent;
@@ -38,6 +39,29 @@ namespace VolumeBox.Toolbox
             Messenger.Subscribe<SceneUnloadingMessage>(m => HandleSceneUnload(m.SceneName), null, true);
 
             _removeMessage = new GameObjectRemovedMessage();
+
+            GCWorkerStart();
+        }
+
+        private async UniTask GCWorkerStart()
+        {
+            while(true)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(m_GarbageCollectorWorkInterval));
+                ForceGarbageCollector();
+            }
+        }
+
+        public int GetPoolObjectsCount(string poolTag)
+        {
+            var pool = pools.FirstOrDefault(p => p.tag == poolTag);
+
+            if (pool == null)
+            {
+                return -1;
+            }
+
+            return pool.CurrentObjectsCount;
         }
 
         public void TryAddPool(PoolData poolToAdd)
@@ -74,7 +98,7 @@ namespace VolumeBox.Toolbox
                 CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
             }
 
-            pools.Add(new Pool(poolToAdd.tag, objectPoolList));
+            pools.Add(new Pool(poolToAdd.tag, poolToAdd.initialSize, objectPoolList));
 
         }
 
@@ -162,9 +186,6 @@ namespace VolumeBox.Toolbox
 
             //Call all spawn methods in gameobject
             CallSpawns(objToSpawn.GameObject, data);
-
-            //Add object back to start
-            poolToUse.objects.Add(objToSpawn);
 
             if (spawnAction != null)
             {
@@ -285,6 +306,8 @@ namespace VolumeBox.Toolbox
 
             GameObject poolObj = Instantiate(obj, poolParent);
 
+            poolObj.name = obj.name;
+
             Updater.InitializeObject(poolObj);
 
             poolObj.Disable();
@@ -300,19 +323,50 @@ namespace VolumeBox.Toolbox
             return poolObj;
         }
 
-        private IEnumerator DespawnCoroutine(PooledGameObject objectToDespawn, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-
-            objectToDespawn.Used = false;
-
-            ReturnToPool(objectToDespawn.GameObject);
-        }
-
         private void ReturnToPool(GameObject obj)
         {
             obj.Disable();
             obj.transform.SetParent(objectPoolParent);
+        }
+
+        public void ForceGarbageCollector()
+        {
+            if(pools != null)
+            {
+                for (int i = 0; i < pools.Count; i++)
+                {
+                    ClearPoolGarbage(pools[i]);
+                }
+            }
+        }
+
+        private void ClearPoolGarbage(Pool pool)
+        {
+            var unusedObjects = pool.objects.Where(o => !o.Used).ToList();
+
+            if(unusedObjects.Count <= 0)
+            {
+                return;
+            }
+
+            var allObjectsCount = pool.objects.Count;
+            var excessObjectsCount = allObjectsCount - pool.defaultSize;
+            var canBeCleared = excessObjectsCount - (unusedObjects.Count - pool.defaultSize) >= 0;
+            var usedObjects = allObjectsCount - unusedObjects.Count;
+            excessObjectsCount -= usedObjects;
+
+
+            if (canBeCleared)
+            {
+                for(int i = 0; i < excessObjectsCount; i++) 
+                {
+                    pool.objects.Remove(unusedObjects[i]);
+                    Destroy(unusedObjects[i].GameObject);
+                    _removeMessage.Obj = unusedObjects[i].GameObject;
+                    _removeMessage.RemoveType = GameObjectRemoveType.Destroyed;
+                    Messenger.Send(_removeMessage);
+                }
+            }
         }
         
         private void HandleSceneUnload(string unloadedSceneName)
@@ -335,11 +389,16 @@ namespace VolumeBox.Toolbox
         private sealed class Pool
         {
             public string tag;
+            public int defaultSize;
             public List<PooledGameObject> objects;
 
-            public Pool(string tag, List<PooledGameObject> objects = null)
+            public int CurrentObjectsCount => objects.Count;
+
+            public Pool(string tag, int defaultSize, List<PooledGameObject> objects = null)
             {
                 this.tag = tag;
+                this.defaultSize = defaultSize;
+
                 if(objects == null)
                 {
                     this.objects = new List<PooledGameObject>();

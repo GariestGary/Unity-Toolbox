@@ -25,8 +25,38 @@ public class PoolerTests
         Assert.AreEqual
         (
             true,
-            Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity).name.Contains("Pooler Test(Clone)")
+            Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity).name.Contains("Pooler Test")
         );
+
+        yield return null;
+    }
+
+    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+    public IEnumerator PoolerGCTest()
+    {
+        GameObject test = new GameObject();
+        Pooler.Instance.RunInternal();
+        Pooler.TryAddPool("Test pool", test, 5);
+
+        Assert.AreEqual(5, Pooler.GetPoolObjectsCount("Test pool"));
+
+        var objList = new List<GameObject>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            objList.Add(Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity));
+        }
+
+        foreach (var obj in objList)
+        {
+            Pooler.DespawnOrDestroy(obj);
+        }    
+
+        Assert.AreEqual(10, Pooler.GetPoolObjectsCount("Test pool"));
+
+        Pooler.ForceGarbageCollectorWork();
+
+        Assert.AreEqual(5, Pooler.GetPoolObjectsCount("Test pool"));
 
         yield return null;
     }

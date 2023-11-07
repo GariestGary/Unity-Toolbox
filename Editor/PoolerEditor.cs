@@ -8,6 +8,7 @@ namespace VolumeBox.Toolbox.Editor
     public class PoolerEditor : UnityEditor.Editor
     {
         private SerializedProperty m_poolsList;
+        private SerializedProperty m_poolGCInterval;
         private string searchValue;
         private Vector2 currentScrollPos;
         private float labelsWidth = 110;
@@ -22,6 +23,7 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             m_poolsList = serializedObject.FindProperty("poolsList");
+            m_poolGCInterval = serializedObject.FindProperty("m_GarbageCollectorWorkInterval");
         }
 
         public override void OnInspectorGUI()
@@ -31,6 +33,13 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.BeginChangeCheck();
 
             DrawSearchHeader(ref searchValue, m_poolsList, ref currentScrollPos.y);
+
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("GC Collect Interval", GUILayout.Width(SettingsDataEditor.LABEL_WIDTH));
+            var interval = EditorGUILayout.FloatField(m_poolGCInterval.floatValue);
+            interval = Mathf.Clamp(interval, 0.5f, float.MaxValue);
+            m_poolGCInterval.floatValue = interval;
+            GUILayout.EndHorizontal();
 
             EditorGUILayout.Space(5);
 
@@ -183,7 +192,9 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
                 var initialSize = property.FindPropertyRelative("initialSize");
-                initialSize.intValue = EditorGUILayout.IntField(initialSize.intValue);
+                var settedValue = EditorGUILayout.IntField(initialSize.intValue);
+                settedValue = Mathf.Clamp(settedValue, 1, int.MaxValue);
+                initialSize.intValue = settedValue;
 
                 EditorGUILayout.EndHorizontal();
 

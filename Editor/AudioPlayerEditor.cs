@@ -297,38 +297,27 @@ namespace VolumeBox.Toolbox.Editor
                 var clip = property.FindPropertyRelative("clip");
                 EditorGUILayout.PropertyField(clip, GUIContent.none);
                 EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.BeginVertical();
                 GUILayout.Space(8);
-                EditorGUILayout.BeginHorizontal();
-                if(GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.ExpandWidth(true)))
+
+                if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Height(25), GUILayout.Width(25)))
                 {
-                    AudioUtils.StopAllPreviewClips();
-                    AudioUtils.PlayPreviewClip(clip.objectReferenceValue as AudioClip);
+                    var clipValue = clip.objectReferenceValue as AudioClip;
+
+                    if(clipValue != null)
+                    {
+                        AudioUtils.StopAllPreviewClips();
+                        AudioUtils.PlayPreviewClip(clipValue);
+                    }
                 }
 
-                if(GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.ExpandWidth(true)))
+                if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Height(25), GUILayout.Width(25)))
                 {
                     AudioUtils.StopAllPreviewClips();
                 }
-                EditorGUILayout.EndHorizontal();
-
-                //var audioClip = clip.objectReferenceValue as AudioClip;
-                //var waveHeight = 20;
-
-                //if (audioClip != null)
-                //{
-                //    for (int i = 0; i < audioClip.channels; i++)
-                //    {
-
-                //    }
-                //    EditorGUILayout.BeginHorizontal();
-
-                //    var width = GUILayoutUtility.GetLastRect().width;
-
-                //    var waveFormTex = AudioUtility.GetWaveFormFast(audioClip, 0, 0, audioClip.samples, width, waveHeight);
-                //    //GUILayout.Label(waveFormTex);
-                //    EditorGUILayout.EndHorizontal();
-                //}
-
                 EditorGUILayout.EndVertical();
 
                 var previewSize = 75;
