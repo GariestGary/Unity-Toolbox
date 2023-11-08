@@ -137,6 +137,11 @@ namespace VolumeBox.Toolbox
 
             pools.Remove(poolToRemove);
         }
+
+        public GameObject Spawn(string poolTag, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
+        {
+            return Spawn(poolTag, Vector3.zero, Quaternion.identity, parent, data, spawnAction);
+        }
         
         public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
         {
@@ -283,16 +288,22 @@ namespace VolumeBox.Toolbox
             return true;
         }
 
-        public void DespawnOrDestroy(GameObject obj)
+        public bool DespawnOrDestroy(GameObject obj)
         {
-            if (!TryDespawn(obj))
+            var despawned = TryDespawn(obj);
+
+            if (!despawned)
             {
                 Destroy(obj);
 
                 _removeMessage.Obj = obj;
                 _removeMessage.RemoveType = GameObjectRemoveType.Destroyed;
                 Messenger.Send(_removeMessage);
+
+                return true;
             }
+
+            return despawned;
         }
 
         private GameObject CreateNewPoolObject(GameObject obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
@@ -372,7 +383,7 @@ namespace VolumeBox.Toolbox
         private void HandleSceneUnload(string unloadedSceneName)
         {
             //TODO: cache objects at spawn into dictionary with scene name key and destroy from correlated list
-            //what if after spawning and caching scene, i move object to other scene, object will stay in old list, correlated to old previous scene
+            //what if after spawning and caching scene, i move object to other scene. object will stay in old list, correlated to old previous scene
             
             for (int i = 0; i < pools.Count; i++)
             {

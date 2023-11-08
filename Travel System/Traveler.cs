@@ -176,6 +176,8 @@ namespace VolumeBox.Toolbox
                 _onUnloadMethod.Invoke(sceneToUnload.Handler, null);
             }
 
+            Updater.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());
+
             _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
 
             while (_currentLoadingSceneOperation != null && !_currentUnloadingSceneOperation.isDone)
