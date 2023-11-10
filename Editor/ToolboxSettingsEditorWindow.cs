@@ -18,14 +18,40 @@ namespace VolumeBox.Toolbox.Editor
 
         private int selectedTab;
 
-        [MenuItem("Toolbox/Settings")]
+        [MenuItem("Toolbox/Settings", priority = 1)]
         public static void ShowMyEditor()
         {
-            EditorWindow wnd = GetWindow<ToolboxSettingsEditorWindow>();
-            wnd.titleContent = new GUIContent("Toolbox Settings");
+            if(StaticData.HasSettings)
+            {
+                EditorWindow wnd = GetWindow<ToolboxSettingsEditorWindow>();
+                wnd.titleContent = new GUIContent("Toolbox Settings");
+            }
+            else
+            {
+                InitialScreenWindow.OpenWindow();
+            }
+        }
+
+        [MenuItem("Toolbox/Documentation", priority = 3)]
+        public static void OpenDocumentation()
+        {
+            Application.OpenURL("https://gariestgary.github.io/toolbox/about/");
+        }
+
+        public static void CreateAssets()
+        {
+            ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
+            ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
+            ResourcesUtils.ResolveScriptable<DatabaseDataHolder>(SettingsData.saverResourcesDataPath);
+            StaticData.CreateSettings();
         }
 
         private void OnEnable()
+        {
+            InitEditors();
+        }
+
+        private void InitEditors()
         {
             poolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
@@ -39,23 +65,48 @@ namespace VolumeBox.Toolbox.Editor
 
         private void OnGUI()
         {
-            selectedTab = GUILayout.Toolbar(selectedTab, new string[] {"Main Settings", "Pooler", "Audio Player", "Saver" });
-
-            switch (selectedTab)
+            if(StaticData.HasSettings)
             {
-                case 0:
-                    MainSettingsGUI();
-                    break;
-                case 1:
-                    PoolerGUI();
-                    break;
-                case 2:
-                    AudioPlayerGUI();
-                    break;
-                case 3:
-                    SaverGUI();
-                    break;
+                if(poolerDataHolder == null || audioPlayerDataHolder == null || saverDataHolder == null)
+                {
+                    InitEditors();
+                }
+
+                selectedTab = GUILayout.Toolbar(selectedTab, new GUIContent[] 
+                {
+                    new GUIContent("Main Settings", EditorGUIUtility.IconContent("d__Popup").image), 
+                    new GUIContent("Pooler", EditorGUIUtility.IconContent("d_PreMatLight1").image), 
+                    new GUIContent("Audio Player", EditorGUIUtility.IconContent("d_Profiler.Audio").image), 
+                    new GUIContent("Database", EditorGUIUtility.IconContent("d_SaveAs").image)
+                }, GUILayout.Height(35));
+
+                switch (selectedTab)
+                {
+                    case 0:
+                        MainSettingsGUI();
+                        break;
+                    case 1:
+                        PoolerGUI();
+                        break;
+                    case 2:
+                        AudioPlayerGUI();
+                        break;
+                    case 3:
+                        SaverGUI();
+                        break;
+                }
             }
+            else 
+            {
+                var buttonStyle = new GUIStyle(GUI.skin.button);
+                buttonStyle.fontSize = 20;
+                EditorGUILayout.HelpBox("Toolbox requires settings data files to be created in Resources folder. Click button below to open setup window", MessageType.Info);
+                if(GUILayout.Button("Open Setup Window", buttonStyle, GUILayout.Height(45)))
+                {
+                    InitialScreenWindow.OpenWindow();
+                }
+            }
+
         }
 
         private void MainSettingsGUI()
@@ -79,6 +130,11 @@ namespace VolumeBox.Toolbox.Editor
         {
             
             saverEditor?.OnInspectorGUI();
+        }
+
+        private void OnLostFocus()
+        {
+            AudioUtils.StopAllPreviewClips();
         }
     }
 }

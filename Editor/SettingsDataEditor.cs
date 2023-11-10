@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(SettingsData))]
     public class SettingsDataEditor: UnityEditor.Editor
     {
-        private float labelsWidth = 150;
+        public const float LABEL_WIDTH = 150;
 
         private SerializedProperty m_resolveAtPlay;
         private SerializedProperty m_timeScale;
@@ -39,19 +39,20 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUI.BeginChangeCheck();
 
+
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Resolve Scenes On Play", GUILayout.Width(labelsWidth));
+            EditorGUILayout.LabelField("Resolve Scenes On Play", GUILayout.Width(LABEL_WIDTH));
             m_resolveAtPlay.boolValue = EditorGUILayout.Toggle(m_resolveAtPlay.boolValue, GUILayout.Width(EditorGUIUtility.singleLineHeight));
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Time Scale", GUILayout.Width(labelsWidth));
+            EditorGUILayout.LabelField("Time Scale", GUILayout.Width(LABEL_WIDTH));
             m_timeScale.floatValue = EditorGUILayout.Slider(m_timeScale.floatValue, 0, 5);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Target Frame Rate", GUILayout.Width(labelsWidth));
+            EditorGUILayout.LabelField("Target Frame Rate", GUILayout.Width(LABEL_WIDTH));
             var oldFramerate = m_targetFrameRate.intValue;
             var newFramerate = EditorGUILayout.IntField(GUIContent.none, m_targetFrameRate.intValue);
             m_targetFrameRate.intValue = newFramerate;
@@ -77,48 +78,28 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             GUILayout.BeginHorizontal();
-            //EditorGUILayout.LabelField("Initial Scene", GUILayout.Width(labelsWidth));
             EditorGUILayout.PropertyField(m_initialSceneName);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Initial Scene Args", GUILayout.Width(labelsWidth));
+            EditorGUILayout.LabelField("Initial Scene Args", GUILayout.Width(LABEL_WIDTH));
             EditorGUILayout.PropertyField(m_initialSceneArgs, GUIContent.none);
             GUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Manual Fade Out", GUILayout.Width(labelsWidth));
+            EditorGUILayout.LabelField("Manual Fade Out", GUILayout.Width(LABEL_WIDTH));
             m_manualFadeOut.boolValue = EditorGUILayout.Toggle(m_manualFadeOut.boolValue);
             EditorGUILayout.EndHorizontal();
 
             if(!m_manualFadeOut.boolValue)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Fade Out Duration", GUILayout.Width(labelsWidth));
+                EditorGUILayout.LabelField("Fade Out Duration", GUILayout.Width(LABEL_WIDTH));
                 m_fadeOutDuration.floatValue = EditorGUILayout.FloatField(m_fadeOutDuration.floatValue);
                 EditorGUILayout.EndHorizontal();
             }
 
             GUILayout.Space(5);
-
-            if (!EditorPlayStateHandler.IsMainSceneCorrectInBuild())
-            {
-                Debug.LogError("There's an issue with MAIN scene, please open Toolbox Settings window to fix this");
-
-                EditorGUILayout.HelpBox("MAIN scene is not in build setting or it's index not 0. You can fix this by pressing button below. It may take a while", MessageType.Error);
-
-                if(GUILayout.Button("Initialize MAIN Scene"))
-                {
-                    EditorPlayStateHandler.InitializeMain();
-                }
-            }
-            else
-            {
-                if(GUILayout.Button("Open MAIN Scene"))
-                {
-                    EditorPlayStateHandler.OpenMainScene();
-                }
-            }
 
             serializedObject.ApplyModifiedProperties();
 

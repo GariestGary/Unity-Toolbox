@@ -1,4 +1,7 @@
 #if UNITY_EDITOR
+using System;
+using System.Reflection;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -47,7 +50,26 @@ namespace VolumeBox.Toolbox.Editor
                 currentScrollPosition.y = float.MaxValue;
             }
 
+            if(GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Width(20), GUILayout.ExpandHeight(true)))
+            {
+                AudioUtils.StopAllPreviewClips();
+            }
+
             GUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Expand All"))
+            {
+                SetExpandedStateForAll(true);
+            }
+
+            if (GUILayout.Button("Collapse All"))
+            {
+                SetExpandedStateForAll(false);
+            }
+
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginVertical();
             currentScrollPosition = EditorGUILayout.BeginScrollView(currentScrollPosition);
@@ -73,6 +95,7 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUILayout.EndVertical();
 
+
             EditorGUILayout.EndScrollView();
 
             serializedObject.ApplyModifiedProperties();
@@ -82,6 +105,15 @@ namespace VolumeBox.Toolbox.Editor
                 EditorUtility.SetDirty(target);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
+            }
+        }
+
+        private void SetExpandedStateForAll(bool value)
+        {
+            for (int i = 0; i < m_albums.arraySize; i++)
+            {
+                var album = m_albums.GetArrayElementAtIndex(i);
+                album.isExpanded = value;
             }
         }
 
@@ -170,6 +202,30 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.BeginVertical();
 
+                EditorGUILayout.BeginHorizontal();
+
+                if (GUILayout.Button("Expand All", GUILayout.Width(100)))
+                {
+                    for (int j = 0; j < m_clips.arraySize; j++)
+                    {
+                        var clip = m_clips.GetArrayElementAtIndex(j);
+
+                        clip.isExpanded = true;
+                    }
+                }
+
+                if (GUILayout.Button("Collapse All", GUILayout.Width(100)))
+                {
+                    for (int j = 0; j < m_clips.arraySize; j++)
+                    {
+                        var clip = m_clips.GetArrayElementAtIndex(j);
+
+                        clip.isExpanded = false;
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
+
                 GUILayout.Space(5);
 
                 for (int i = 0; i < m_clips.arraySize; i++)
@@ -244,10 +300,39 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.EndVertical();
 
+                EditorGUILayout.BeginVertical();
+                GUILayout.Space(8);
+
+                if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Height(25), GUILayout.Width(25)))
+                {
+                    var clipValue = clip.objectReferenceValue as AudioClip;
+
+                    if(clipValue != null)
+                    {
+                        AudioUtils.StopAllPreviewClips();
+                        AudioUtils.PlayPreviewClip(clipValue);
+                    }
+                }
+
+                if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Height(25), GUILayout.Width(25)))
+                {
+                    AudioUtils.StopAllPreviewClips();
+                }
+                EditorGUILayout.EndVertical();
+
+                var previewSize = 75;
+                var preview = AssetPreview.GetAssetPreview(clip.objectReferenceValue);
+                GUILayout.Label(preview, GUILayout.Width(previewSize), GUILayout.Height(previewSize));
+
                 EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndVertical();
+        }
+
+        private void OnDisable()
+        {
+            AudioUtils.StopAllPreviewClips();
         }
     }
 }

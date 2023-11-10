@@ -225,7 +225,7 @@ namespace VolumeBox.Toolbox
         {
             this.delta = delta;
 
-            if(pausedByActiveState || pausedManual) return;
+            if(Paused) return;
 
             Tick();
         }
@@ -234,14 +234,14 @@ namespace VolumeBox.Toolbox
         {
             this.fixedDelta = fixedDelta;
 
-            if(pausedByActiveState || pausedManual) return;
+            if(Paused) return;
 
             FixedTick();
         }
 
         private void LateProcess(float delta)
         {
-            if(pausedByActiveState || pausedManual) return;
+            if(Paused) return;
 
             LateTick();
         }

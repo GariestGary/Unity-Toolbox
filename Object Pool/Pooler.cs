@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -18,6 +18,16 @@ namespace VolumeBox.Toolbox
         protected override void Clear()
         {
             Data?.Clear();
+        }
+
+        public static void ForceGarbageCollectorWork()
+        {
+            Instance.Data.ForceGarbageCollector();
+        }
+
+        public static int GetPoolObjectsCount(string poolTag)
+        {
+            return Instance.Data.GetPoolObjectsCount(poolTag);
         }
 
         public static void TryAddPool(PoolData poolToAdd)

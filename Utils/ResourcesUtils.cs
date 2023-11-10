@@ -2,6 +2,7 @@
 using UnityEditor;
 #endif
 using UnityEngine;
+using static UnityEngine.GridBrushBase;
 
 namespace VolumeBox.Toolbox
 {
@@ -43,8 +44,16 @@ namespace VolumeBox.Toolbox
                 AssetDatabase.SaveAssets();
             }
 #endif
+            var toolScriptable = tool as T;
 
-            return tool as T;
+            return toolScriptable;
+        }
+
+        public static bool HasScriptable(string path)
+        {
+            int lastDot = path.LastIndexOf('.');
+
+            return Resources.Load(path[..lastDot]) != null;
         }
     }
 }

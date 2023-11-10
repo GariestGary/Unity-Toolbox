@@ -23,8 +23,8 @@ namespace VolumeBox.Toolbox
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
 
 #pragma warning disable
-            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive), null, true);
-            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.sceneName), null, true);
+            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args, m.Additive), null, true);
+            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName), null, true);
             Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes(), null, true);
 #pragma warning enable
         }
@@ -60,6 +60,14 @@ namespace VolumeBox.Toolbox
             {
                 return scene.Handler as T;
             }
+        }
+
+        /// <summary>
+        /// Returns true if specified scene is opened in hierarchy
+        /// </summary>
+        public bool IsSceneOpened(string sceneName)
+        {
+            return _openedScenes.Any(s => s.SceneDefinition.name == sceneName);
         }
 
         /// <summary>
@@ -168,6 +176,8 @@ namespace VolumeBox.Toolbox
                 _onUnloadMethod.Invoke(sceneToUnload.Handler, null);
             }
 
+            Updater.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());
+
             _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
 
             while (_currentLoadingSceneOperation != null && !_currentUnloadingSceneOperation.isDone)
@@ -191,6 +201,8 @@ namespace VolumeBox.Toolbox
                 {
                     await UniTask.Yield();
                 }
+
+                await UniTask.DelayFrame(1);
             }
         }
 
@@ -217,6 +229,9 @@ namespace VolumeBox.Toolbox
             return false;
         }
 
+        /// <summary>
+        /// Unloads all opened scenes except 'MAIN'
+        /// </summary>
         public static async UniTask UnloadAllScenes()
         {
             var unloadings = new List<UniTask>();
@@ -254,7 +269,7 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class UnloadSceneMessage: Message
     {
-        public string sceneName;
+        public string SceneName;
     }
 
     public class UnloadAllScenesMessage: Message
@@ -265,9 +280,9 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class LoadSceneMessage: Message
     {
-        public string sceneName;
-        public SceneArgs args;
-        public bool additive;
+        public string SceneName;
+        public SceneArgs Args;
+        public bool Additive = true;
     }
 
     [Serializable]
