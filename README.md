@@ -1,16 +1,9 @@
 [![openupm](https://img.shields.io/npm/v/com.volumebox.toolbox?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.volumebox.toolbox/) ![GitHub](https://img.shields.io/github/license/GariestGary/Unity-Toolbox)
 
 # Unity Toolbox
-Set of architectural solutions for Unity
-## Table of contents
-* [Installation](#installation)
-* [Basics](#basics)
-* [Update System](#update-system)
-* [Dependency Injection](#dependency-injection)
-* [Message System](#message-system)
-* [Object Pooling](#object-pooling)
-* [Save System](#save-system)
-* [Travel System](#travel-system)
+Set of architectural solutions for Unity.
+
+Toolbox is a framework that makes it easier to create games using Unity. Many frequently used things by programmers are taken into account in the toolbox and configured in such a way as to reduce the time and number of lines of code spent on them.
 
 ## Installation
 
@@ -41,7 +34,7 @@ Alternatively, merge the snippet to Packages/manifest.json
         }
     ],
     "dependencies": {
-        "com.volumebox.toolbox": "0.2.4"
+        "com.volumebox.toolbox": "1.0.0"
     }
 }
 ```
@@ -71,4 +64,6 @@ Alternatively, merge the snippet to Packages/manifest.json
 * open `My Registries` packages in package manager window
 * install `VolumeBox Toolbox`
 
-# DOCUMENTATION IN PROGRESS
+# Documentation
+
+You can read documentation on [my website](https://gariestgary.github.io/toolbox/about/)
