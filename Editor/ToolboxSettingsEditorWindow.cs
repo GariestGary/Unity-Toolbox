@@ -18,7 +18,7 @@ namespace VolumeBox.Toolbox.Editor
 
         private int selectedTab;
 
-        [MenuItem("Toolbox/Settings")]
+        [MenuItem("Toolbox/Settings", priority = 1)]
         public static void ShowMyEditor()
         {
             if(StaticData.HasSettings)
@@ -30,6 +30,12 @@ namespace VolumeBox.Toolbox.Editor
             {
                 InitialScreenWindow.OpenWindow();
             }
+        }
+
+        [MenuItem("Toolbox/Documentation", priority = 3)]
+        public static void OpenDocumentation()
+        {
+            Application.OpenURL("https://gariestgary.github.io/toolbox/about/");
         }
 
         public static void CreateAssets()
@@ -66,7 +72,13 @@ namespace VolumeBox.Toolbox.Editor
                     InitEditors();
                 }
 
-                selectedTab = GUILayout.Toolbar(selectedTab, new string[] {"Main Settings", "Pooler", "Audio Player", "Database" }, GUILayout.Height(35));
+                selectedTab = GUILayout.Toolbar(selectedTab, new GUIContent[] 
+                {
+                    new GUIContent("Main Settings", EditorGUIUtility.IconContent("d__Popup").image), 
+                    new GUIContent("Pooler", EditorGUIUtility.IconContent("d_PreMatLight1").image), 
+                    new GUIContent("Audio Player", EditorGUIUtility.IconContent("d_Profiler.Audio").image), 
+                    new GUIContent("Database", EditorGUIUtility.IconContent("d_SaveAs").image)
+                }, GUILayout.Height(35));
 
                 switch (selectedTab)
                 {

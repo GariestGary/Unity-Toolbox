@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox.Editor
     public class InitialScreenWindow : EditorWindow
     {
         private const int WindowWidth = 480;
-        private const int WindowHeight = 400;
+        private const int WindowHeight = 420;
 
         private static Texture2D m_HeaderTex;
 
@@ -35,7 +35,7 @@ namespace VolumeBox.Toolbox.Editor
             }
         }
 
-        [MenuItem("Toolbox/Setup Screen")]
+        [MenuItem("Toolbox/Setup Screen", priority = 1)]
         public static void OpenWindow()
         {
             GetWindow<InitialScreenWindow>(true, "Toolbox Setup");
@@ -60,6 +60,11 @@ namespace VolumeBox.Toolbox.Editor
 
             var buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.fontSize = 20;
+            
+            if (GUILayout.Button(new GUIContent("Open Documentation", EditorGUIUtility.IconContent("d_TextAsset Icon").image), buttonStyle, GUILayout.Height(45)))
+            {
+                ToolboxSettingsEditorWindow.OpenDocumentation();
+            }
 
             if (!EditorLoadUtils.IsMainSceneCorrectInBuild())
             {
@@ -67,33 +72,35 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.HelpBox("MAIN scene is not in build setting or it's index not 0. You can fix this by pressing button below. It may take a while", MessageType.Error);
 
-                if (GUILayout.Button("Initialize MAIN Scene", buttonStyle, GUILayout.Height(45)))
+                if (GUILayout.Button(new GUIContent("Initialize MAIN Scene", EditorGUIUtility.IconContent("d_SceneAsset Icon").image), buttonStyle, GUILayout.Height(45)))
                 {
                     EditorLoadUtils.InitializeMain();
                 }
             }
             else
             {
-                if (GUILayout.Button("Open MAIN Scene", buttonStyle, GUILayout.Height(45)))
+                if (GUILayout.Button(new GUIContent("Open MAIN Scene", EditorGUIUtility.IconContent("d_SceneAsset Icon").image), buttonStyle, GUILayout.Height(45)))
                 {
                     EditorLoadUtils.OpenMainScene();
                 }
             }
 
-            if(GUILayout.Button("Open Toolbox Settings", buttonStyle, GUILayout.Height(45)))
+            if(GUILayout.Button(new GUIContent("Open Toolbox Settings", EditorGUIUtility.IconContent("CustomTool@2x").image), buttonStyle, GUILayout.Height(45)))
             {
                 GetWindow<ToolboxSettingsEditorWindow>(false, "Toolbox Settings");
             }
 
             string buttonCaption = "Recreate Settings Data";
+            string iconPath = "Refresh@2x";
 
             if(!StaticData.HasSettings)
             {
                 buttonCaption = "Create Settings Data";
+                iconPath = "Collab.FileAdded";
                 EditorGUILayout.HelpBox("Toolbox requires settings data files to be created in Resources folder. Click button below to create them", MessageType.Info);
             }
 
-            if(GUILayout.Button(buttonCaption, buttonStyle, GUILayout.Height(45)))
+            if(GUILayout.Button(new GUIContent(buttonCaption, EditorGUIUtility.IconContent(iconPath).image), buttonStyle, GUILayout.Height(45)))
             {
                 ToolboxSettingsEditorWindow.CreateAssets();
             }
