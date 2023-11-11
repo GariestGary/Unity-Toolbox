@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -112,3 +110,4 @@ namespace VolumeBox.Toolbox.Editor
         }
     }
 }
+#endif
