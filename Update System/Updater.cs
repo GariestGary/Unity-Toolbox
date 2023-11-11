@@ -54,7 +54,8 @@ namespace VolumeBox.Toolbox
 
             foreach(var obj in objs)
             {
-                monos.Concat(obj.GetComponentsInChildren<MonoCached>(true));
+                var components = obj.GetComponentsInChildren<MonoCached>(true);
+                monos = monos.Concat(components).ToArray();
             }
 
             foreach (var mono in monos)
@@ -98,7 +99,8 @@ namespace VolumeBox.Toolbox
 
             foreach (var obj in objs)
             {
-                monos.Concat(obj.GetComponentsInChildren<MonoCached>(true));
+                var components = obj.GetComponentsInChildren<MonoCached>(true);
+                monos = monos.Concat(components).ToArray();
             }
 
             foreach (var mono in monos)
