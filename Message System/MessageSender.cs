@@ -1,64 +1,67 @@
-using TypeReferences;
 using UnityEngine;
-using VolumeBox.Toolbox;
 using System;
 using System.Collections.Generic;
 
-public class MessageSender : MonoCached
+namespace VolumeBox.Toolbox
 {
-    [SerializeField] private List<MessageToSend> _messages;
-
-    private int _prevMessagesCount = 1;
-
-    public void Send()
+    public class MessageSender: MonoCached
     {
-        foreach (var message in _messages)
-        {
-            Messenger.Send(message.CurrentTypeInstance);
-        }
-    }
+        [SerializeField] private List<MessageToSend> _messages;
 
-    private void OnValidate()
-    {
-        if(_messages == null) return;
-        
-        if(_messages.Count > _prevMessagesCount)
-        {
-            _messages[_messages.Count - 1].CurrentTypeInstance = null;
-        }
+        private int _prevMessagesCount = 1;
 
-        foreach (var message in _messages)
+        public void Send()
         {
-            if (message.CurrentTypeInstance == null || message.CurrentTypeInstance.GetType() != message.MessageType.Type)
+            foreach (var message in _messages)
             {
-                if(message.MessageType.Type == null)
-                {
-                    message.CurrentTypeInstance = null;
-                }
-                else
-                {
-                    message.CurrentTypeInstance = Activator.CreateInstance(message.MessageType.Type) as Message;
-                }
+                Messenger.Send(message.CurrentTypeInstance);
             }
         }
 
-        _prevMessagesCount = _messages.Count;
-    }
-
-    [Serializable]
-    private class MessageToSend
-    {
-        [SerializeField] [Inherits(typeof(Message), IncludeAdditionalAssemblies = new[] { "Assembly-CSharp" })] private TypeReference messageType;
-
-        [SerializeReference] private Message currentTypeInstance;
-
-        public TypeReference MessageType => messageType;
-        public Message CurrentTypeInstance
+        private void OnValidate()
         {
-            get { return currentTypeInstance; }
-            set { currentTypeInstance = value; }
+            if (_messages == null) return;
+
+            if (_messages.Count > _prevMessagesCount)
+            {
+                _messages[_messages.Count - 1].CurrentTypeInstance = null;
+            }
+
+            foreach (var message in _messages)
+            {
+                if (message.CurrentTypeInstance == null || message.CurrentTypeInstance.GetType() != message.MessageType.Type)
+                {
+                    if (message.MessageType == null)
+                    {
+                        message.CurrentTypeInstance = null;
+                    }
+                    else
+                    {
+                        if(message.MessageType.Type == null)
+                        {
+                            continue;
+                        }
+                        message.CurrentTypeInstance = Activator.CreateInstance(message.MessageType.Type) as Message;
+                    }
+                }
+            }
+
+            _prevMessagesCount = _messages.Count;
+        }
+
+        [Serializable]
+        private class MessageToSend
+        {
+            [SerializeField] private InspectableType<Message> messageType;
+
+            [SerializeReference] private Message currentTypeInstance;
+
+            public InspectableType<Message> MessageType => messageType;
+            public Message CurrentTypeInstance
+            {
+                get { return currentTypeInstance; }
+                set { currentTypeInstance = value; }
+            }
         }
     }
 }
-
-

@@ -28,15 +28,16 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUI.BeginChangeCheck();
 
+            EditorGUI.indentLevel--;
             PoolerEditor.DrawSearchHeader(ref searchValue, m_poolsList, ref currentScrollPos.y);
+            EditorGUI.indentLevel++;
 
             EditorGUILayout.Space(5);
 
+            EditorGUI.indentLevel++;
             EditorGUILayout.BeginVertical();
             currentScrollPos = EditorGUILayout.BeginScrollView(currentScrollPos);
 
-            //EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(true));
-            //GUILayout.Space(10);
             for (int i = 0; i < m_poolsList.arraySize; i++)
             {
                 var pool = m_poolsList.GetArrayElementAtIndex(i);
@@ -53,10 +54,10 @@ namespace VolumeBox.Toolbox.Editor
                     PoolerEditor.DrawElement(pool, m_poolsList, i, labelsWidth);
                 }
             }
-            //EditorGUILayout.BeginHorizontal();
 
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
+            EditorGUI.indentLevel--;
 
             serializedObject.ApplyModifiedProperties();
 

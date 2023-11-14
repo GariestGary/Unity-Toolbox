@@ -16,6 +16,7 @@ namespace VolumeBox.Toolbox
         {
             Messenger.Subscribe<PlayAudioMessage>(x => Play(x.albumName, x.clipID, x.volume, x.pitch, x.loop, x.playType), null, true);
             Messenger.Subscribe<StopAudioMessage>(x => StopAudio(x.albumName), null, true);
+            Messenger.Subscribe<StopAllAudioMessage>(_ => StopAll());
         }
 
         public void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
@@ -93,6 +94,11 @@ namespace VolumeBox.Toolbox
             album?.source.Stop();
         }
 
+        public void StopAll()
+        {
+            albums.ForEach(a => a.source.Stop());
+        }
+
         private AudioAlbum GetAlbum(string albumName)
         {
             return albums.All(x => x.albumName != albumName) ? null : albums.FirstOrDefault(a => a.albumName == albumName);
@@ -157,4 +163,6 @@ namespace VolumeBox.Toolbox
     {
         public string albumName;
     }
+
+    public class StopAllAudioMessage : Message { }
 }

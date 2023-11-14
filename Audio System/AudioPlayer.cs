@@ -46,5 +46,10 @@ namespace VolumeBox.Toolbox
         {
             Instance.Data.StopAudio(source);
         }
+
+        public static void StopAll()
+        {
+            Instance.Data.StopAll();
+        }
     }
 }

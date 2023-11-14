@@ -1,12 +1,11 @@
 using System;
-using TypeReferences;
 using UnityEngine;
 using UnityEngine.Events;
 using VolumeBox.Toolbox;
 
 public class MessageReceiver: MonoCached
 {
-    [SerializeField][Inherits(typeof(Message), IncludeAdditionalAssemblies = new[] { "Assembly-CSharp" })] private TypeReference messageType;
+    [SerializeField] private InspectableType<Message> messageType;
 
     public UnityEvent ReceivedEvent;
     private Subscriber sub;
