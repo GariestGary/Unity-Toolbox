@@ -1,91 +1,91 @@
 using NUnit.Framework;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.TestTools;
-using VolumeBox.Toolbox;
 
-public class MessengerTest
+namespace VolumeBox.Toolbox.Tests
 {
-    private string message;
-
-    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
-    public IEnumerator MessengerReactTest()
+    public class MessengerTest
     {
-        message = "null";
+        private string message;
 
-        Messenger.ClearSubscribers();
-        
-        Messenger.Subscribe<MockMessage>(x => React(x.message));
-        Messenger.Send<MockMessage>();
-        Assert.AreEqual("Reacted", message);
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+        public IEnumerator MessengerReactTest()
+        {
+            message = "null";
 
-        yield return null;
-    }
+            Messenger.ClearSubscribers();
+            
+            Messenger.Subscribe<MockMessage>(x => React(x.message));
+            Messenger.Send<MockMessage>();
+            Assert.AreEqual("Reacted", message);
 
-    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
-    public IEnumerator MessengerSceneHandleTest()
-    {
-        Messenger.ClearSubscribers();
+            yield return null;
+        }
 
-        var obj = new GameObject("A");
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+        public IEnumerator MessengerSceneHandleTest()
+        {
+            Messenger.ClearSubscribers();
 
-        Subscriber subToRemove = Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
+            var obj = new GameObject("A");
 
-        message = "null";
+            Subscriber subToRemove = Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
 
-        Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
-        Messenger.Send<MockMessage>();
+            message = "null";
 
-        Assert.AreEqual("null", message);
+            Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
+            Messenger.Send<MockMessage>();
 
-        Messenger.ClearSubscribers();
+            Assert.AreEqual("null", message);
 
-        message = "null";
+            Messenger.ClearSubscribers();
 
-        Subscriber subToStay = Messenger.Subscribe<MockMessage>(m => React(m.message));
+            message = "null";
 
-        Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
-        Messenger.Send<MockMessage>();
+            Subscriber subToStay = Messenger.Subscribe<MockMessage>(m => React(m.message));
 
-        Assert.AreEqual("Reacted", message);
+            Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
+            Messenger.Send<MockMessage>();
 
-        yield return null;
-    }
+            Assert.AreEqual("Reacted", message);
 
-    [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
-    public IEnumerator MessengerObjectBindTest()
-    {
-        Messenger.Instance.RunInternal();
-        Pooler.Instance.RunInternal();
+            yield return null;
+        }
 
-        Messenger.ClearSubscribers();
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+        public IEnumerator MessengerObjectBindTest()
+        {
+            Messenger.Instance.RunInternal();
+            Pooler.Instance.RunInternal();
 
-        var obj = new GameObject("A");
+            Messenger.ClearSubscribers();
 
-        message = "null";
+            var obj = new GameObject("A");
 
-        Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
+            message = "null";
 
-        Pooler.DespawnOrDestroy(obj);
+            Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
 
-        Messenger.Send<MockMessage>();
-        Assert.AreEqual("null", message);
-        yield return null;
+            Pooler.DespawnOrDestroy(obj);
 
-        yield return null;
-    }
+            Messenger.Send<MockMessage>();
+            Assert.AreEqual("null", message);
+            yield return null;
 
-    private void React(string test)
-    {
-        message = test;
-    }
+            yield return null;
+        }
 
-    [Serializable]
-    public class MockMessage: Message
-    {
-        public string message = "Reacted";
+        private void React(string test)
+        {
+            message = test;
+        }
+
+        [Serializable]
+        public class MockMessage: Message
+        {
+            public string message = "Reacted";
+        }
     }
 }

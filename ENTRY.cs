@@ -2,23 +2,15 @@
 using UnityEditor;
 #endif
 
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 
 namespace VolumeBox.Toolbox
-{   
+{
     public class ENTRY : MonoBehaviour
     {
         private SettingsData settings => StaticData.Settings;
-
-        private AudioPlayer audioPlayer;
-        private Messenger messenger;
-        private Traveler traveler;
-        private Updater updater;
-        private Pooler pooler;
-        private Database saver;
 
         private void Awake()
         {

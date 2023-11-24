@@ -1,14 +1,26 @@
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#else
 using NaughtyAttributes;
+#endif
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
     public class MonoCached : MonoBehaviour
     {
+        #if ODIN_INSPECTOR
+        [FoldoutGroup("Process Settings"), PropertyOrder(int.MaxValue)]
+        #else
         [Foldout("Process Settings")]
+        #endif
         [SerializeField]
         private bool processIfInactiveSelf = false;
+        #if ODIN_INSPECTOR
+        [FoldoutGroup("Process Settings"), PropertyOrder(int.MaxValue)]
+        #else
         [Foldout("Process Settings")]
+        #endif
         [SerializeField]
         private bool processIfInactiveInHierarchy = false;
 

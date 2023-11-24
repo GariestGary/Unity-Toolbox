@@ -1,3 +1,4 @@
+#if TOOLBOX_TASKS_HANDLE
 #if UNITY_EDITOR
 using System.Threading;
 using UnityEngine;
@@ -44,4 +45,5 @@ namespace VolumeBox.Toolbox
     }
 }
 
+#endif
 #endif

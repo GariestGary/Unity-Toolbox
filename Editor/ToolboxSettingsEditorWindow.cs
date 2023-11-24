@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using VolumeBox.Toolbox;
 
 namespace VolumeBox.Toolbox.Editor
 {

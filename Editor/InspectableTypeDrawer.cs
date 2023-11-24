@@ -2,8 +2,6 @@
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
-
-using Type = System.Type;
 using System;
 using System.Reflection;
 
@@ -11,7 +9,7 @@ namespace VolumeBox.Toolbox.Editor
 {
     [CustomPropertyDrawer(typeof(InspectableType<>), true)]
     public class InspectableTypeDrawer : PropertyDrawer {
-        System.Type[] _derivedTypes;
+        Type[] _derivedTypes;
         GUIContent[] _optionLabels;
         int _selectedIndex;
 
