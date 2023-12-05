@@ -42,6 +42,11 @@ namespace VolumeBox.Toolbox
             Instance.Data.Play(source, id, volume, pitch, loop, playType);
         }
 
+        public static void Play(string formattedId, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        {
+            Instance.Data.PlayFormatted(formattedId, volume, pitch, loop, playType);
+        }
+
         public void StopAudio(string source)
         {
             Instance.Data.StopAudio(source);

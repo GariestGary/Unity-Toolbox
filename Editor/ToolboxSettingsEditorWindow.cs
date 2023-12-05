@@ -37,6 +37,19 @@ namespace VolumeBox.Toolbox.Editor
             Application.OpenURL("https://gariestgary.github.io/toolbox/about/");
         }
 
+        [MenuItem("Toolbox/Open MAIN Scene", priority = 2)]
+        public static void OpenMainScene()
+        {
+            if(EditorLoadUtils.IsMainSceneCorrectInBuild())
+            {
+                EditorLoadUtils.OpenMainScene();
+            }
+            else
+            {
+                Debug.LogError("There's an issue with MAIN scene, please open Toolbox Setup window to fix this");
+            }
+        }
+
         public static void CreateAssets()
         {
             ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);

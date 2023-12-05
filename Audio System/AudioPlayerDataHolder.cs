@@ -40,6 +40,19 @@ namespace VolumeBox.Toolbox
             Play(source, clip, volume, pitch, loop, playType);
         }
 
+        public void PlayFormatted(string formattedId, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        {
+            var split = formattedId.Split('/');
+
+            if(split == null || split.Length < 2)
+            {
+                Debug.LogWarning($"Invalid formatted string {formattedId} in Audio Player. Make sure you separated album and clip id with \"\\\" symbol");
+                return;
+            }
+
+            Play(split[0], split[1], volume, pitch, loop, playType);
+        }
+
         private void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var album = GetAlbum(source);

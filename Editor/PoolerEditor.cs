@@ -45,14 +45,17 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUILayout.BeginHorizontal();
 
-            if(GUILayout.Button("Expand All"))
+            if(m_poolsList.arraySize > 0)
             {
-                SetExpandedStateForAll(true);
-            }
+                if(GUILayout.Button("Expand All"))
+                {
+                    SetExpandedStateForAll(true);
+                }
 
-            if(GUILayout.Button("Collapse All"))
-            {
-                SetExpandedStateForAll(false);
+                if(GUILayout.Button("Collapse All"))
+                {
+                    SetExpandedStateForAll(false);
+                }
             }
 
             EditorGUILayout.EndHorizontal();

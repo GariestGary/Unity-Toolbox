@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox
 
         private bool initialized = false;
 
-        protected override void Rise()
+        private void InitializePools()
         {
             if (initialized) return;
 

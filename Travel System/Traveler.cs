@@ -15,12 +15,14 @@ namespace VolumeBox.Toolbox
         private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
         private static MethodInfo _onLoadMethod;
         private static MethodInfo _onUnloadMethod;
+        private static MethodInfo _scenePoolInitMethod;
 
         protected override void Run()
         {
             _openedScenes = new List<OpenedScene>();
             _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
+            _scenePoolInitMethod = typeof(ScenePool).GetMethod("InitializePools", BindingFlags.NonPublic | BindingFlags.Instance);
 
 #pragma warning disable
             Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args, m.Additive), null, true);
@@ -112,14 +114,19 @@ namespace VolumeBox.Toolbox
 
             GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
 
-            //Search for scene handler
+            //traverse all objects
             foreach (var obj in sceneObjects)
             {
-                handler = obj.GetComponent<SceneHandlerBase>();
+                var scenePools = obj.GetComponentsInChildren<ScenePool>(true);
 
-                if (handler != null)
+                foreach(var scenePool in scenePools)
                 {
-                    break;
+                    _scenePoolInitMethod.Invoke(scenePool, null);
+                }
+
+                if (handler == null)
+                {
+                    handler = obj.GetComponent<SceneHandlerBase>();
                 }
             }
 

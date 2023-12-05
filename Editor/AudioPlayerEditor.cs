@@ -56,14 +56,17 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button("Expand All"))
+            if(m_albums.arraySize > 0)
             {
-                SetExpandedStateForAll(true);
-            }
+                if (GUILayout.Button("Expand All"))
+                {
+                    SetExpandedStateForAll(true);
+                }
 
-            if (GUILayout.Button("Collapse All"))
-            {
-                SetExpandedStateForAll(false);
+                if (GUILayout.Button("Collapse All"))
+                {
+                    SetExpandedStateForAll(false);
+                }
             }
 
             EditorGUILayout.EndHorizontal();
@@ -199,31 +202,36 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.BeginVertical();
 
+                GUILayout.Space(5);
+
                 EditorGUILayout.BeginHorizontal();
 
-                if (GUILayout.Button("Expand All", GUILayout.Width(100)))
+                if(m_clips.arraySize > 0)
                 {
-                    for (int j = 0; j < m_clips.arraySize; j++)
+                    if (GUILayout.Button("Expand All", GUILayout.Width(100)))
                     {
-                        var clip = m_clips.GetArrayElementAtIndex(j);
+                        for (int j = 0; j < m_clips.arraySize; j++)
+                        {
+                            var clip = m_clips.GetArrayElementAtIndex(j);
 
-                        clip.isExpanded = true;
+                            clip.isExpanded = true;
+                        }
                     }
-                }
 
-                if (GUILayout.Button("Collapse All", GUILayout.Width(100)))
-                {
-                    for (int j = 0; j < m_clips.arraySize; j++)
+                    if (GUILayout.Button("Collapse All", GUILayout.Width(100)))
                     {
-                        var clip = m_clips.GetArrayElementAtIndex(j);
+                        for (int j = 0; j < m_clips.arraySize; j++)
+                        {
+                            var clip = m_clips.GetArrayElementAtIndex(j);
 
-                        clip.isExpanded = false;
+                            clip.isExpanded = false;
+                        }
                     }
                 }
 
                 EditorGUILayout.EndHorizontal();
 
-                GUILayout.Space(5);
+                GUILayout.Space(1);
 
                 for (int i = 0; i < m_clips.arraySize; i++)
                 {

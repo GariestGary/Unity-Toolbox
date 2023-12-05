@@ -10,6 +10,7 @@ namespace VolumeBox.Toolbox
 
         private int _prevMessagesCount = 1;
 
+        [ContextMenu("Send")]
         public void Send()
         {
             foreach (var message in _messages)
@@ -20,6 +21,7 @@ namespace VolumeBox.Toolbox
 
         private void OnValidate()
         {
+#if !ODIN_INSPECTOR
             if (_messages == null) return;
 
             if (_messages.Count > _prevMessagesCount)
@@ -47,16 +49,21 @@ namespace VolumeBox.Toolbox
             }
 
             _prevMessagesCount = _messages.Count;
+#endif
         }
 
         [Serializable]
         private class MessageToSend
         {
+#if !ODIN_INSPECTOR
             [SerializeField] private InspectableType<Message> messageType;
+#endif
 
             [SerializeReference] private Message currentTypeInstance;
 
+#if !ODIN_INSPECTOR
             public InspectableType<Message> MessageType => messageType;
+#endif
             public Message CurrentTypeInstance
             {
                 get { return currentTypeInstance; }
