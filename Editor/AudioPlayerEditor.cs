@@ -45,6 +45,8 @@ namespace VolumeBox.Toolbox.Editor
 
                 m_albums.GetArrayElementAtIndex(m_albums.arraySize - 1).FindPropertyRelative("albumName").stringValue = string.Empty;
                 currentScrollPosition.y = float.MaxValue;
+
+                AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
             }
 
             if(GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Width(20), GUILayout.ExpandHeight(true)))
@@ -143,6 +145,7 @@ namespace VolumeBox.Toolbox.Editor
                     EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
+                    AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
                     return;
                 }
             }
@@ -184,6 +187,7 @@ namespace VolumeBox.Toolbox.Editor
                     var newClip = m_clips.GetArrayElementAtIndex(0);
                     newClip.isExpanded = false;
                     newClip.FindPropertyRelative("id").stringValue = string.Empty;
+                    AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -271,6 +275,7 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
+                AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
                 return;
             }
             GUI.backgroundColor = oldColor;
