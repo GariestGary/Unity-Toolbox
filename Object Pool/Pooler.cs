@@ -60,6 +60,18 @@ namespace VolumeBox.Toolbox
         }
 
         /// <summary>
+        /// Spawns GameObject from pool with specified tag, then calls all OnSpawn methods in it
+        /// </summary>
+        /// <param name="poolTag">pool tag with necessary object</param>
+        /// <param name="parent">parent transform for GameObject</param>
+        /// <param name="data">data to provide in GameObject</param>
+        /// <returns>GameObject from pool</returns>
+        public static GameObject Spawn(string poolTag, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
+        {
+            return Instance.Data.Spawn(poolTag, parent, data, spawnAction);
+        }
+
+        /// <summary>
         /// Alternative to Unity's Instantiate method, that automatically injects object
         /// </summary>
         /// <param name="prefab"></param>
