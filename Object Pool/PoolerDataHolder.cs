@@ -16,6 +16,8 @@ namespace VolumeBox.Toolbox
         private List<Pool> pools = new List<Pool>();
         private GameObjectRemovedMessage _removeMessage;
 
+        public List<PoolData> PoolsList => poolsList;
+
         public void Run()
         {
 #pragma warning disable

@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox.Editor
 {
+    [AttributeUsage(AttributeTargets.Field)]
     public class AudioPlayerClipAttribute : PropertyAttribute
     {
         

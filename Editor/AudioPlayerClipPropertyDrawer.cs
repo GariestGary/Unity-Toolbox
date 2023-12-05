@@ -35,12 +35,12 @@ namespace VolumeBox.Toolbox.Editor
             var (albumIndex, clipIndex) = Parse(currentString);
 
             var labelRect = position;
-            labelRect.width = 100;
+            labelRect.width = EditorGUIUtility.labelWidth;
 
             var halfPropertyWidth = (position.width - labelRect.width) * 0.5f;
 
             var albumLabel = position;
-            albumLabel.x = labelRect.width;
+            albumLabel.x = labelRect.width + 20;
             albumLabel.width = 40;
 
             EditorGUI.LabelField(albumLabel, "Album");
@@ -50,14 +50,14 @@ namespace VolumeBox.Toolbox.Editor
             albumRect.width = halfPropertyWidth - albumLabel.width;
 
             var clipLabel = position;
-            clipLabel.x = albumRect.x + albumRect.width + 15;
+            clipLabel.x = albumRect.x + albumRect.width + 10;
             clipLabel.width = 40;
 
             EditorGUI.LabelField(clipLabel, "Clip");
 
             var clipRect = position;
             clipRect.x = clipLabel.x + clipLabel.width;
-            clipRect.width = halfPropertyWidth - clipLabel.width * 0.5f - 15;
+            clipRect.width = halfPropertyWidth - clipLabel.width - 10;
 
             EditorGUI.LabelField(labelRect, label);
 
@@ -133,6 +133,8 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     m_AlbumClipsRelations.Add(album.albumName, album.clips.ConvertAll(c => c.id));
                 }
+
+                IsClipsChanged = false;
             }
         }
     }
