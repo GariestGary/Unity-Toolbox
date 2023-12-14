@@ -218,7 +218,7 @@ namespace VolumeBox.Toolbox
 
         private void CallSpawns(GameObject obj, object data)
         {
-            IPooled[] pooled = obj.GetComponentsInChildren<IPooled>();
+            IPooled[] pooled = obj.GetComponentsInChildren<IPooled>(true);
 
             foreach (var t in pooled)
             {
@@ -231,7 +231,7 @@ namespace VolumeBox.Toolbox
 
         private void CallDespawns(GameObject obj)
         {
-            IDespawn[] despawns = obj.GetComponentsInChildren<IDespawn>();
+            IDespawn[] despawns = obj.GetComponentsInChildren<IDespawn>(true);
 
             foreach(var t in despawns)
             {
