@@ -228,6 +228,19 @@ namespace VolumeBox.Toolbox
                 }
             }
         }
+
+        private void CallDespawns(GameObject obj)
+        {
+            IDespawn[] despawns = obj.GetComponentsInChildren<IDespawn>();
+
+            foreach(var t in despawns)
+            {
+                if(t != null)
+                {
+                    t.OnDespawn();
+                }
+            }
+        }
         
         public bool TryDespawn(GameObject objectToDespawn)
         {
@@ -277,6 +290,8 @@ namespace VolumeBox.Toolbox
             {
                 return true;
             }
+
+            CallDespawns(pgo.GameObject);
 
             pgo.Used = false;
             ReturnToPool(pgo.GameObject);
