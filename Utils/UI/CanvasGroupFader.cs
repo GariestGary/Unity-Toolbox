@@ -38,9 +38,6 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         public void FadeOut(float duration)
         {
-            _tokenSource?.Cancel();
-            _tokenSource?.Dispose();
-            _tokenSource = new();
 #pragma warning disable
             FadeOutForAsync(duration, _tokenSource.Token);
 #pragma warning enable
@@ -48,17 +45,39 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         public void FadeIn(float duration)
         {
-            _tokenSource?.Cancel();
-            _tokenSource?.Dispose();
-            _tokenSource = new();
+            
 #pragma warning disable
             FadeInForAsync(duration, _tokenSource.Token);
 #pragma warning enable
         }
 
+        public async UniTask FadeOutAsync()
+        {
+            await FadeOutForAsync(fadeOutDuration, _tokenSource.Token);
+        }
+
+        public async UniTask FadeInAsync()
+        {
+            await FadeInForAsync(fadeInDuration, _tokenSource.Token);
+        }
+
+        public async UniTask FadeOutAsync(float duration)
+        {
+            await FadeOutForAsync(duration, _tokenSource.Token);
+        }
+
+        public async UniTask FadeInAsync(float duration)
+        {
+            await FadeInForAsync(duration, _tokenSource.Token);
+        }
+
         protected async UniTask FadeOutForAsync(float fadeOutDuration, CancellationToken token)
         {
             if (canvasGroup == null) return;
+
+            _tokenSource?.Cancel();
+            _tokenSource?.Dispose();
+            _tokenSource = new();
 
             float alpha = canvasGroup.alpha;
             float stack = 0;
@@ -86,7 +105,11 @@ namespace VolumeBox.Toolbox.Utils.UI
         {
             if (canvasGroup == null) return;
 
-            if(controlInteractions)
+            _tokenSource?.Cancel();
+            _tokenSource?.Dispose();
+            _tokenSource = new();
+
+            if (controlInteractions)
             {
                 canvasGroup.SetInteractions(true);
             }
