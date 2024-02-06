@@ -38,6 +38,8 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         public void FadeOut(float duration)
         {
+            _tokenSource ??= new CancellationTokenSource();
+
 #pragma warning disable
             FadeOutForAsync(duration, _tokenSource.Token);
 #pragma warning enable
@@ -45,7 +47,8 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         public void FadeIn(float duration)
         {
-            
+            _tokenSource ??= new CancellationTokenSource();
+
 #pragma warning disable
             FadeInForAsync(duration, _tokenSource.Token);
 #pragma warning enable
@@ -53,21 +56,29 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         public async UniTask FadeOutAsync()
         {
+            _tokenSource ??= new CancellationTokenSource();
+            
             await FadeOutForAsync(fadeOutDuration, _tokenSource.Token);
         }
 
         public async UniTask FadeInAsync()
         {
+            _tokenSource ??= new CancellationTokenSource();
+            
             await FadeInForAsync(fadeInDuration, _tokenSource.Token);
         }
 
         public async UniTask FadeOutAsync(float duration)
         {
+            _tokenSource ??= new CancellationTokenSource();
+            
             await FadeOutForAsync(duration, _tokenSource.Token);
         }
 
         public async UniTask FadeInAsync(float duration)
         {
+            _tokenSource ??= new CancellationTokenSource();
+            
             await FadeInForAsync(duration, _tokenSource.Token);
         }
 
