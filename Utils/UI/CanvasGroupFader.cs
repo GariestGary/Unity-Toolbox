@@ -1,20 +1,25 @@
 using Cysharp.Threading.Tasks;
-using NaughtyAttributes;
 using System.Threading;
 using UnityEngine;
-using VolumeBox.Toolbox;
 
 namespace VolumeBox.Toolbox.Utils.UI
 {
     public class CanvasGroupFader: MonoCached
     {
         [SerializeField] private bool customCanvas;
-        [SerializeField, ShowIf(nameof(customCanvas))] private CanvasGroup canvasGroup;
-        [SerializeField, MinValue(0)] private float fadeInDuration = 0.2f;
-        [SerializeField, MinValue(0)] private float fadeOutDuration = 0.2f;
+        [SerializeField]
+#if ODIN_INSPECTOR
+        [Sirenix.OdinInspector.ShowIf(nameof(customCanvas))]
+#else
+        [NaughtyAttributes.ShowIf(nameof(customCanvas))]
+#endif
+        private CanvasGroup canvasGroup;
+        [SerializeField, NaughtyAttributes.MinValue(0)] private float fadeInDuration = 0.2f;
+        [SerializeField, NaughtyAttributes.MinValue(0)] private float fadeOutDuration = 0.2f;
         [SerializeField] private bool controlInteractions = true;
 
-        private CancellationTokenSource _tokenSource;
+        private CancellationTokenSource _fadeInTokenSource;
+        private CancellationTokenSource _fadeOutTokenSource;
 
         public float FadeInDuration => fadeInDuration;
         public float FadeOutDuration => fadeOutDuration;
@@ -24,13 +29,13 @@ namespace VolumeBox.Toolbox.Utils.UI
             canvasGroup = GetComponent<CanvasGroup>();
         }
 
-        [Button("Fade In")]
+        [NaughtyAttributes.Button("Fade In")]
         public void FadeIn()
         {
             FadeIn(fadeInDuration);
         }
 
-        [Button("Fade Out")]
+        [NaughtyAttributes.Button("Fade Out")]
         public void FadeOut()
         {
             FadeOut(FadeOutDuration);
@@ -38,57 +43,57 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         public void FadeOut(float duration)
         {
-            _tokenSource ??= new CancellationTokenSource();
+            _fadeOutTokenSource ??= new CancellationTokenSource();
 
 #pragma warning disable
-            FadeOutForAsync(duration, _tokenSource.Token);
+            FadeOutForAsync(duration, _fadeOutTokenSource.Token);
 #pragma warning enable
         }
 
         public void FadeIn(float duration)
         {
-            _tokenSource ??= new CancellationTokenSource();
+            _fadeInTokenSource ??= new CancellationTokenSource();
 
 #pragma warning disable
-            FadeInForAsync(duration, _tokenSource.Token);
+            FadeInForAsync(duration, _fadeInTokenSource.Token);
 #pragma warning enable
         }
 
         public async UniTask FadeOutAsync()
         {
-            _tokenSource ??= new CancellationTokenSource();
+            _fadeOutTokenSource ??= new CancellationTokenSource();
             
-            await FadeOutForAsync(fadeOutDuration, _tokenSource.Token);
+            await FadeOutForAsync(fadeOutDuration, _fadeOutTokenSource.Token);
         }
 
         public async UniTask FadeInAsync()
         {
-            _tokenSource ??= new CancellationTokenSource();
+            _fadeInTokenSource ??= new CancellationTokenSource();
             
-            await FadeInForAsync(fadeInDuration, _tokenSource.Token);
+            await FadeInForAsync(fadeInDuration, _fadeInTokenSource.Token);
         }
 
         public async UniTask FadeOutAsync(float duration)
         {
-            _tokenSource ??= new CancellationTokenSource();
+            _fadeOutTokenSource ??= new CancellationTokenSource();
             
-            await FadeOutForAsync(duration, _tokenSource.Token);
+            await FadeOutForAsync(duration, _fadeOutTokenSource.Token);
         }
 
         public async UniTask FadeInAsync(float duration)
         {
-            _tokenSource ??= new CancellationTokenSource();
+            _fadeInTokenSource ??= new CancellationTokenSource();
             
-            await FadeInForAsync(duration, _tokenSource.Token);
+            await FadeInForAsync(duration, _fadeInTokenSource.Token);
         }
 
         protected async UniTask FadeOutForAsync(float fadeOutDuration, CancellationToken token)
         {
             if (canvasGroup == null) return;
 
-            _tokenSource?.Cancel();
-            _tokenSource?.Dispose();
-            _tokenSource = new();
+            _fadeInTokenSource?.Cancel();
+            _fadeInTokenSource?.Dispose();
+            _fadeInTokenSource = new();
 
             float alpha = canvasGroup.alpha;
             float stack = 0;
@@ -112,13 +117,13 @@ namespace VolumeBox.Toolbox.Utils.UI
             }
         }
 
-        protected async UniTask FadeInForAsync(float fadeInDuration, CancellationToken token)
+        protected async UniTask FadeInForAsync(float duration, CancellationToken token)
         {
             if (canvasGroup == null) return;
 
-            _tokenSource?.Cancel();
-            _tokenSource?.Dispose();
-            _tokenSource = new();
+            _fadeOutTokenSource?.Cancel();
+            _fadeOutTokenSource?.Dispose();
+            _fadeOutTokenSource = new();
 
             if (controlInteractions)
             {
@@ -135,7 +140,7 @@ namespace VolumeBox.Toolbox.Utils.UI
                     return;
                 }
 
-                stack += Time.deltaTime / fadeInDuration;
+                stack += Time.deltaTime / duration;
                 alpha = Mathf.Lerp(0, 1, stack);
                 canvasGroup.alpha = alpha;
                 await UniTask.Yield();
@@ -144,7 +149,8 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         protected override void Destroyed()
         {
-            _tokenSource?.Cancel();
+            _fadeInTokenSource?.Cancel();
+            _fadeOutTokenSource?.Cancel();
         }
     }
 }
