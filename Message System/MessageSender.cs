@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using TypeReferences;
 
 namespace VolumeBox.Toolbox
 {
@@ -56,13 +57,13 @@ namespace VolumeBox.Toolbox
         private class MessageToSend
         {
 #if !ODIN_INSPECTOR
-            [SerializeField] private InspectableType<Message> messageType;
+            [SerializeField, Inherits(typeof(Message), ShowAllTypes = true)] private TypeReference messageType;
 #endif
 
             [SerializeReference] private Message currentTypeInstance;
 
 #if !ODIN_INSPECTOR
-            public InspectableType<Message> MessageType => messageType;
+            public TypeReference MessageType => messageType;
 #endif
             public Message CurrentTypeInstance
             {

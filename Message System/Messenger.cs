@@ -45,7 +45,12 @@ namespace VolumeBox.Toolbox
         public static void RemoveSubscriber(Subscriber subscriber)
         {
 	        if(subscriber == null) return;
-	        
+
+	        if (Instance.subscribers == null || Instance.subscribers.Count <= 0)
+	        {
+		        return;
+	        }
+
 	        if(Instance.subscribers.Contains(subscriber))
 			{
 				Instance.subscribers.Remove(subscriber);

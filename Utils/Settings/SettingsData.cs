@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NaughtyAttributes;
 using UnityEngine;
 
@@ -22,6 +23,9 @@ namespace VolumeBox.Toolbox
 
         [SerializeField]
         public float FadeOutDuration = 0.5f;
+        
+        //[SerializeField]
+        //public List<Assemblyde>
 
         [HideInInspector] public bool AutoResolveScenesAtPlay = true;
         public const string poolerResourcesDataPath = "Toolbox/PoolerData.asset";

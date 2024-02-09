@@ -16,6 +16,12 @@ namespace VolumeBox.Toolbox.Editor
         [InitializeOnLoadMethod]
         private static void InitLoad()
         {
+            //Workaround for TypeReferences package error caused by Unity renamed styles
+            if (TypeReferences.Editor.ProjectSettings.SearchbarMinItemsCount < 99999)
+            {
+                TypeReferences.Editor.ProjectSettings.SearchbarMinItemsCount = 99999;
+            }
+
             EditorApplication.update += InitialShow;
         }
 
