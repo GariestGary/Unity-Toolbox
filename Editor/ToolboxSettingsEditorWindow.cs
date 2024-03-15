@@ -1,11 +1,18 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace VolumeBox.Toolbox.Editor
 {
     public class ToolboxSettingsEditorWindow: EditorWindow
     {
+        [SerializeField] private Texture2D m_MainSettingsIcon;
+        [SerializeField] private Texture2D m_PoolerIcon;
+        [SerializeField] private Texture2D m_AudioPlayerIcon;
+        [SerializeField] private Texture2D m_DatabaseIcon;
+
+
         private PoolerDataHolder poolerDataHolder;
         private AudioPlayerDataHolder audioPlayerDataHolder;
         private DatabaseDataHolder saverDataHolder;
@@ -86,10 +93,10 @@ namespace VolumeBox.Toolbox.Editor
 
                 selectedTab = GUILayout.Toolbar(selectedTab, new GUIContent[] 
                 {
-                    new GUIContent("Main Settings", EditorGUIUtility.IconContent("d__Popup").image), 
-                    new GUIContent("Pooler", EditorGUIUtility.IconContent("d_PreMatLight1").image), 
-                    new GUIContent("Audio Player", EditorGUIUtility.IconContent("d_Profiler.Audio").image), 
-                    new GUIContent("Database", EditorGUIUtility.IconContent("d_SaveAs").image)
+                    new GUIContent("Main Settings", m_MainSettingsIcon), 
+                    new GUIContent("Pooler", m_PoolerIcon), 
+                    new GUIContent("Audio Player", m_AudioPlayerIcon), 
+                    new GUIContent("Database", m_DatabaseIcon)
                 }, GUILayout.Height(35));
 
                 switch (selectedTab)

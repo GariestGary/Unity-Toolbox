@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox.Utils.UI
 {
+    /// <summary>
+    /// Component that provides fade in and fade out functionality for a CanvasGroup component. It has async methods for fading in and out.
+    /// </summary>
     public class CanvasGroupFader: MonoCached
     {
         [SerializeField] private bool customCanvas;
@@ -24,18 +27,21 @@ namespace VolumeBox.Toolbox.Utils.UI
         public float FadeInDuration => fadeInDuration;
         public float FadeOutDuration => fadeOutDuration;
 
-        protected override void Rise()
+        private bool IsCanvasGroupValidated()
         {
-            canvasGroup = GetComponent<CanvasGroup>();
+            if(canvasGroup == null)
+            {
+                canvasGroup = GetComponent<CanvasGroup>();
+            }
+
+            return canvasGroup != null;
         }
 
-        [NaughtyAttributes.Button("Fade In")]
         public void FadeIn()
         {
             FadeIn(fadeInDuration);
         }
 
-        [NaughtyAttributes.Button("Fade Out")]
         public void FadeOut()
         {
             FadeOut(FadeOutDuration);
@@ -45,18 +51,14 @@ namespace VolumeBox.Toolbox.Utils.UI
         {
             _fadeOutTokenSource ??= new CancellationTokenSource();
 
-#pragma warning disable
-            FadeOutForAsync(duration, _fadeOutTokenSource.Token);
-#pragma warning enable
+            FadeOutForAsync(duration, _fadeOutTokenSource.Token).Forget();
         }
 
         public void FadeIn(float duration)
         {
             _fadeInTokenSource ??= new CancellationTokenSource();
 
-#pragma warning disable
-            FadeInForAsync(duration, _fadeInTokenSource.Token);
-#pragma warning enable
+            FadeInForAsync(duration, _fadeInTokenSource.Token).Forget();
         }
 
         public async UniTask FadeOutAsync()
@@ -89,7 +91,10 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         protected async UniTask FadeOutForAsync(float fadeOutDuration, CancellationToken token)
         {
-            if (canvasGroup == null) return;
+            if(!IsCanvasGroupValidated())
+            {
+                return;
+            }
 
             _fadeInTokenSource?.Cancel();
             _fadeInTokenSource?.Dispose();
@@ -119,7 +124,10 @@ namespace VolumeBox.Toolbox.Utils.UI
 
         protected async UniTask FadeInForAsync(float duration, CancellationToken token)
         {
-            if (canvasGroup == null) return;
+            if(!IsCanvasGroupValidated())
+            {
+                return;
+            }
 
             _fadeOutTokenSource?.Cancel();
             _fadeOutTokenSource?.Dispose();

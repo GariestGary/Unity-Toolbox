@@ -27,9 +27,7 @@ namespace VolumeBox.Toolbox.Editor
 
         private static void InitialShow()
         {
-#pragma warning disable
             InitialShowAsync();
-#pragma warning enable
         }
 
         private static void InitialShowAsync()
@@ -110,11 +108,6 @@ namespace VolumeBox.Toolbox.Editor
             {
                 ToolboxSettingsEditorWindow.CreateAssets();
             }
-        }
-
-        private static void OnQuit()
-        {
-
         }
     }
 }

@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -18,14 +19,9 @@ namespace VolumeBox.Toolbox
 
         public List<PoolData> PoolsList => poolsList;
 
-        public void Run()
-        {
-#pragma warning disable
-            RunAsync();
-#pragma warning enable
-        }
+        private CancellationTokenSource m_GCTokenSource = new CancellationTokenSource();
 
-        private async UniTask RunAsync()
+        public void Run()
         {
             objectPoolParent = new GameObject("Pool Parent").transform;
 
@@ -40,16 +36,37 @@ namespace VolumeBox.Toolbox
 
             _removeMessage = new GameObjectRemovedMessage();
 
-            GCWorkerStart();
+            EnableGC();
         }
 
-        private async UniTask GCWorkerStart()
+        private async UniTask GCWorkerStart(CancellationToken token)
         {
-            while(true)
+            while(!token.IsCancellationRequested)
             {
-                await UniTask.Delay(TimeSpan.FromSeconds(m_GarbageCollectorWorkInterval));
+                await UniTask.Delay(TimeSpan.FromSeconds(m_GarbageCollectorWorkInterval)).AttachExternalCancellation(token);
+
+                if(token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 ForceGarbageCollector();
             }
+        }
+
+        public void EnableGC()
+        {
+            GCWorkerStart(m_GCTokenSource.Token).Forget();
+        }
+
+        public void DisableGC()
+        {
+            GCWorkerStop();
+        }
+
+        private void GCWorkerStop()
+        {
+            m_GCTokenSource = m_GCTokenSource.CancelAndCreate();
         }
 
         public int GetPoolObjectsCount(string poolTag)

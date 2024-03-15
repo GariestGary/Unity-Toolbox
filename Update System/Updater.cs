@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
+    /// <summary>
+    /// Class that controls lifecycle of <see cref="MonoCached">MonoCached</see> objects
+    /// </summary>
     public class Updater : ToolWrapper<Updater>
     {
         #pragma warning disable

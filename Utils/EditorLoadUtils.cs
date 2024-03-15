@@ -132,7 +132,6 @@ namespace VolumeBox.Toolbox
 
             if (length <= 0)
             {
-                //Debug.LogWarning("MAIN scene is not in build setting or it's index not 0. You can fix this from Toolbox/Init MAIN scene");
                 return false;
             }
 

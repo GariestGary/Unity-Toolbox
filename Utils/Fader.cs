@@ -26,9 +26,7 @@ namespace VolumeBox.Toolbox
         private static void OnStateChanged(PlayModeStateChange state)
         {
             if (!HasInstance) return;
-#pragma warning disable
-            Instance.FadeOutFor(0);
-#pragma warning restore
+            Instance.FadeOutFor(0).Forget();
         }
 #endif
 

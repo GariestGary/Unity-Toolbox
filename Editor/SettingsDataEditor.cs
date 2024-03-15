@@ -102,12 +102,10 @@ namespace VolumeBox.Toolbox.Editor
             GUILayout.Space(5);
 
             serializedObject.ApplyModifiedProperties();
-
-            if (EditorGUI.EndChangeCheck())
+            
+            if(EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(target);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
             }
         }
     }

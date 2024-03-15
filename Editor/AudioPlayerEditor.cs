@@ -105,8 +105,6 @@ namespace VolumeBox.Toolbox.Editor
             if(EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(target);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
             }
         }
 

@@ -24,11 +24,9 @@ namespace VolumeBox.Toolbox
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
             _scenePoolInitMethod = typeof(ScenePool).GetMethod("InitializePools", BindingFlags.NonPublic | BindingFlags.Instance);
 
-#pragma warning disable
-            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args, m.Additive), null, true);
-            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName), null, true);
-            Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes(), null, true);
-#pragma warning enable
+            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args, m.Additive).Forget(), null, true);
+            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName).Forget(), null, true);
+            Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes().Forget(), null, true);
         }
 
         protected override void Clear()
@@ -67,7 +65,7 @@ namespace VolumeBox.Toolbox
         /// <summary>
         /// Returns true if specified scene is opened in hierarchy
         /// </summary>
-        public bool IsSceneOpened(string sceneName)
+        public static bool IsSceneOpened(string sceneName)
         {
             return _openedScenes.Any(s => s.SceneDefinition.name == sceneName);
         }
