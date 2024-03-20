@@ -39,6 +39,8 @@ namespace VolumeBox.Toolbox
             EnableGC();
         }
 
+        #region Garbage Collector
+
         private async UniTask GCWorkerStart(CancellationToken token)
         {
             while(!token.IsCancellationRequested)
@@ -53,6 +55,10 @@ namespace VolumeBox.Toolbox
                 ForceGarbageCollector();
             }
         }
+        private void GCWorkerStop()
+        {
+            m_GCTokenSource = m_GCTokenSource.CancelAndCreate();
+        }
 
         public void EnableGC()
         {
@@ -64,43 +70,105 @@ namespace VolumeBox.Toolbox
             GCWorkerStop();
         }
 
-        private void GCWorkerStop()
+        public void ForceGarbageCollector()
         {
-            m_GCTokenSource = m_GCTokenSource.CancelAndCreate();
-        }
-
-        public int GetPoolObjectsCount(string poolTag)
-        {
-            var pool = pools.FirstOrDefault(p => p.tag == poolTag);
-
-            if (pool == null)
+            if(pools != null)
             {
-                return -1;
+                for (int i = 0; i < pools.Count; i++)
+                {
+                    ClearPoolGarbage(pools[i]);
+                }
+            }
+        }
+        private void ClearPoolGarbage(Pool pool)
+        {
+            var unusedObjects = pool.objects.Where(o => !o.Used).ToList();
+
+            if(unusedObjects.Count <= 0)
+            {
+                return;
             }
 
-            return pool.CurrentObjectsCount;
+            var allObjectsCount = pool.objects.Count;
+            var excessObjectsCount = allObjectsCount - pool.defaultSize;
+            var canBeCleared = excessObjectsCount - (unusedObjects.Count - pool.defaultSize) >= 0;
+            var usedObjects = allObjectsCount - unusedObjects.Count;
+            excessObjectsCount -= usedObjects;
+
+
+            if (canBeCleared)
+            {
+                for(int i = 0; i < excessObjectsCount; i++) 
+                {
+                    pool.objects.Remove(unusedObjects[i]);
+                    Destroy(unusedObjects[i].GameObject);
+                    _removeMessage.Obj = unusedObjects[i].GameObject;
+                    _removeMessage.RemoveType = GameObjectRemoveType.Destroyed;
+                    Messenger.Send(_removeMessage);
+                }
+            }
         }
 
-        public void TryAddPool(PoolData poolToAdd)
+        #endregion
+
+
+        public bool TryRemovePool(Pool pool)
+        {
+            if (pools == null)
+            {
+                return false;
+            }
+
+            if(!pools.Contains(pool))
+            {
+                return false;
+            }
+
+            foreach (var obj in pool.objects)
+            {
+                TryDespawn(obj);
+                Destroy(obj.GameObject);
+            }
+
+            pools.Remove(pool);
+            return true;
+        }
+
+        public bool TryRemovePool(string tag)
+        {
+            Pool poolToRemove = null;
+
+            for (int i = 0; i < pools.Count; i++)
+            {
+                if (pools[i].tag == tag)
+                {
+                    poolToRemove = pools[i];
+                    break;
+                }
+            }
+
+            if (poolToRemove == null)
+            {
+                Debug.LogWarning($"There is no pool named {tag}");
+                return false;
+            }
+
+            return TryRemovePool(poolToRemove);
+        }
+
+        #region Instantiating
+        
+        public Pool TryAddPool(PoolData poolToAdd)
         {
             if(poolToAdd.pooledObject == null)
             {
                 Debug.LogWarning($"Pool with tag {poolToAdd.tag} has no prefab setted");
-                return;
+                return null;
             }
 
             if(pools == null)
             {
-                return;
-            }
-
-            for (int i = 0; i < pools.Count; i++)
-            {
-                if (pools[i].tag == poolToAdd.tag)
-                {
-                    Debug.LogWarning("Pool with tag " + poolToAdd.tag + " already exist's");
-                    return;
-                }
+                return null;
             }
 
             List<PooledGameObject> objectPoolList = new List<PooledGameObject>();
@@ -115,46 +183,18 @@ namespace VolumeBox.Toolbox
                 CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
             }
 
-            pools.Add(new Pool(poolToAdd.tag, poolToAdd.initialSize, objectPoolList));
+            var pool = new Pool(poolToAdd.tag, poolToAdd.initialSize, objectPoolList);
+            pools.Add(pool);
+            return pool;
 
         }
 
-        public void TryAddPool(string tag, GameObject obj, int size)
+        public Pool TryAddPool(string tag, GameObject obj, int size)
         {
             PoolData pool = new PoolData() { tag = tag, pooledObject = obj, initialSize = size };
-
-            TryAddPool(pool);
+            return TryAddPool(pool);
         }
-
-        public void TryRemovePool(string tag)
-        {
-            Pool poolToRemove = null;// pools.FirstOrDefault(p => p.tag == tag);
-
-            if(pools == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < pools.Count; i++)
-            {
-                if (pools[i].tag == tag)
-                {
-                    poolToRemove = pools[i];
-                    break;
-                }
-            }
-
-            if (poolToRemove == null) return;
-
-            foreach (var obj in poolToRemove.objects)
-            {
-                TryDespawn(obj);
-                Destroy(obj.GameObject);
-            }
-
-            pools.Remove(poolToRemove);
-        }
-
+        
         public GameObject Spawn(string poolTag, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
         {
             return Spawn(poolTag, Vector3.zero, Quaternion.identity, parent, data, spawnAction);
@@ -163,24 +203,17 @@ namespace VolumeBox.Toolbox
         public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
         {
             //Returns null if object pool with specified tag doesn't exists
-            Pool poolToUse = null;
+            var poolsToUse = pools.Where(p => p.tag == poolTag).ToArray();
 
-            for (int i = 0; i < pools.Count; i++)
-            {
-                if (pools[i].tag.Equals(poolTag))
-                {
-                    poolToUse = pools[i];
-                    break;
-                }
-            }
-
-            if(poolToUse == null)
+            if(poolsToUse.Length <= 0)
             {
                 Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exists");
                 return null;
             }
-            
-			//get first unused obj
+
+
+            //get first unused obj
+            var poolToUse = poolsToUse[UnityEngine.Random.Range(0, poolsToUse.Length)];
             var objToSpawn = poolToUse.objects.Where(o => !o.Used).FirstOrDefault();
 
             //Create new object if last in list is active
@@ -232,6 +265,38 @@ namespace VolumeBox.Toolbox
         {
             return Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
         }
+        
+        private GameObject CreateNewPoolObject(GameObject obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
+        {
+            Transform poolParent = null;
+
+            if(addToPoolParent)
+            {
+                poolParent = objectPoolParent;
+            }
+
+            GameObject poolObj = Instantiate(obj, poolParent);
+
+            poolObj.name = obj.name;
+
+            Updater.InitializeObject(poolObj);
+
+            poolObj.Disable();
+
+            PooledGameObject pgo = new PooledGameObject()
+            {
+                GameObject = poolObj,
+                Used = false
+            };
+            
+            poolQueue.Add(pgo);
+
+            return poolObj;
+        }
+
+        #endregion
+
+        #region Reflection
 
         private void CallSpawns(GameObject obj, object data)
         {
@@ -258,7 +323,11 @@ namespace VolumeBox.Toolbox
                 }
             }
         }
-        
+
+        #endregion
+
+        #region Destroying
+
         public bool TryDespawn(GameObject objectToDespawn)
         {
             if (objectToDespawn == null)
@@ -337,86 +406,9 @@ namespace VolumeBox.Toolbox
 
             return despawned;
         }
-
-        private GameObject CreateNewPoolObject(GameObject obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
-        {
-            Transform poolParent = null;
-
-            if(addToPoolParent)
-            {
-                poolParent = objectPoolParent;
-            }
-
-            GameObject poolObj = Instantiate(obj, poolParent);
-
-            poolObj.name = obj.name;
-
-            Updater.InitializeObject(poolObj);
-
-            poolObj.Disable();
-
-            PooledGameObject pgo = new PooledGameObject()
-            {
-                GameObject = poolObj,
-                Used = false
-            };
-            
-            poolQueue.Add(pgo);
-
-            return poolObj;
-        }
-
-        private void ReturnToPool(GameObject obj)
-        {
-            obj.Disable();
-            obj.transform.SetParent(objectPoolParent);
-        }
-
-        public void ForceGarbageCollector()
-        {
-            if(pools != null)
-            {
-                for (int i = 0; i < pools.Count; i++)
-                {
-                    ClearPoolGarbage(pools[i]);
-                }
-            }
-        }
-
-        private void ClearPoolGarbage(Pool pool)
-        {
-            var unusedObjects = pool.objects.Where(o => !o.Used).ToList();
-
-            if(unusedObjects.Count <= 0)
-            {
-                return;
-            }
-
-            var allObjectsCount = pool.objects.Count;
-            var excessObjectsCount = allObjectsCount - pool.defaultSize;
-            var canBeCleared = excessObjectsCount - (unusedObjects.Count - pool.defaultSize) >= 0;
-            var usedObjects = allObjectsCount - unusedObjects.Count;
-            excessObjectsCount -= usedObjects;
-
-
-            if (canBeCleared)
-            {
-                for(int i = 0; i < excessObjectsCount; i++) 
-                {
-                    pool.objects.Remove(unusedObjects[i]);
-                    Destroy(unusedObjects[i].GameObject);
-                    _removeMessage.Obj = unusedObjects[i].GameObject;
-                    _removeMessage.RemoveType = GameObjectRemoveType.Destroyed;
-                    Messenger.Send(_removeMessage);
-                }
-            }
-        }
         
         private void HandleSceneUnload(string unloadedSceneName)
         {
-            //TODO: cache objects at spawn into dictionary with scene name key and destroy from correlated list
-            //what if after spawning and caching scene, i move object to other scene. object will stay in old list, correlated to old previous scene
-            
             for (int i = 0; i < pools.Count; i++)
             {
                 foreach (var obj in pools[i].objects)
@@ -428,36 +420,29 @@ namespace VolumeBox.Toolbox
                 }
             }
         }
-
-        private sealed class Pool
+        
+        private void ReturnToPool(GameObject obj)
         {
-            public string tag;
-            public int defaultSize;
-            public List<PooledGameObject> objects;
+            obj.Disable();
+            obj.transform.SetParent(objectPoolParent);
+        }
+        
+        #endregion
 
-            public int CurrentObjectsCount => objects.Count;
+        public int GetPoolObjectsCount(string poolTag)
+        {
+            var allPools = pools.Where(p => p.tag == poolTag);
 
-            public Pool(string tag, int defaultSize, List<PooledGameObject> objects = null)
+            if(allPools.Count() <= 0)
             {
-                this.tag = tag;
-                this.defaultSize = defaultSize;
-
-                if(objects == null)
-                {
-                    this.objects = new List<PooledGameObject>();
-                }
-                else
-                {
-                    this.objects = objects;
-                }
+                Debug.LogWarning($"There is no pool named {poolTag}");
+                return -1;
             }
+
+            return allPools.Sum(p => p.CurrentObjectsCount);
         }
 
-        private sealed class PooledGameObject
-        {
-            public GameObject GameObject;
-            public bool Used;
-        }
+
 
         public void Clear()
         {
@@ -475,6 +460,36 @@ namespace VolumeBox.Toolbox
         public int initialSize;
     }
 
+    public sealed class Pool
+    {
+        public string tag;
+        public int defaultSize;
+        public List<PooledGameObject> objects;
+
+        public int CurrentObjectsCount => objects.Count;
+
+        public Pool(string tag, int defaultSize, List<PooledGameObject> objects = null)
+        {
+            this.tag = tag;
+            this.defaultSize = defaultSize;
+
+            if(objects == null)
+            {
+                this.objects = new List<PooledGameObject>();
+            }
+            else
+            {
+                this.objects = objects;
+            }
+        }
+    }
+
+    public sealed class PooledGameObject
+        {
+            public GameObject GameObject;
+            public bool Used;
+        }
+    
     public class GameObjectRemovedMessage: Message
     {
         public GameObject Obj;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -12,8 +13,8 @@ namespace VolumeBox.Toolbox.Editor
         public static bool IsClipsChanged { get; set; }
 
         private AudioPlayerDataHolder m_AudioPlayerDataHolder;
-        private Dictionary<string, List<string>> m_AlbumClipsRelations = new();
-        private List<string> m_Albums = new();
+        private Dictionary<string, string[]> m_AlbumClipsRelations = new();
+        private string[] m_Albums = new string[0];
         private bool m_IsDataHolderValid = false;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -34,9 +35,10 @@ namespace VolumeBox.Toolbox.Editor
 
             var (albumIndex, clipIndex) = Parse(currentString);
 
+            EditorGUI.LabelField(position, label);
+
             var labelRect = position;
             labelRect.width = EditorGUIUtility.labelWidth;
-
             var halfPropertyWidth = (position.width - labelRect.width) * 0.5f;
 
             var albumLabel = position;
@@ -59,13 +61,11 @@ namespace VolumeBox.Toolbox.Editor
             clipRect.x = clipLabel.x + clipLabel.width;
             clipRect.width = halfPropertyWidth - clipLabel.width - 10;
 
-            EditorGUI.LabelField(labelRect, label);
-
-            albumIndex = EditorGUI.Popup(albumRect, albumIndex, m_Albums.ToArray());
+            albumIndex = EditorGUI.Popup(albumRect, albumIndex, m_Albums);
 
             var albumName = string.Empty;
             
-            if(albumIndex >= 0 && albumIndex < m_Albums.Count)
+            if(albumIndex >= 0 && albumIndex < m_Albums.Length)
             {
                 albumName = m_Albums[albumIndex];
             }
@@ -74,7 +74,7 @@ namespace VolumeBox.Toolbox.Editor
 
             if(m_AlbumClipsRelations.ContainsKey(albumName))
             {
-                clipsArray = m_AlbumClipsRelations[albumName].ToArray();
+                clipsArray = m_AlbumClipsRelations[albumName];
             }
 
             clipIndex = EditorGUI.Popup(clipRect, clipIndex, clipsArray);
@@ -98,11 +98,11 @@ namespace VolumeBox.Toolbox.Editor
                 return (-1, -1);
             }
 
-            var albumIndex = m_Albums.IndexOf(splits[0]);
+            var albumIndex = Array.IndexOf(m_Albums, splits[0]);
             var clipIndex = -1;
             if (albumIndex > -1)
             {
-                clipIndex = m_AlbumClipsRelations[splits[0]].IndexOf(splits[1]);
+                clipIndex = Array.IndexOf(m_AlbumClipsRelations[splits[0]], splits[1]);
             }
 
             return (albumIndex, clipIndex);
@@ -110,7 +110,7 @@ namespace VolumeBox.Toolbox.Editor
 
         private void ValidateClips()
         {
-            if (IsClipsChanged || (!IsClipsChanged && m_AudioPlayerDataHolder == null))
+            if (IsClipsChanged || m_AudioPlayerDataHolder == null)
             {
                 m_IsDataHolderValid = true;
 
@@ -127,11 +127,11 @@ namespace VolumeBox.Toolbox.Editor
                     return;
                 }
 
-                m_Albums = m_AudioPlayerDataHolder.Albums.ConvertAll(c => c.albumName);
+                m_Albums = m_AudioPlayerDataHolder.Albums.ConvertAll(c => c.albumName).ToArray();
 
                 foreach(var album in m_AudioPlayerDataHolder.Albums)
                 {
-                    m_AlbumClipsRelations.Add(album.albumName, album.clips.ConvertAll(c => c.id));
+                    m_AlbumClipsRelations.Add(album.albumName, album.clips.ConvertAll(c => c.id).ToArray());
                 }
 
                 IsClipsChanged = false;

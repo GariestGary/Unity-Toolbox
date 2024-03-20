@@ -40,11 +40,23 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.BeginChangeCheck();
 
 
+            //HEADER
+            EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            EditorGUILayout.LabelField("Scene Management", EditorStyles.largeLabel);
+            EditorGUILayout.Space(5);
+
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Resolve Scenes On Play", GUILayout.Width(LABEL_WIDTH));
             m_resolveAtPlay.boolValue = EditorGUILayout.Toggle(m_resolveAtPlay.boolValue, GUILayout.Width(EditorGUIUtility.singleLineHeight));
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+
+            EditorGUILayout.EndVertical();
+
+            //HEADER
+            EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            EditorGUILayout.LabelField("Timings", EditorStyles.largeLabel);
+            EditorGUILayout.Space(5);
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Time Scale", GUILayout.Width(LABEL_WIDTH));
@@ -77,6 +89,13 @@ namespace VolumeBox.Toolbox.Editor
                 optionDataList.Add(name);
             }
 
+            EditorGUILayout.EndVertical();
+
+            //HEADER
+            EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            EditorGUILayout.LabelField("Initial Scene", EditorStyles.largeLabel);
+            EditorGUILayout.Space(5);
+
             GUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(m_initialSceneName);
             GUILayout.EndHorizontal();
@@ -107,6 +126,8 @@ namespace VolumeBox.Toolbox.Editor
             {
                 EditorUtility.SetDirty(target);
             }
+
+            EditorGUILayout.EndVertical();
         }
     }
 }

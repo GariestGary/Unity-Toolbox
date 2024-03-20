@@ -193,8 +193,15 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
                 var initialSize = property.FindPropertyRelative("initialSize");
+                var prevInitSize = initialSize.intValue;
                 var settedValue = EditorGUILayout.IntField(initialSize.intValue);
                 settedValue = Mathf.Clamp(settedValue, 1, int.MaxValue);
+                
+                if(settedValue != prevInitSize)
+                {
+                    PoolerTagPropertyDrawer.IsPoolsChanged = true;
+                }
+
                 initialSize.intValue = settedValue;
 
                 EditorGUILayout.EndHorizontal();
