@@ -114,6 +114,7 @@ namespace VolumeBox.Toolbox.Editor
                 poolsList.InsertArrayElementAtIndex(0);
                 poolsList.GetArrayElementAtIndex(0).FindPropertyRelative("tag").stringValue = string.Empty;
                 currentScrollPosY = 0;
+                PoolerTagPropertyDrawer.IsPoolsChanged = true;
             }
 
             EditorGUILayout.EndHorizontal();
@@ -147,6 +148,7 @@ namespace VolumeBox.Toolbox.Editor
                     EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
+                    PoolerTagPropertyDrawer.IsPoolsChanged = true;
                     return;
                 }
             }
@@ -175,7 +177,13 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.BeginHorizontal();
 
                 EditorGUILayout.LabelField("Pool Tag", GUILayout.Width(labelsWidth));
+                var prevTag = tag.stringValue;
                 tag.stringValue = EditorGUILayout.TextField(tag.stringValue);
+
+                if(prevTag != tag.stringValue)
+                {
+                    PoolerTagPropertyDrawer.IsPoolsChanged = true;
+                }
 
                 EditorGUILayout.EndHorizontal();
 
@@ -193,14 +201,8 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
                 var initialSize = property.FindPropertyRelative("initialSize");
-                var prevInitSize = initialSize.intValue;
                 var settedValue = EditorGUILayout.IntField(initialSize.intValue);
                 settedValue = Mathf.Clamp(settedValue, 1, int.MaxValue);
-                
-                if(settedValue != prevInitSize)
-                {
-                    PoolerTagPropertyDrawer.IsPoolsChanged = true;
-                }
 
                 initialSize.intValue = settedValue;
 

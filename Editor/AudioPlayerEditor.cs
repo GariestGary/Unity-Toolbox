@@ -168,7 +168,12 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Album Name", GUILayout.Width(labelSize));
 
+                var prevAlbumName = albumName.stringValue;
                 albumName.stringValue = EditorGUILayout.TextField(albumName.stringValue);
+                if(prevAlbumName != albumName.stringValue)
+                {
+                    AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
+                }
 
                 GUILayout.Space(25);
 
@@ -295,12 +300,20 @@ namespace VolumeBox.Toolbox.Editor
 
                 //clip id draw
                 EditorGUILayout.BeginHorizontal();
+                
                 EditorGUILayout.LabelField("Clip ID", GUILayout.Width(labelSize));
+                var prevClipId = clipId.stringValue;
                 clipId.stringValue = EditorGUILayout.TextField(clipId.stringValue);
+                if(prevClipId != clipId.stringValue)
+                {
+                    AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
+                }
+
                 EditorGUILayout.EndHorizontal();
 
                 //clip reference draw
                 EditorGUILayout.BeginHorizontal();
+                
                 EditorGUILayout.LabelField("Audio Clip", GUILayout.Width(labelSize));
                 var clip = property.FindPropertyRelative("clip");
                 EditorGUILayout.PropertyField(clip, GUIContent.none);

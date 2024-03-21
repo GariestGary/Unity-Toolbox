@@ -15,14 +15,13 @@ namespace VolumeBox.Toolbox.Editor
         private AudioPlayerDataHolder m_AudioPlayerDataHolder;
         private Dictionary<string, string[]> m_AlbumClipsRelations = new();
         private string[] m_Albums = new string[0];
-        private bool m_IsDataHolderValid = false;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             ValidateClips();
 
 
-            if(!m_IsDataHolderValid)
+            if(m_AudioPlayerDataHolder == null)
             {
                 EditorGUI.PropertyField(position, property, label, true);
                 return;
@@ -112,8 +111,6 @@ namespace VolumeBox.Toolbox.Editor
         {
             if (IsClipsChanged || m_AudioPlayerDataHolder == null)
             {
-                m_IsDataHolderValid = true;
-
                 m_AlbumClipsRelations.Clear();
 
                 if(m_AudioPlayerDataHolder == null)
@@ -123,7 +120,6 @@ namespace VolumeBox.Toolbox.Editor
 
                 if(m_AudioPlayerDataHolder == null)
                 {
-                    m_IsDataHolderValid = false;
                     return;
                 }
 

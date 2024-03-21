@@ -8,6 +8,6 @@ namespace VolumeBox.Toolbox.Editor
     [AttributeUsage(AttributeTargets.Field)]
     public class FromPoolAttribute : PropertyAttribute
     {
-        
+
     }
 }

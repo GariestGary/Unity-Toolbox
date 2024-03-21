@@ -19,7 +19,7 @@ namespace VolumeBox.Toolbox.Editor
                 return;
             }
 
-            m_poolsList = serializedObject.FindProperty("pools");
+            m_poolsList = serializedObject.FindProperty("m_Pools");
         }
 
         public override void OnInspectorGUI()

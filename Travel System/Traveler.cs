@@ -107,11 +107,10 @@ namespace VolumeBox.Toolbox
             }
 
             Messenger.Send(new SceneLoadingMessage(sceneName));
-            var loadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-            loadingOperation.allowSceneActivation = false;
             await WaitForLoadingOperationsEnd(sceneName);
+            var loadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
             _currentLoadingSceneOperation = loadingOperation;
-            loadingOperation.allowSceneActivation = true;
+            await loadingOperation;
             Messenger.Send(new SceneLoadedMessage(sceneName));
             Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
             await UniTask.DelayFrame(1);
