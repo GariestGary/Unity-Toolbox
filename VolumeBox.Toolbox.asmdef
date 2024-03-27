@@ -2,9 +2,8 @@
     "name": "VolumeBox.Toolbox",
     "rootNamespace": "VolumeBox.Toolbox",
     "references": [
-        "GUID:776d03a35f1b52c4a9aed9f56d7b4229",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:ea6a6314f279f814facc8c48a7d3c9f1"
+        "GUID:88be65f96b86746888c927a5c8ff3534"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

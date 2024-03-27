@@ -1,7 +1,7 @@
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #else
-using NaughtyAttributes;
+using Alchemy.Inspector;
 #endif
 using UnityEngine;
 
@@ -9,19 +9,7 @@ namespace VolumeBox.Toolbox
 {
     public class MonoCached : MonoBehaviour
     {
-        #if ODIN_INSPECTOR
-        [TitleGroup("Process Settings", alignment: TitleAlignments.Right), HorizontalGroup("Process Settings/Process"), ToggleLeft, PropertyOrder(int.MaxValue - 1)]
-        #else
-        [Foldout("Process Settings")]
-        #endif
-        [SerializeField]
         private bool processIfInactiveSelf = false;
-        #if ODIN_INSPECTOR
-        [TitleGroup("Process Settings"), HorizontalGroup("Process Settings/Process"), ToggleLeft, PropertyOrder(int.MaxValue)]
-        #else
-        [Foldout("Process Settings")]
-        #endif
-        [SerializeField]
         private bool processIfInactiveInHierarchy = false;
 
         protected float delta;

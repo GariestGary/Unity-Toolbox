@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -97,7 +99,12 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.Space(5);
 
             GUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(m_initialSceneName);
+            EditorGUILayout.LabelField("Initial Scene Name", GUILayout.Width(EditorGUIUtility.labelWidth));
+            selectedScene = EditorGUILayout.Popup(selectedScene, EditorBuildSettings.scenes.ToList().ConvertAll(x => 
+            {
+                int pos = x.path.LastIndexOf("/") + 1;
+                return x.path.Substring(pos, x.path.Length - pos).Replace(".unity", "");
+            }).ToArray());
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();

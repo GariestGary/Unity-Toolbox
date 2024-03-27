@@ -14,11 +14,13 @@ namespace VolumeBox.Toolbox.Utils.UI
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf(nameof(customCanvas))]
 #else
-        [NaughtyAttributes.ShowIf(nameof(customCanvas))]
+        //[NaughtyAttributes.ShowIf(nameof(customCanvas))]
 #endif
         private CanvasGroup canvasGroup;
-        [SerializeField, NaughtyAttributes.MinValue(0)] private float fadeInDuration = 0.2f;
-        [SerializeField, NaughtyAttributes.MinValue(0)] private float fadeOutDuration = 0.2f;
+        [SerializeField]//, NaughtyAttributes.MinValue(0)] 
+        private float fadeInDuration = 0.2f;
+        [SerializeField]//, NaughtyAttributes.MinValue(0)] 
+        private float fadeOutDuration = 0.2f;
         [SerializeField] private bool controlInteractions = true;
 
         private CancellationTokenSource _fadeInTokenSource;
