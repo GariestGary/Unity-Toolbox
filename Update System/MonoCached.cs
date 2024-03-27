@@ -2,6 +2,8 @@
 using Sirenix.OdinInspector;
 #else
 using Alchemy.Inspector;
+using System;
+
 #endif
 using UnityEngine;
 
@@ -9,8 +11,8 @@ namespace VolumeBox.Toolbox
 {
     public class MonoCached : MonoBehaviour
     {
-        private bool processIfInactiveSelf = false;
-        private bool processIfInactiveInHierarchy = false;
+        [SerializeField, HideInInspector] private bool processIfInactiveSelf = false;
+        [SerializeField, HideInInspector] private bool processIfInactiveInHierarchy = false;
 
         protected float delta;
         protected float fixedDelta;

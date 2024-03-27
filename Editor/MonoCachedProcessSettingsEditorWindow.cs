@@ -8,24 +8,26 @@ namespace VolumeBox.Toolbox.Editor
     public class MonoCachedProcessSettingsEditorWindow : AlchemyEditorWindow
     {
         private static MonoCachedProcessSettingsEditorWindow instance;
-
         private MonoCached m_Target;
-
-        public void SetTarget(MonoCached mono)
+        
+        public void DrawTarget(MonoCached mono)
         {
             m_Target = mono;
-        }
 
-        protected override void CreateGUI()
-        {
             var inHierarchy = new Toggle("Process If Inactive In Hierarchy");
-            //var inHierarchyProperty = new SerializedProperty();
-            //inHierarchy.BindProperty();
+            var self = new Toggle("Process If Inactive Self");
+            var serializedObject = new SerializedObject(m_Target);
+            var selfProperty = serializedObject.FindProperty("processIfInactiveSelf");
+            var inHierarchyProperty = serializedObject.FindProperty("processIfInactiveInHierarchy");
+            inHierarchy.BindProperty(inHierarchyProperty);
+            self.BindProperty(selfProperty);
+            self.style.flexShrink = new StyleFloat(1);
+            rootVisualElement.Add(self);
             rootVisualElement.Add(inHierarchy);
         }
 
         [MenuItem("CONTEXT/MonoCached/Process Settings")]
-        static void Open(MenuCommand command)
+        public static void Open(MenuCommand command)
         {
             if(instance != null)
             {
@@ -33,10 +35,12 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             MonoCached mono = command.context as MonoCached;
-            var window = GetWindow<MonoCachedProcessSettingsEditorWindow>(mono.GetType().ToString() + " Process Settings");
-            window.SetTarget(mono);
-            window.Show();
+            var window = GetWindow<MonoCachedProcessSettingsEditorWindow>(mono.GetType().ToString() + " Settings");
+            window.maxSize = new UnityEngine.Vector2(300, 100);
             instance = window;
+            window.minSize = new UnityEngine.Vector2(300, 100);
+            window.DrawTarget(mono);
+            window.Show();
         }
     }
 }
