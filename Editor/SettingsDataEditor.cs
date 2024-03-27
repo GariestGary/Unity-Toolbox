@@ -21,8 +21,8 @@ namespace VolumeBox.Toolbox.Editor
         private SerializedProperty m_manualFadeOut;
         private SerializedProperty m_fadeOutDuration;
 
-        private int selectedFramerate;
         private int selectedScene;
+        //private string[] scenesList;
 
         private void OnEnable()
         {
@@ -33,6 +33,12 @@ namespace VolumeBox.Toolbox.Editor
             m_initialSceneArgs = serializedObject.FindProperty("InitialSceneArgs");
             m_manualFadeOut = serializedObject.FindProperty("ManualFadeOut");
             m_fadeOutDuration = serializedObject.FindProperty("FadeOutDuration");
+
+            //scenesList = EditorBuildSettings.scenes.ToList().ConvertAll(x =>
+            //{
+            //    int pos = x.path.LastIndexOf("/") + 1;
+            //    return x.path.Substring(pos, x.path.Length - pos).Replace(".unity", "");
+            //}).ToArray();
         }
 
         public override void OnInspectorGUI()
@@ -100,11 +106,7 @@ namespace VolumeBox.Toolbox.Editor
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Initial Scene Name", GUILayout.Width(EditorGUIUtility.labelWidth));
-            selectedScene = EditorGUILayout.Popup(selectedScene, EditorBuildSettings.scenes.ToList().ConvertAll(x => 
-            {
-                int pos = x.path.LastIndexOf("/") + 1;
-                return x.path.Substring(pos, x.path.Length - pos).Replace(".unity", "");
-            }).ToArray());
+            EditorGUILayout.PropertyField(m_initialSceneName);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();

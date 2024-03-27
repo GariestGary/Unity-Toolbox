@@ -20,54 +20,58 @@ namespace VolumeBox.Toolbox.Editor
         {
             ValidateClips();
 
-
             if(m_AudioPlayerDataHolder == null)
             {
                 EditorGUI.PropertyField(position, property, label, true);
                 return;
             }
 
-
             EditorGUI.BeginChangeCheck();
 
             var currentString = property.stringValue;
-
             var (albumIndex, clipIndex) = Parse(currentString);
 
             EditorGUI.LabelField(position, label);
 
             var labelRect = position;
-            labelRect.width = EditorGUIUtility.labelWidth;
+            labelRect.width = EditorGUIUtility.labelWidth + 2;
             var halfPropertyWidth = (position.width - labelRect.width) * 0.5f;
 
+            #region ALBUM
+            //Label
             var albumLabel = position;
-            albumLabel.x = labelRect.width + 20;
+            albumLabel.x = labelRect.width;
             albumLabel.width = 40;
 
             EditorGUI.LabelField(albumLabel, "Album");
 
+            //Property
             var albumRect = position;
-            albumRect.x = albumLabel.x + albumLabel.width;
+            albumRect.x = albumLabel.x + albumLabel.width + 5;
             albumRect.width = halfPropertyWidth - albumLabel.width;
 
-            var clipLabel = position;
-            clipLabel.x = albumRect.x + albumRect.width + 10;
-            clipLabel.width = 40;
-
-            EditorGUI.LabelField(clipLabel, "Clip");
-
-            var clipRect = position;
-            clipRect.x = clipLabel.x + clipLabel.width;
-            clipRect.width = halfPropertyWidth - clipLabel.width - 10;
-
             albumIndex = EditorGUI.Popup(albumRect, albumIndex, m_Albums);
-
+            
             var albumName = string.Empty;
             
             if(albumIndex >= 0 && albumIndex < m_Albums.Length)
             {
                 albumName = m_Albums[albumIndex];
             }
+            #endregion
+
+            #region CLIP
+            //Label
+            var clipLabel = position;
+            clipLabel.x = albumRect.x + albumRect.width + 5;
+            clipLabel.width = 40;
+
+            EditorGUI.LabelField(clipLabel, "Clip");
+
+            //Property
+            var clipRect = position;
+            clipRect.x = clipLabel.x + clipLabel.width;
+            clipRect.width = halfPropertyWidth - clipLabel.width - 10;
 
             var clipsArray = new string[0];
 
@@ -84,6 +88,7 @@ namespace VolumeBox.Toolbox.Editor
             {
                 clipName = clipsArray[clipIndex];
             }
+            #endregion
 
             property.stringValue = string.Join("/", albumName, clipName);   
         }

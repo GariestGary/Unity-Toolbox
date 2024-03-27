@@ -35,13 +35,17 @@ namespace VolumeBox.Toolbox.Editor
                 selectedPoolIndex = 0;
             }
 
-            EditorGUI.LabelField(position, label);
-
             var labelRect = position;
-            labelRect.x += EditorGUIUtility.labelWidth;
-            labelRect.width -= EditorGUIUtility.labelWidth;
+            labelRect.width = EditorGUIUtility.labelWidth + 2;
+            //labelRect.width += 2;
 
-            selectedPoolIndex = EditorGUI.Popup(labelRect, selectedPoolIndex, m_ParsedPoolTags);
+            EditorGUI.LabelField(labelRect, label);
+
+            var poolRect = position;
+            poolRect.x = labelRect.width;
+            poolRect.width -= labelRect.width;
+
+            selectedPoolIndex = EditorGUI.Popup(poolRect, selectedPoolIndex, m_ParsedPoolTags);
 
             if(m_PoolsAvailable.Length <= 0)
             {
