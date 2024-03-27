@@ -94,7 +94,7 @@ namespace VolumeBox.Toolbox.Editor
 
             if(splits == null || splits.Length < 2)
             {
-                return (-1, -1);
+                return (0, 0);
             }
 
             var albumIndex = Array.IndexOf(m_Albums, splits[0]);
