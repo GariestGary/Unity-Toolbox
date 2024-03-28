@@ -26,6 +26,7 @@
             <ui:Label tabindex="-1" text="Initial Scene" parse-escape-sequences="true" display-tooltip-when-elided="true" class="header-label" />
             <ui:VisualElement name="initial_scene_name_container" class="property-container">
                 <ui:Label tabindex="-1" text="Initial Scene Name" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+                <VolumeBox.Toolbox.Editor.SceneField name="scene_name_field" style="width: auto; flex-grow: 1;" />
             </ui:VisualElement>
             <ui:VisualElement name="initial_scene_args_container" class="property-container">
                 <ui:Label tabindex="-1" text="Initial Scene Args" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />

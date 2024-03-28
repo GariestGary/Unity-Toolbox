@@ -52,6 +52,7 @@ namespace VolumeBox.Toolbox.Editor
             element.Q<Slider>("timescale_slider").BindProperty(m_timeScale);
             element.Q<FloatField>("timescale_floatfield").BindProperty(m_timeScale);
             element.Q<Toggle>("resolve_at_play_toggle").BindProperty(m_resolveAtPlay);
+            //element.Q<SceneField>("scene_name_field").Bin(m_initialSceneName);
             return element;
         }
 
