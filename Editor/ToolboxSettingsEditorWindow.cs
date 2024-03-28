@@ -1,17 +1,19 @@
 #if UNITY_EDITOR
+using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+using UnityEngine.UIElements;
+using static Codice.CM.WorkspaceServer.WorkspaceTreeDataStore;
 
 namespace VolumeBox.Toolbox.Editor
 {
-    public class ToolboxSettingsEditorWindow: EditorWindow
+    public class ToolboxSettingsEditorWindow: AlchemyEditorWindow
     {
         [SerializeField] private Texture2D m_MainSettingsIcon;
         [SerializeField] private Texture2D m_PoolerIcon;
         [SerializeField] private Texture2D m_AudioPlayerIcon;
         [SerializeField] private Texture2D m_DatabaseIcon;
-
+        [SerializeField] private GUISkin m_TabSkin;
 
         private PoolerDataHolder poolerDataHolder;
         private AudioPlayerDataHolder audioPlayerDataHolder;
@@ -23,6 +25,8 @@ namespace VolumeBox.Toolbox.Editor
         private AudioPlayerEditor audioEditor;
 
         private int selectedTab;
+        private int prevSelectedTab;
+        private VisualElement currentContent;
 
         [MenuItem("Toolbox/Settings", priority = 1)]
         public static void ShowMyEditor()
@@ -82,7 +86,52 @@ namespace VolumeBox.Toolbox.Editor
             saverEditor = (DatabaseEditor)UnityEditor.Editor.CreateEditor(saverDataHolder);
         }
 
+        protected override void CreateGUI()
+        {
+            var toolbar = new IMGUIContainer(() => 
+            {
+                selectedTab = DrawToolbar();
+            });
+            rootVisualElement.Add(toolbar);
+        }
+
         private void OnGUI()
+        {
+            if (selectedTab == prevSelectedTab && currentContent != null)
+            {
+                return;
+            }
+
+            VisualElement content = new VisualElement();
+            
+            switch (selectedTab)
+            {
+                case 0:
+                    content = MainSettingsGUI();
+                    break;
+                case 1:
+                    content = PoolerGUI();
+                    break;
+                case 2:
+                    content = AudioPlayerGUI();
+                    break;
+                case 3:
+                    content = SaverGUI();
+                    break;
+                default:
+                    break;
+            }
+
+            if(currentContent != null)
+            {
+                rootVisualElement.Remove(currentContent);
+            }
+            rootVisualElement.Add(content);
+            currentContent = content;
+            prevSelectedTab = selectedTab;
+        }
+
+        private int DrawToolbar()
         {
             if(StaticData.HasSettings)
             {
@@ -91,29 +140,16 @@ namespace VolumeBox.Toolbox.Editor
                     InitEditors();
                 }
 
-                selectedTab = GUILayout.Toolbar(selectedTab, new GUIContent[] 
+                GUI.skin = m_TabSkin;
+                var selectedIndex = GUILayout.Toolbar(selectedTab, new GUIContent[] 
                 {
                     new GUIContent("Main Settings", m_MainSettingsIcon), 
                     new GUIContent("Pooler", m_PoolerIcon), 
                     new GUIContent("Audio Player", m_AudioPlayerIcon), 
                     new GUIContent("Database", m_DatabaseIcon)
-                }, GUILayout.Height(35));
-
-                switch (selectedTab)
-                {
-                    case 0:
-                        MainSettingsGUI();
-                        break;
-                    case 1:
-                        PoolerGUI();
-                        break;
-                    case 2:
-                        AudioPlayerGUI();
-                        break;
-                    case 3:
-                        SaverGUI();
-                        break;
-                }
+                }, m_TabSkin.GetStyle("Tab"), GUILayout.Height(40));
+//
+                return selectedIndex;
             }
             else 
             {
@@ -124,31 +160,32 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     InitialScreenWindow.OpenWindow();
                 }
+
+                return -1;
             }
 
         }
 
-        private void MainSettingsGUI()
+        private VisualElement MainSettingsGUI()
         {
-            settingsEditor?.OnInspectorGUI();
+            return settingsEditor?.CreateInspectorGUI();
         }
 
-        private void PoolerGUI()
+        private VisualElement PoolerGUI()
         {
-            
-            poolerEditor?.OnInspectorGUI();
+            return poolerEditor?.CreateInspectorGUI();
         }
 
-        private void AudioPlayerGUI()
+        private VisualElement AudioPlayerGUI()
         {
             
-            audioEditor?.OnInspectorGUI();
+            return audioEditor?.CreateInspectorGUI();
         }
 
-        private void SaverGUI()
+        private VisualElement SaverGUI()
         {
             
-            saverEditor?.OnInspectorGUI();
+            return saverEditor?.CreateInspectorGUI();
         }
 
         private void OnLostFocus()

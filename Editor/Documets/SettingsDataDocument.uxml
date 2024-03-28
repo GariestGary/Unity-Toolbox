@@ -1,0 +1,41 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scripts/Unity%20Toolbox/Editor/Documets/toolbox-styles.uss?fileID=7433441132597879392&amp;guid=bc882e28717894746820ae80c13e5232&amp;type=3#toolbox-styles" />
+    <ui:VisualElement style="flex-grow: 1; background-color: rgb(56, 56, 56);">
+        <ui:VisualElement name="scene_management_container" class="box-group" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;">
+            <ui:Label tabindex="-1" text="Scene Management" parse-escape-sequences="true" display-tooltip-when-elided="true" class="header-label" />
+            <ui:VisualElement name="resolve_at_play" class="property-container">
+                <ui:Label tabindex="-1" text="Resolve Scenes At Play" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" style="flex-grow: 0;" />
+                <ui:Toggle name="resolve_at_play_toggle" class="toggle-labelless" style="flex-shrink: 0; flex-grow: 0; width: 16px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="timings_container" class="box-group" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;">
+            <ui:Label tabindex="-1" text="Timings" parse-escape-sequences="true" display-tooltip-when-elided="true" class="header-label" />
+            <ui:VisualElement name="time_scale_container" class="property-container" style="flex-grow: 0; flex-direction: row; flex-wrap: nowrap;">
+                <ui:Label tabindex="-1" text="Time Scale" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+                <ui:VisualElement name="silder_container" style="flex-grow: 1; flex-direction: row; flex-shrink: 1; width: auto;">
+                    <ui:Slider picking-mode="Ignore" value="42" high-value="10" name="timescale_slider" style="flex-shrink: 1; min-height: auto; width: 70%; flex-grow: 1;" />
+                    <ui:FloatField value="42,2" name="timescale_floatfield" style="flex-shrink: 1; align-items: stretch; flex-direction: row; width: 50px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="framerate_container" class="property-container">
+                <ui:Label tabindex="-1" text="Target Framerate" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+                <ui:FloatField value="42,2" style="width: 50px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="initial_scene_container" class="box-group" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;">
+            <ui:Label tabindex="-1" text="Initial Scene" parse-escape-sequences="true" display-tooltip-when-elided="true" class="header-label" />
+            <ui:VisualElement name="initial_scene_name_container" class="property-container">
+                <ui:Label tabindex="-1" text="Initial Scene Name" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+            </ui:VisualElement>
+            <ui:VisualElement name="initial_scene_args_container" class="property-container">
+                <ui:Label tabindex="-1" text="Initial Scene Args" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+            </ui:VisualElement>
+            <ui:VisualElement name="manual_fade_out_container" class="property-container">
+                <ui:Label tabindex="-1" text="Manual Fade Out" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+            </ui:VisualElement>
+            <ui:VisualElement name="fade_out_duration_container" class="property-container">
+                <ui:Label tabindex="-1" text="Fade Out Duration" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,11 +1,13 @@
 #if UNITY_EDITOR
+using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(AudioPlayerDataHolder))]
-    public class AudioPlayerEditor: UnityEditor.Editor
+    public class AudioPlayerEditor: AlchemyEditor
     {
         private SerializedProperty m_albums;
         private Vector2 currentScrollPosition;
@@ -19,7 +21,12 @@ namespace VolumeBox.Toolbox.Editor
             m_albums = serializedObject.FindProperty("albums");
         }
 
-        public override void OnInspectorGUI()
+        public override VisualElement CreateInspectorGUI()
+        {
+            return base.CreateInspectorGUI();
+        }
+
+        public void CreateIMGUI()
         {
             serializedObject.Update();
 

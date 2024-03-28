@@ -1,11 +1,13 @@
 #if UNITY_EDITOR
+using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(DatabaseDataHolder))]
-    public class DatabaseEditor : UnityEditor.Editor
+    public class DatabaseEditor : AlchemyEditor
     {
         private SerializedProperty m_database;
 
@@ -18,7 +20,12 @@ namespace VolumeBox.Toolbox.Editor
             m_database = serializedObject.FindProperty("properties");
         }
 
-        public override void OnInspectorGUI()
+        public override VisualElement CreateInspectorGUI()
+        {
+            return base.CreateInspectorGUI();
+        }
+
+        public void CreateIMGUI()
         {
             serializedObject.Update();
 

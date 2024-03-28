@@ -1,16 +1,21 @@
 #if UNITY_EDITOR
+using Alchemy.Editor;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(SettingsData))]
-    public class SettingsDataEditor: UnityEditor.Editor
+    public class SettingsDataEditor: AlchemyEditor
     {
+        [SerializeField] private VisualTreeAsset m_Document;
+
         public const float LABEL_WIDTH = 150;
 
         private SerializedProperty m_resolveAtPlay;
@@ -41,7 +46,16 @@ namespace VolumeBox.Toolbox.Editor
             //}).ToArray();
         }
 
-        public override void OnInspectorGUI()
+        public override VisualElement CreateInspectorGUI()
+        {
+            var element = m_Document.Instantiate();
+            element.Q<Slider>("timescale_slider").BindProperty(m_timeScale);
+            element.Q<FloatField>("timescale_floatfield").BindProperty(m_timeScale);
+            element.Q<Toggle>("resolve_at_play_toggle").BindProperty(m_resolveAtPlay);
+            return element;
+        }
+
+        public void CreateIMGUI()
         {
             serializedObject.Update();
 

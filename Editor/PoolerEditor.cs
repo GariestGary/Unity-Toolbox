@@ -1,11 +1,13 @@
 #if UNITY_EDITOR
+using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(PoolerDataHolder))]
-    public class PoolerEditor : UnityEditor.Editor
+    public class PoolerEditor : AlchemyEditor
     {
         private SerializedProperty m_poolsList;
         private SerializedProperty m_poolGCInterval;
@@ -26,7 +28,12 @@ namespace VolumeBox.Toolbox.Editor
             m_poolGCInterval = serializedObject.FindProperty("m_GarbageCollectorWorkInterval");
         }
 
-        public override void OnInspectorGUI()
+        public override VisualElement CreateInspectorGUI()
+        {
+            return base.CreateInspectorGUI();
+        }
+
+        public void CreateIMGUI()
         {
             serializedObject.Update();
 
