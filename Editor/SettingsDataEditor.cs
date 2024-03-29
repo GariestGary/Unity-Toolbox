@@ -27,6 +27,7 @@ namespace VolumeBox.Toolbox.Editor
         private SerializedProperty m_fadeOutDuration;
 
         private int selectedScene;
+        private VisualElement m_Container;
         //private string[] scenesList;
 
         private void OnEnable()
@@ -52,8 +53,28 @@ namespace VolumeBox.Toolbox.Editor
             element.Q<Slider>("timescale_slider").BindProperty(m_timeScale);
             element.Q<FloatField>("timescale_floatfield").BindProperty(m_timeScale);
             element.Q<Toggle>("resolve_at_play_toggle").BindProperty(m_resolveAtPlay);
-            //element.Q<SceneField>("scene_name_field").Bin(m_initialSceneName);
+            element.Q<SceneField>("scene_name_field").BindProperty(m_initialSceneName);
+            var manualFadeOutToggle = element.Q<Toggle>("manual_fade_out_toggle");
+            manualFadeOutToggle.BindProperty(m_manualFadeOut);
+            element.Q<FloatField>("target_framerate_float").BindProperty(m_targetFrameRate);
+
+            ObjectField initialSceneArgsField = new ObjectField(string.Empty);
+            initialSceneArgsField.AddToClassList("field-grow");
+            initialSceneArgsField.objectType = typeof(SceneArgs);
+            initialSceneArgsField.allowSceneObjects = false;
+            initialSceneArgsField.BindProperty(m_initialSceneArgs);
+            element.Q<VisualElement>("initial_scene_args_field_container").Add(initialSceneArgsField);
+
+            manualFadeOutToggle.RegisterValueChangedCallback<bool>(OnManualFadeOutToggleChanged);
+
+            m_Container = element;
             return element;
+        }
+
+        private void OnManualFadeOutToggleChanged(ChangeEvent<bool> evt)
+        {
+            m_Container.Q<VisualElement>("fade_out_duration_container").visible = !evt.newValue;
+            m_Container.MarkDirtyRepaint();
         }
 
         public void CreateIMGUI()

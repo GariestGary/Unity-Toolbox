@@ -1,14 +1,18 @@
 .box-group {
     flex-grow: 1;
     background-color: rgba(0, 0, 0, 0.2);
-    border-left-width: 15px;
-    border-right-width: 15px;
-    border-top-width: 15px;
-    border-bottom-width: 15px;
-    border-top-left-radius: 7px;
-    border-bottom-left-radius: 7px;
-    border-top-right-radius: 7px;
-    border-bottom-right-radius: 7px;
+    border-left-width: 8px;
+    border-right-width: 8px;
+    border-top-width: 8px;
+    border-bottom-width: 8px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .header-label {
@@ -19,7 +23,7 @@
 }
 
 .toggle-labelless {
-    width: 16px;
+    width: auto;
     flex-direction: row;
     border-left-width: 0;
     border-right-width: 0;
@@ -29,10 +33,11 @@
     border-right-color: rgb(255, 255, 255);
     border-top-color: rgb(255, 255, 255);
     border-bottom-color: rgb(255, 255, 255);
-    border-top-left-radius: 1px;
-    border-bottom-left-radius: 1px;
-    border-top-right-radius: 1px;
-    border-bottom-right-radius: 1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    flex-grow: 1;
 }
 
 .default-label {
@@ -49,6 +54,42 @@
     height: 30px;
     padding-left: 0;
     padding-right: 0;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.field-grow {
+    flex-grow: 1;
+    width: auto;
+    height: auto;
+    align-items: stretch;
+    flex-shrink: 0;
+    justify-content: space-around;
+}
+
+.field-short {
+    width: 50px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: space-around;
+}
+
+.field-container {
+    flex-grow: 1;
+    justify-content: space-between;
+    align-self: center;
+    flex-direction: row;
+    align-items: stretch;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }

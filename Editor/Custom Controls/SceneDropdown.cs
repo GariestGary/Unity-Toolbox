@@ -11,6 +11,8 @@ namespace VolumeBox.Toolbox.Editor
 {
     internal sealed class SceneDropdown: AdvancedDropdown
     {
+        public event Action<SceneDropdownItem> OnItemSelected;
+
         public SceneDropdown(AdvancedDropdownState state) : base(state)
         {
         }
@@ -26,10 +28,15 @@ namespace VolumeBox.Toolbox.Editor
                 var lastSlash = scene.LastIndexOf("/") + 1;
                 var formattedSceneName = scene.Substring(lastSlash, scene.Length - lastSlash).Replace(".unity", "");
 
-                root.AddChild(new SceneDropdownItem(formattedSceneName, formattedSceneName));
+                root.AddChild(new SceneDropdownItem(formattedSceneName));
             }
 
             return root;
+        }
+
+        protected override void ItemSelected(AdvancedDropdownItem item)
+        {
+            OnItemSelected?.Invoke(item as SceneDropdownItem);
         }
     }
 
@@ -37,9 +44,9 @@ namespace VolumeBox.Toolbox.Editor
     {
         public readonly string SceneName;
 
-        public SceneDropdownItem(string sceneName, string name) : base(name)
+        public SceneDropdownItem(string name) : base(name)
         {
-            SceneName = sceneName;
+            SceneName = name;
         }
     }
 }

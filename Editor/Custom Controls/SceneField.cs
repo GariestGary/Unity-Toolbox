@@ -7,38 +7,15 @@ using UnityEngine.UIElements;
 using System;
 using System.Linq;
 using UnityEditor.UIElements;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 
 namespace VolumeBox.Toolbox.Editor
 {
-    public class SceneField: BaseField<string>, INotifyValueChanged<string>
+    public class SceneField: BindableElement, INotifyValueChanged<string>, IBindable
     {
-        public string value
-        {
-            get
-            {
-                return m_CurrentSceneName;
-            }
-            set
-            {
-                if (value == this.value)
-                    return;
-
-                var previous = this.value;
-                SetValueWithoutNotify(value);
-
-                m_CurrentSceneName = value;
-
-                using (var evt = ChangeEvent<string>.GetPooled(previous, value))
-                {
-                    evt.target = this;
-                    SendEvent(evt);
-                }
-            }
-        }
-
         private string m_CurrentSceneName;
 
-        public SceneField(string label, VisualElement visualInput) : base(label, visualInput)
+        public SceneField()
         {
             var buttonContainer = new IMGUIContainer(() =>
             {
@@ -46,6 +23,10 @@ namespace VolumeBox.Toolbox.Editor
                 if (GUI.Button(rect, new GUIContent(m_CurrentSceneName.IsValuable() ? m_CurrentSceneName : "Select scene..."), EditorStyles.miniPullDown))
                 {
                     var dropdown = new SceneDropdown(new AdvancedDropdownState());
+                    dropdown.OnItemSelected += item =>
+                    {
+                        value = item.SceneName;
+                    };
                     dropdown.Show(rect);
                 }
             });
@@ -53,17 +34,42 @@ namespace VolumeBox.Toolbox.Editor
             Add(buttonContainer);
         }
 
-        public new class UxmlFactory: UxmlFactory<SceneField> { }
-        public new class UxmlTraits: BindableElement.UxmlTraits { }
-
-        public SceneField() : base(string.Empty, null)
+        public string value 
         {
-
+            get => m_CurrentSceneName;
+            set
+            {
+                if(m_CurrentSceneName != value)
+                {
+                    using (ChangeEvent<string> evt = ChangeEvent<string>.GetPooled(m_CurrentSceneName, value))
+                    {
+                        evt.target = this;
+                        SetValueWithoutNotify(value);
+                        SendEvent(evt);
+                    }
+                }
+            }
         }
 
         public void SetValueWithoutNotify(string newValue)
         {
             m_CurrentSceneName = newValue;
+        }
+
+        public new class UxmlFactory: UxmlFactory<SceneField> { }
+
+        public new class UxmlTraits: BaseField<Enum>.UxmlTraits
+        {
+            private UxmlStringAttributeDescription m_Value = new UxmlStringAttributeDescription { defaultValue = string.Empty };
+#pragma warning restore 414
+
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
+            {
+                base.Init(ve, bag, cc);
+
+                SceneField sceneField = (SceneField)ve;
+                sceneField.SetValueWithoutNotify(m_Value.GetValueFromBag(bag, cc));
+            }
         }
     }
 }
