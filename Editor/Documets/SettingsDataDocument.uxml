@@ -46,7 +46,7 @@
                     <ui:Toggle name="manual_fade_out_toggle" class="field-marginless field-grow" style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="fade_out_duration_container" class="property-container">
+            <ui:VisualElement name="fade_out_duration_container" class="property-container" style="overflow: visible; visibility: visible; display: flex;">
                 <ui:Label tabindex="-1" text="Fade Out Duration" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
                 <ui:VisualElement class="field-container">
                     <ui:FloatField value="42,2" name="fade_out_duration_float" class="field-short" />

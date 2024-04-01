@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using Alchemy.Editor;
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,6 +10,9 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(PoolerDataHolder))]
     public class PoolerEditor : AlchemyEditor
     {
+        [SerializeField] private VisualTreeAsset m_Document;
+        [SerializeField] private VisualTreeAsset m_PoolDocument;
+
         private SerializedProperty m_poolsList;
         private SerializedProperty m_poolGCInterval;
         private string searchValue;
@@ -30,7 +34,17 @@ namespace VolumeBox.Toolbox.Editor
 
         public override VisualElement CreateInspectorGUI()
         {
-            return base.CreateInspectorGUI();
+            var element = m_Document.Instantiate();
+            var poolsList = element.Q<ListView>("pools-list");
+            Func<VisualElement> itemCreate = () =>
+            {
+                var item = m_PoolDocument.Instantiate();
+                return item;
+            };
+            poolsList.makeItem = itemCreate;
+
+
+            return element;
         }
 
         public void CreateIMGUI()

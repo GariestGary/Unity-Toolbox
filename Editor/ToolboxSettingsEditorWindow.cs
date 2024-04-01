@@ -9,6 +9,7 @@ namespace VolumeBox.Toolbox.Editor
 {
     public class ToolboxSettingsEditorWindow: AlchemyEditorWindow
     {
+        [SerializeField] private VisualTreeAsset m_Document;
         [SerializeField] private Texture2D m_MainSettingsIcon;
         [SerializeField] private Texture2D m_PoolerIcon;
         [SerializeField] private Texture2D m_AudioPlayerIcon;
@@ -88,6 +89,7 @@ namespace VolumeBox.Toolbox.Editor
 
         protected override void CreateGUI()
         {
+            rootVisualElement.Add(m_Document.Instantiate());
             var toolbar = new IMGUIContainer(() => 
             {
                 selectedTab = DrawToolbar();
@@ -126,6 +128,7 @@ namespace VolumeBox.Toolbox.Editor
             {
                 rootVisualElement.Remove(currentContent);
             }
+
             rootVisualElement.Add(content);
             currentContent = content;
             prevSelectedTab = selectedTab;

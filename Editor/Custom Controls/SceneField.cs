@@ -1,13 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System;
-using System.Linq;
-using UnityEditor.UIElements;
-using Unity.Plastic.Newtonsoft.Json.Linq;
 
 namespace VolumeBox.Toolbox.Editor
 {
@@ -17,9 +12,29 @@ namespace VolumeBox.Toolbox.Editor
 
         public SceneField()
         {
+            DrawGUI(string.Empty);
+        }
+
+        public SceneField(string label = "")
+        {
+            DrawGUI(label);
+        }
+
+        private void DrawGUI(string label = "")
+        {
             var buttonContainer = new IMGUIContainer(() =>
             {
-                var rect = GUILayoutUtility.GetRect(new GUIContent(""), EditorStyles.largeLabel);
+                var rect = GUILayoutUtility.GetLastRect();// GUILayoutUtility.GetRect(new GUIContent(""), EditorStyles.miniPullDown);
+                
+                if (label.IsValuable())
+                {
+                    var labelRect = rect;
+                    labelRect.width = EditorGUIUtility.labelWidth;
+                    EditorGUI.LabelField(labelRect, label);
+                    rect.x += labelRect.width;
+                    rect.width -= labelRect.width;
+                }
+
                 if (GUI.Button(rect, new GUIContent(m_CurrentSceneName.IsValuable() ? m_CurrentSceneName : "Select scene..."), EditorStyles.miniPullDown))
                 {
                     var dropdown = new SceneDropdown(new AdvancedDropdownState());
@@ -61,7 +76,6 @@ namespace VolumeBox.Toolbox.Editor
         public new class UxmlTraits: BaseField<Enum>.UxmlTraits
         {
             private UxmlStringAttributeDescription m_Value = new UxmlStringAttributeDescription { defaultValue = string.Empty };
-#pragma warning restore 414
 
             public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
             {

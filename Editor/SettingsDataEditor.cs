@@ -73,8 +73,8 @@ namespace VolumeBox.Toolbox.Editor
 
         private void OnManualFadeOutToggleChanged(ChangeEvent<bool> evt)
         {
-            m_Container.Q<VisualElement>("fade_out_duration_container").visible = !evt.newValue;
-            m_Container.MarkDirtyRepaint();
+            var fadeOutElement = m_Container.Q<VisualElement>("fade_out_duration_container");
+            fadeOutElement.style.display = evt.newValue ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         public void CreateIMGUI()
