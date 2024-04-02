@@ -37,7 +37,6 @@ namespace VolumeBox.Toolbox.Editor
 
             var labelRect = position;
             labelRect.width = EditorGUIUtility.labelWidth + 2;
-            //labelRect.width += 2;
 
             EditorGUI.LabelField(labelRect, label);
 

@@ -12,6 +12,7 @@ namespace VolumeBox.Toolbox.Editor
     {
         [SerializeField] private VisualTreeAsset m_Document;
         [SerializeField] private VisualTreeAsset m_PoolDocument;
+        [SerializeField] private GUISkin m_Skin;
 
         private SerializedProperty m_poolsList;
         private SerializedProperty m_poolGCInterval;
@@ -19,7 +20,7 @@ namespace VolumeBox.Toolbox.Editor
         private Vector2 currentScrollPos;
         private float labelsWidth = 110;
 
-        private Color buttonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
+        private static Color buttonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
 
         private void OnEnable()
         {
@@ -34,15 +35,10 @@ namespace VolumeBox.Toolbox.Editor
 
         public override VisualElement CreateInspectorGUI()
         {
-            var element = m_Document.Instantiate();
-            var poolsList = element.Q<ListView>("pools-list");
-            Func<VisualElement> itemCreate = () =>
+            var element = new IMGUIContainer(() => 
             {
-                var item = m_PoolDocument.Instantiate();
-                return item;
-            };
-            poolsList.makeItem = itemCreate;
-
+                CreateIMGUI();
+            });
 
             return element;
         }
@@ -88,17 +84,23 @@ namespace VolumeBox.Toolbox.Editor
             {
                 var pool = m_poolsList.GetArrayElementAtIndex(i);
 
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(4);
                 if (searchValue.IsValuable())
                 {
                     if (pool.FindPropertyRelative("tag").stringValue.ToLower().Contains(searchValue.ToLower()))
                     {
-                        DrawElement(pool, m_poolsList, i, labelsWidth);
+                        DrawElement(pool, m_poolsList, i, labelsWidth, m_Skin);
                     }
                 }
                 else
                 {
-                    DrawElement(pool, m_poolsList, i, labelsWidth);
+                    DrawElement(pool, m_poolsList, i, labelsWidth, m_Skin);
                 }
+                GUILayout.Space(4);
+                EditorGUILayout.EndHorizontal();
+
+                GUILayout.Space(3);
             }
 
             EditorGUILayout.EndScrollView();
@@ -141,20 +143,25 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        public static void DrawElement(SerializedProperty property, SerializedProperty list, int index, float labelsWidth)
+        public static void DrawElement(SerializedProperty property, SerializedProperty list, int index, float labelsWidth, GUISkin skin = null)
         {
+            var oldSkin = GUI.skin;
+            if(skin != null)
+            {
+                GUI.skin = skin;
+            }
+
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
-
-
-
+            GUILayout.Space(4);
+            GUI.skin = oldSkin;
             EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
-
+            GUILayout.Space(4);
             var tag = property.FindPropertyRelative("tag");
 
             property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, tag.stringValue, true);
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
+            GUI.backgroundColor = buttonColor;
 
             EditorGUILayout.BeginVertical(GUILayout.Width(25));
 
@@ -177,7 +184,7 @@ namespace VolumeBox.Toolbox.Editor
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndVertical();
-
+            GUILayout.Space(4);
             EditorGUILayout.EndHorizontal();
 
 
@@ -239,8 +246,13 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.EndHorizontal();
 
-            }   
-            
+                GUILayout.Space(7);
+            }
+            else
+            {
+                GUILayout.Space(4);
+            }
+
             EditorGUILayout.EndVertical();
         }
     }

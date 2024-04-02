@@ -11,6 +11,7 @@ namespace VolumeBox.Toolbox.Editor
 {
     internal sealed class SceneDropdown: AdvancedDropdown
     {
+
         public event Action<SceneDropdownItem> OnItemSelected;
 
         public SceneDropdown(AdvancedDropdownState state) : base(state)

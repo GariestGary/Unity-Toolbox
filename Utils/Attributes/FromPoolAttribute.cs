@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace VolumeBox.Toolbox.Editor
+namespace VolumeBox.Toolbox
 {
     [AttributeUsage(AttributeTargets.Field)]
     public class FromPoolAttribute : PropertyAttribute

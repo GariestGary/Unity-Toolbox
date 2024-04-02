@@ -24,11 +24,15 @@ namespace VolumeBox.Toolbox.Editor
         {
             var buttonContainer = new IMGUIContainer(() =>
             {
-                var rect = GUILayoutUtility.GetLastRect();// GUILayoutUtility.GetRect(new GUIContent(""), EditorStyles.miniPullDown);
-                
-                if (label.IsValuable())
+                var rect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none);
+
+                if(label.IsValuable())
                 {
+                    rect.x += 3;
+                    rect.y += 1;
                     var labelRect = rect;
+                    var a = GUI.skin.label.CalcSize(new GUIContent(label));
+                    //TODO: figure out how to render field as same width aspect as other
                     labelRect.width = EditorGUIUtility.labelWidth;
                     EditorGUI.LabelField(labelRect, label);
                     rect.x += labelRect.width;

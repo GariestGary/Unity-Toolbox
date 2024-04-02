@@ -63,6 +63,10 @@ namespace VolumeBox.Toolbox.Editor
             initialSceneArgsField.objectType = typeof(SceneArgs);
             initialSceneArgsField.allowSceneObjects = false;
             initialSceneArgsField.BindProperty(m_initialSceneArgs);
+
+            initialSceneArgsField.style.marginLeft = 0;
+            initialSceneArgsField.style.marginRight = 0;
+
             element.Q<VisualElement>("initial_scene_args_field_container").Add(initialSceneArgsField);
 
             manualFadeOutToggle.RegisterValueChangedCallback<bool>(OnManualFadeOutToggleChanged);

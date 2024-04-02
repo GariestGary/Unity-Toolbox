@@ -4,7 +4,10 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_Document: {fileID: 9197481963319205126, guid: 3e81dbaaf2f229c4c8b58b45efd57f31, type: 3}
+  - m_Document: {fileID: 9197481963319205126, guid: 3e81dbaaf2f229c4c8b58b45efd57f31,
+      type: 3}
+  - m_PoolDocument: {instanceID: 0}
+  - m_Skin: {fileID: 11400000, guid: e1583d1cac683a04ba2f29e18c2d6b9f, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -30,7 +30,7 @@
             <ui:Label tabindex="-1" text="Initial Scene" parse-escape-sequences="true" display-tooltip-when-elided="true" class="header-label" />
             <ui:VisualElement name="initial_scene_name_container" class="property-container">
                 <ui:Label tabindex="-1" text="Initial Scene Name" parse-escape-sequences="true" display-tooltip-when-elided="true" class="default-label" />
-                <ui:VisualElement class="field-container">
+                <ui:VisualElement class="field-container" style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;">
                     <VolumeBox.Toolbox.Editor.SceneField name="scene_name_field" class="field-grow" />
                 </ui:VisualElement>
             </ui:VisualElement>
