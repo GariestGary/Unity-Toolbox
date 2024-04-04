@@ -4,7 +4,21 @@ namespace VolumeBox.Toolbox
 {
     public abstract class ResourcesToolWrapper<T, T1>: ToolWrapperBase<T> where T: MonoCached where T1: ScriptableObject
     {
-        protected T1 Data;
+        private T1 m_Data;
+
+        protected T1 Data
+        {
+            get
+            {
+                if(m_Data == null)
+                {
+                    LoadData();
+                }
+
+                return m_Data;
+            }
+            private set { }
+        }
         
         /// <summary>
         /// For internal use
@@ -23,7 +37,7 @@ namespace VolumeBox.Toolbox
 
         private void LoadData()
         {
-            Data = ResourcesUtils.ResolveScriptable<T1>(GetDataPath());
+            m_Data = ResourcesUtils.ResolveScriptable<T1>(GetDataPath());
         }
     }
 }

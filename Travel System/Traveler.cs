@@ -20,10 +20,7 @@ namespace VolumeBox.Toolbox
         protected override void Run()
         {
             _openedScenes = new List<OpenedScene>();
-            _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
-            _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
-            _scenePoolInitMethod = typeof(ScenePool).GetMethod("InitializePools", BindingFlags.NonPublic | BindingFlags.Instance);
-
+            InitReflectionMethods();
             Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args).Forget(), null, true);
             Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName).Forget(), null, true);
             Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes().Forget(), null, true);
@@ -32,6 +29,13 @@ namespace VolumeBox.Toolbox
         protected override void Clear()
         {
             
+        }
+
+        private static void InitReflectionMethods()
+        {
+            _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
+            _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
+            _scenePoolInitMethod = typeof(ScenePool).GetMethod("InitializePools", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
@@ -124,6 +128,11 @@ namespace VolumeBox.Toolbox
 
                 foreach(var scenePool in scenePools)
                 {
+                    if(_scenePoolInitMethod == null)
+                    {
+                        InitReflectionMethods();
+                    }
+
                     _scenePoolInitMethod.Invoke(scenePool, null);
                 }
 

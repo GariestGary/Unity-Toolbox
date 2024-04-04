@@ -50,6 +50,7 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.BeginChangeCheck();
 
             DrawSearchHeader(ref searchValue, m_poolsList, ref currentScrollPos.y);
+            EditorGUILayout.Space(3);
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("GC Collect Interval", GUILayout.Width(SettingsDataEditor.LABEL_WIDTH));
@@ -58,7 +59,7 @@ namespace VolumeBox.Toolbox.Editor
             m_poolGCInterval.floatValue = interval;
             GUILayout.EndHorizontal();
 
-            EditorGUILayout.Space(5);
+            EditorGUILayout.Space(3);
 
             EditorGUILayout.BeginHorizontal();
 

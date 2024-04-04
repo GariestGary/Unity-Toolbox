@@ -28,12 +28,13 @@ namespace VolumeBox.Toolbox.Tests
             Assert.AreEqual(false, SceneManager.GetSceneByName(test1).isLoaded);
             Assert.AreEqual(false, Traveler.IsSceneOpened(test1));
 
-            var list = new List<UniTask>();
-
-            list.Add(Traveler.LoadScene(test1));
-            list.Add(Traveler.LoadScene(test2));
-            list.Add(Traveler.UnloadScene(test1));
-            list.Add(Traveler.UnloadScene(test2));
+            var list = new List<UniTask>
+            {
+                Traveler.LoadScene(test1),
+                Traveler.LoadScene(test2),
+                Traveler.UnloadScene(test1),
+                Traveler.UnloadScene(test2)
+            };
 
             yield return UniTask.WhenAll(list).ToCoroutine();
 

@@ -9,6 +9,8 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(AudioPlayerDataHolder))]
     public class AudioPlayerEditor: AlchemyEditor
     {
+        [SerializeField] private GUISkin m_Skin;
+
         private SerializedProperty m_albums;
         private Vector2 currentScrollPosition;
         private float labelSize = 110;
@@ -23,7 +25,9 @@ namespace VolumeBox.Toolbox.Editor
 
         public override VisualElement CreateInspectorGUI()
         {
-            return base.CreateInspectorGUI();
+            var container = new IMGUIContainer(() => CreateIMGUI());
+
+            return container;
         }
 
         public void CreateIMGUI()
@@ -100,6 +104,7 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     DrawAlbum(album, m_albums, i);
                 }
+                GUILayout.Space(3);
             }
 
             EditorGUILayout.EndVertical();
@@ -126,12 +131,18 @@ namespace VolumeBox.Toolbox.Editor
 
         private void DrawAlbum(SerializedProperty property, SerializedProperty list, int index)
         {
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(3);
+            var oldSkin = GUI.skin;
+            GUI.skin = m_Skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            GUILayout.Space(3);
+            GUI.skin = oldSkin;
 
             EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
 
+            GUILayout.Space(5);
             var albumName = property.FindPropertyRelative("albumName");
-
             property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, albumName.stringValue, true);
 
             var oldColor = GUI.backgroundColor;
@@ -160,6 +171,7 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUILayout.EndVertical();
 
+            GUILayout.Space(5);
             EditorGUILayout.EndHorizontal();
 
             if (property.isExpanded)
@@ -250,6 +262,7 @@ namespace VolumeBox.Toolbox.Editor
                 for (int i = 0; i < m_clips.arraySize; i++)
                 {
                     DrawClip(m_clips.GetArrayElementAtIndex(i), m_clips, i);
+                    GUILayout.Space(3);
                 }
 
                 EditorGUILayout.EndVertical();
@@ -258,16 +271,22 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.EndHorizontal();
             }
-
+            GUILayout.Space(3);
             EditorGUILayout.EndVertical();
+            GUILayout.Space(3);
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawClip(SerializedProperty property, SerializedProperty list, int index)
         {
+            EditorGUILayout.BeginHorizontal();
+            var oldSkin = GUI.skin;
+            GUI.skin = m_Skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
-
+            GUI.skin = oldSkin;
+            GUILayout.Space(3);
             EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
-
+            GUILayout.Space(3);
             var clipId = property.FindPropertyRelative("id");
             property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true);
 
@@ -293,7 +312,7 @@ namespace VolumeBox.Toolbox.Editor
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndVertical();
-
+            GUILayout.Space(3);
             EditorGUILayout.EndHorizontal();
 
             if(property.isExpanded)
@@ -355,7 +374,10 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.EndHorizontal();
             }
 
+            GUILayout.Space(3);
             EditorGUILayout.EndVertical();
+            GUILayout.Space(3);
+            EditorGUILayout.EndHorizontal();
         }
 
         private void OnDisable()

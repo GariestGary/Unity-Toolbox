@@ -9,6 +9,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(DatabaseDataHolder))]
     public class DatabaseEditor : AlchemyEditor
     {
+        [SerializeField] private GUISkin m_Skin;
         private SerializedProperty m_database;
 
         private Vector2 _currentScrollPosition;
@@ -22,7 +23,9 @@ namespace VolumeBox.Toolbox.Editor
 
         public override VisualElement CreateInspectorGUI()
         {
-            return base.CreateInspectorGUI();
+            var container = new IMGUIContainer(() => CreateIMGUI());
+
+            return container;
         }
 
         public void CreateIMGUI()
@@ -30,7 +33,7 @@ namespace VolumeBox.Toolbox.Editor
             serializedObject.Update();
 
             EditorGUI.BeginChangeCheck();
-
+            GUILayout.Space(3);
             EditorGUILayout.PropertyField(m_database);
 
             GUILayout.Space(5);
@@ -51,7 +54,12 @@ namespace VolumeBox.Toolbox.Editor
 
                 for (int i = 0; i < props.arraySize; i++)
                 {
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(3);
+                    var oldSkin = GUI.skin;
+                    GUI.skin = m_Skin;
                     EditorGUILayout.BeginHorizontal(GUI.skin.FindStyle("Box"), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                    GUI.skin = oldSkin;
 
                     EditorGUILayout.PropertyField(props.GetArrayElementAtIndex(i));
 
@@ -67,7 +75,9 @@ namespace VolumeBox.Toolbox.Editor
 
                     EditorGUILayout.EndHorizontal();
 
-                    GUILayout.Space(5);
+                    GUILayout.Space(3);
+                    EditorGUILayout.EndHorizontal();
+                    GUILayout.Space(3);
                 }
 
                 if (GUILayout.Button(EditorGUIUtility.IconContent("CreateAddNew"), GUILayout.Height(30)))
