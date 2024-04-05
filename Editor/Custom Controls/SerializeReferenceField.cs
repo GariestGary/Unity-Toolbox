@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -32,7 +34,7 @@ namespace VolumeBox.Toolbox.Editor
                 var dropdownRect = position;
                 dropdownRect.height = EditorGUIUtility.singleLineHeight;
 
-                var buttonLabel = new GUIContent("T");
+                var buttonLabel = EditorGUIUtility.IconContent("cs Script Icon");
 
                 try
                 {
@@ -83,10 +85,10 @@ namespace VolumeBox.Toolbox.Editor
                 var visualTree = panel.visualTree;
                 visualTree.RegisterCallback<GeometryChangedEvent>(x =>
                 {
-                    buttonContainer.style.width = GUIHelper.CalculateFieldWidth(buttonContainer, visualTree) -
+                    buttonContainer.style.width = Utils.CalculateFieldWidth(buttonContainer, visualTree) -
                         (buttonContainer.GetFirstAncestorOfType<Foldout>() != null ? 18f : 0f);
                 });
-                buttonContainer.style.width = GUIHelper.CalculateFieldWidth(buttonContainer, visualTree) -
+                buttonContainer.style.width = Utils.CalculateFieldWidth(buttonContainer, visualTree) -
                     (buttonContainer.GetFirstAncestorOfType<Foldout>() != null ? 18f : 0f);
             });
 
@@ -112,10 +114,6 @@ namespace VolumeBox.Toolbox.Editor
             {
                 var helpbox = new HelpBox("No type assigned.", HelpBoxMessageType.Info);
                 foldout.Add(helpbox);
-            }
-            else
-            {
-                InspectorHelper.BuildElements(property.serializedObject, foldout, property.managedReferenceValue, x => property.FindPropertyRelative(x));
             }
 
             this.Bind(property.serializedObject);
