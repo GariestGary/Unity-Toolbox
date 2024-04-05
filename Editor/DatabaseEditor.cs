@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,7 +6,7 @@ using UnityEngine.UIElements;
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(DatabaseDataHolder))]
-    public class DatabaseEditor : AlchemyEditor
+    public class DatabaseEditor : UnityEditor.Editor
     {
         [SerializeField] private GUISkin m_Skin;
         private SerializedProperty m_database;

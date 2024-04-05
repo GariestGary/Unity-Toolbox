@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,7 +6,7 @@ using UnityEngine.UIElements;
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(AudioPlayerDataHolder))]
-    public class AudioPlayerEditor: AlchemyEditor
+    public class AudioPlayerEditor: UnityEditor.Editor
     {
         [SerializeField] private GUISkin m_Skin;
 

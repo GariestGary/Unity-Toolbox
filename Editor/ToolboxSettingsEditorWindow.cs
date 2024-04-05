@@ -1,13 +1,11 @@
 #if UNITY_EDITOR
-using Alchemy.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Codice.CM.WorkspaceServer.WorkspaceTreeDataStore;
 
 namespace VolumeBox.Toolbox.Editor
 {
-    public class ToolboxSettingsEditorWindow: AlchemyEditorWindow
+    public class ToolboxSettingsEditorWindow: EditorWindow
     {
         [SerializeField] private VisualTreeAsset m_Document;
         [SerializeField] private Texture2D m_MainSettingsIcon;
@@ -87,10 +85,10 @@ namespace VolumeBox.Toolbox.Editor
             saverEditor = (DatabaseEditor)UnityEditor.Editor.CreateEditor(saverDataHolder);
         }
 
-        protected override void CreateGUI()
+        private void CreateGUI()
         {
             rootVisualElement.Add(m_Document.Instantiate());
-            var toolbar = new IMGUIContainer(() => 
+            var toolbar = new IMGUIContainer(() =>
             {
                 selectedTab = DrawToolbar();
             });
@@ -130,6 +128,7 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             rootVisualElement.Add(content);
+
             currentContent = content;
             prevSelectedTab = selectedTab;
         }

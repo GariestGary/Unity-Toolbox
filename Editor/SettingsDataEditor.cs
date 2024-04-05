@@ -1,8 +1,5 @@
 #if UNITY_EDITOR
-using Alchemy.Editor;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -12,7 +9,7 @@ using UnityEngine.UIElements;
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(SettingsData))]
-    public class SettingsDataEditor: AlchemyEditor
+    public class SettingsDataEditor: UnityEditor.Editor
     {
         [SerializeField] private VisualTreeAsset m_Document;
 

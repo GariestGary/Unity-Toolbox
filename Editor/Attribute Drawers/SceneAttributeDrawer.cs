@@ -1,21 +1,18 @@
 using UnityEngine;
 using UnityEditor;
-using Alchemy.Editor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
-    [CustomAttributeDrawer(typeof(SceneAttribute))]
-    public class ScenePropertyDrawer: AlchemyAttributeDrawer
+    [CustomPropertyDrawer(typeof(SceneAttribute))]
+    public class ScenePropertyDrawer: PropertyDrawer
     {
-        public override void OnCreateElement()
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var parent = TargetElement.parent;
-            var field = new SceneField(SerializedProperty.displayName);
-            field.BindProperty(SerializedProperty);
-            parent.Remove(TargetElement);
-            parent.Add(field);
+            var field = new SceneField(property.displayName);
+            field.BindProperty(property);
+            return field;
         }
     }
 }

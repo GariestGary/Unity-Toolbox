@@ -1,7 +1,6 @@
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #else
-using Alchemy.Inspector;
 using System;
 
 #endif

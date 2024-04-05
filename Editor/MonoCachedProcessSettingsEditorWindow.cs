@@ -1,11 +1,10 @@
-using Alchemy.Editor;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
-    public class MonoCachedProcessSettingsEditorWindow : AlchemyEditorWindow
+    public class MonoCachedProcessSettingsEditorWindow : EditorWindow
     {
         private static MonoCachedProcessSettingsEditorWindow instance;
         private MonoCached m_Target;

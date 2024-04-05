@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using Alchemy.Editor;
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +7,7 @@ using UnityEngine.UIElements;
 namespace VolumeBox.Toolbox.Editor
 {
     [CustomEditor(typeof(PoolerDataHolder))]
-    public class PoolerEditor : AlchemyEditor
+    public class PoolerEditor : UnityEditor.Editor
     {
         [SerializeField] private VisualTreeAsset m_Document;
         [SerializeField] private VisualTreeAsset m_PoolDocument;
