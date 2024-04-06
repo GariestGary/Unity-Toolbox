@@ -1,10 +1,9 @@
 {
   "name": "com.volumebox.toolbox",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "displayName": "VolumeBox Toolbox",
   "description": "Architecture solution for simplifying process of creating games",
   "dependencies": {
-    "com.annulusgames.alchemy": "2.0.1",
 	  "com.cysharp.unitask": "2.5.4"
   },
   "keywords": [
