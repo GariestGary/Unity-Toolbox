@@ -10,13 +10,12 @@ namespace VolumeBox.Toolbox
 {
     public class ENTRY : MonoBehaviour
     {
-        private SettingsData settings => StaticData.Settings;
+        private SettingsData m_Settings => StaticData.Settings;
+
 
         private void Awake()
         {
-#pragma warning disable
-            Init();
-#pragma warning enable
+            Init().Forget();
         }
 
         private async UniTask Init()
@@ -36,19 +35,22 @@ namespace VolumeBox.Toolbox
 
             Updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 
-            await Fader.In(0);
-
-            if (!string.IsNullOrEmpty(settings.InitialSceneName) && settings.InitialSceneName != "MAIN")
+            if(StaticData.Settings.AutoResolveScenesAtPlay)
             {
-                await Traveler.LoadScene(settings.InitialSceneName, settings.InitialSceneArgs);
+                await Fader.In(0);
 
-                if (!settings.ManualFadeOut)
+                if (!string.IsNullOrEmpty(m_Settings.InitialSceneName) && m_Settings.InitialSceneName != "MAIN")
                 {
-                    await Fader.Out(settings.FadeOutDuration);
+                    await Traveler.LoadScene(m_Settings.InitialSceneName, m_Settings.InitialSceneArgs);
+
+                    if (!m_Settings.ManualFadeOut)
+                    {
+                        await Fader.Out(m_Settings.FadeOutDuration);
+                    }
                 }
             }
 
-            Application.targetFrameRate = settings.TargetFrameRate;
+            Application.targetFrameRate = m_Settings.TargetFrameRate;
         }
 
 #if UNITY_EDITOR

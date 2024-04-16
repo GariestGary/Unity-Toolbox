@@ -168,7 +168,7 @@ namespace VolumeBox.Toolbox
 
             if(pools == null)
             {
-                return null;
+                pools = new List<Pool>();
             }
 
             List<PooledGameObject> objectPoolList = new List<PooledGameObject>();
@@ -266,7 +266,7 @@ namespace VolumeBox.Toolbox
             return Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
         }
         
-        private GameObject CreateNewPoolObject(GameObject obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
+        private GameObject CreateNewPoolObject<T>(T obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
         {
             Transform poolParent = null;
 
@@ -275,9 +275,9 @@ namespace VolumeBox.Toolbox
                 poolParent = objectPoolParent;
             }
 
-            GameObject poolObj = Instantiate(obj, poolParent);
+            GameObject poolObj = Instantiate(obj as GameObject, poolParent);
 
-            poolObj.name = obj.name;
+            poolObj.name = (obj as GameObject).name;
 
             Updater.InitializeObject(poolObj);
 
@@ -298,15 +298,28 @@ namespace VolumeBox.Toolbox
 
         #region Reflection
 
-        private void CallSpawns(GameObject obj, object data)
+        private void CallSpawns(GameObject obj, object data) 
         {
-            IPooled[] pooled = obj.GetComponentsInChildren<IPooled>(true);
+            MonoCached[] pooledMono = obj.GetComponentsInChildren<MonoCached>(true).Where(o => o is IPooledBase).ToArray();
 
-            foreach (var t in pooled)
+            for (int i = 0; i < pooledMono.Length; i++)
             {
-                if(t != null)
+                if (pooledMono[i] == null)
                 {
-                    t.OnSpawn(data);
+                    continue;
+                }
+
+                var type = pooledMono[i].GetType();
+                var interfaces = type.GetInterfaces();
+
+                foreach (var inter in interfaces)
+                {
+                    if(inter.GetInterface("IPooledBase") != null)
+                    {
+                        var generic = inter.GetGenericArguments()[0];
+                        var onSpawnMethod = inter.GetMethod("OnSpawn");
+                        onSpawnMethod.Invoke(pooledMono[i], new object[] { Convert.ChangeType(data, generic) });
+                    }
                 }
             }
         }
@@ -441,8 +454,6 @@ namespace VolumeBox.Toolbox
 
             return allPools.Sum(p => p.CurrentObjectsCount);
         }
-
-
 
         public void Clear()
         {

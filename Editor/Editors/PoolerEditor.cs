@@ -9,8 +9,6 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(PoolerDataHolder))]
     public class PoolerEditor : UnityEditor.Editor
     {
-        [SerializeField] private VisualTreeAsset m_Document;
-        [SerializeField] private VisualTreeAsset m_PoolDocument;
         [SerializeField] private GUISkin m_Skin;
 
         private SerializedProperty m_poolsList;
@@ -36,13 +34,13 @@ namespace VolumeBox.Toolbox.Editor
         {
             var element = new IMGUIContainer(() => 
             {
-                CreateIMGUI();
+                DrawIMGUI();
             });
 
             return element;
         }
 
-        public void CreateIMGUI()
+        public void DrawIMGUI()
         {
             serializedObject.Update();
 

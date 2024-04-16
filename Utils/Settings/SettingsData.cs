@@ -11,7 +11,7 @@ namespace VolumeBox.Toolbox
         [SerializeField]
         public int TargetFrameRate = 120;
 
-        [SerializeField, Scene]
+        [SerializeField]
         public string InitialSceneName;
 
         [SerializeField]

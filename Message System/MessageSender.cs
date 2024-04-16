@@ -8,8 +8,6 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField] private List<MessageToSend> _messages;
 
-        private int _prevMessagesCount = 1;
-
         [ContextMenu("Send")]
         public void Send()
         {

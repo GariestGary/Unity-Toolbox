@@ -38,9 +38,8 @@ namespace VolumeBox.Toolbox
         static EditorLoadUtils()
         {
             EditorApplication.playModeStateChanged += OnStateChanged;
-            IsMainSceneCorrectInBuild();
         }
-        
+
         public static async Task<bool> IsDevelopmentMode()
         {
             var currentPath = await GetCurrentMainScenePath();
@@ -50,12 +49,12 @@ namespace VolumeBox.Toolbox
 
         private static async void OnStateChanged(PlayModeStateChange state)
         {
+            EditorReady = false;
+            
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
                 ExitedPlayMode?.Invoke();
 
-                EditorReady = false;
-                
                 if (_scenesOpenedAtStart != null && _scenesOpenedAtStart.Count > 0)
                 {
                     for (int i = 0; i < _scenesOpenedAtStart.Count; i++)
@@ -73,11 +72,11 @@ namespace VolumeBox.Toolbox
 
                 if (StaticData.Settings.AutoResolveScenesAtPlay)
                 {
-                    EditorReady = false;
                     await HandleOpenedScenes();
-                    EditorReady = true;
                 }
             }
+            
+            EditorReady = true;
         }
         
         private static async Task HandleOpenedScenes()

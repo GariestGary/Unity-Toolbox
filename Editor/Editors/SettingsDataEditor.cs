@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(SettingsData))]
     public class SettingsDataEditor: UnityEditor.Editor
     {
-        [SerializeField] private VisualTreeAsset m_Document;
+        [SerializeField] private GUISkin m_Skin;
 
         public const float LABEL_WIDTH = 150;
 
@@ -24,8 +25,7 @@ namespace VolumeBox.Toolbox.Editor
         private SerializedProperty m_fadeOutDuration;
 
         private int selectedScene;
-        private VisualElement m_Container;
-        //private string[] scenesList;
+        private string[] scenesList;
 
         private void OnEnable()
         {
@@ -37,56 +37,63 @@ namespace VolumeBox.Toolbox.Editor
             m_manualFadeOut = serializedObject.FindProperty("ManualFadeOut");
             m_fadeOutDuration = serializedObject.FindProperty("FadeOutDuration");
 
-            //scenesList = EditorBuildSettings.scenes.ToList().ConvertAll(x =>
-            //{
-            //    int pos = x.path.LastIndexOf("/") + 1;
-            //    return x.path.Substring(pos, x.path.Length - pos).Replace(".unity", "");
-            //}).ToArray();
+            RebuildScenesList();
         }
 
-        public override VisualElement CreateInspectorGUI()
+        private void RebuildScenesList()
         {
-            var element = m_Document.Instantiate();
-            element.Q<Slider>("timescale_slider").BindProperty(m_timeScale);
-            element.Q<FloatField>("timescale_floatfield").BindProperty(m_timeScale);
-            element.Q<Toggle>("resolve_at_play_toggle").BindProperty(m_resolveAtPlay);
-            element.Q<SceneField>("scene_name_field").BindProperty(m_initialSceneName);
-            var manualFadeOutToggle = element.Q<Toggle>("manual_fade_out_toggle");
-            manualFadeOutToggle.BindProperty(m_manualFadeOut);
-            element.Q<FloatField>("target_framerate_float").BindProperty(m_targetFrameRate);
+            scenesList = EditorBuildSettings.scenes.ToList().ConvertAll(x =>
+            {
+                int pos = x.path.LastIndexOf("/") + 1;
+                return x.path.Substring(pos, x.path.Length - pos).Replace(".unity", "");
+            }).ToArray();
 
-            ObjectField initialSceneArgsField = new ObjectField(string.Empty);
-            initialSceneArgsField.AddToClassList("field-grow");
-            initialSceneArgsField.objectType = typeof(SceneArgs);
-            initialSceneArgsField.allowSceneObjects = false;
-            initialSceneArgsField.BindProperty(m_initialSceneArgs);
+            selectedScene = scenesList.ToList().IndexOf(m_initialSceneName.stringValue);
 
-            initialSceneArgsField.style.marginLeft = 0;
-            initialSceneArgsField.style.marginRight = 0;
-
-            element.Q<VisualElement>("initial_scene_args_field_container").Add(initialSceneArgsField);
-
-            manualFadeOutToggle.RegisterValueChangedCallback<bool>(OnManualFadeOutToggleChanged);
-
-            m_Container = element;
-            return element;
+            if (selectedScene < 0)
+            {
+                selectedScene = 0;
+            }
         }
 
-        private void OnManualFadeOutToggleChanged(ChangeEvent<bool> evt)
+        private bool IsScenesChanged()
         {
-            var fadeOutElement = m_Container.Q<VisualElement>("fade_out_duration_container");
-            fadeOutElement.style.display = evt.newValue ? DisplayStyle.None : DisplayStyle.Flex;
+            if(scenesList.Length != EditorBuildSettings.scenes.Length)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < scenesList.Length; i++)
+            {
+                if (!EditorBuildSettings.scenes[i].path.Contains(scenesList[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        public void CreateIMGUI()
+        public void DrawIMGUI()
         {
+            if(IsScenesChanged())
+            {
+                RebuildScenesList();
+            }
+
+            var oldSkin = GUI.skin;
+
             serializedObject.Update();
 
             EditorGUI.BeginChangeCheck();
 
-
+            GUILayout.Space(5);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(5);
             //HEADER
+            GUI.skin = m_Skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            GUI.skin = oldSkin;
             EditorGUILayout.LabelField("Scene Management", EditorStyles.largeLabel);
             EditorGUILayout.Space(5);
 
@@ -96,10 +103,18 @@ namespace VolumeBox.Toolbox.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(3);
             EditorGUILayout.EndVertical();
+            GUILayout.Space(5);
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(5);
 
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(5);
             //HEADER
+            GUI.skin = m_Skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            GUI.skin = oldSkin;
             EditorGUILayout.LabelField("Timings", EditorStyles.largeLabel);
             EditorGUILayout.Space(5);
 
@@ -134,16 +149,26 @@ namespace VolumeBox.Toolbox.Editor
                 optionDataList.Add(name);
             }
 
+            GUILayout.Space(3);
             EditorGUILayout.EndVertical();
+            GUILayout.Space(5);
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(5);
 
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(5);
             //HEADER
+            GUI.skin = m_Skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            GUI.skin = oldSkin;
             EditorGUILayout.LabelField("Initial Scene", EditorStyles.largeLabel);
             EditorGUILayout.Space(5);
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Initial Scene Name", GUILayout.Width(EditorGUIUtility.labelWidth));
-            EditorGUILayout.PropertyField(m_initialSceneName);
+            selectedScene = EditorGUILayout.Popup(selectedScene, scenesList);
+            m_initialSceneName.stringValue = scenesList[selectedScene];
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -164,8 +189,6 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.EndHorizontal();
             }
 
-            GUILayout.Space(5);
-
             serializedObject.ApplyModifiedProperties();
             
             if(EditorGUI.EndChangeCheck())
@@ -173,7 +196,10 @@ namespace VolumeBox.Toolbox.Editor
                 EditorUtility.SetDirty(target);
             }
 
+            GUILayout.Space(3);
             EditorGUILayout.EndVertical();
+            GUILayout.Space(5);
+            EditorGUILayout.EndHorizontal();
         }
     }
 }

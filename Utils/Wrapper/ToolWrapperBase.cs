@@ -6,9 +6,11 @@
 
         public void RunInternal()
         {
-            if(runned) return;
-
-            Run();
+            if(!runned)
+            {
+                Run();
+                runned = true;
+            }
         }
 
         public void ClearInternal()

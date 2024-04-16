@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox.Editor
 {
@@ -11,19 +12,28 @@ namespace VolumeBox.Toolbox.Editor
         public static bool IsPoolsChanged { get; set; }
 
         private PoolerDataHolder m_PoolerDataHolder;
-        private string[] m_PoolsAvailable = new string[0];
+        private Component m_Target;
+        private string[] m_PoolsAvailable;
         private string[] m_ParsedPoolTags = new string[0];
- 
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            ValidatePools();
+            ValidatePools(property);
 
-            if (m_PoolerDataHolder == null)
+            var labelRect = position;
+            labelRect.width = EditorGUIUtility.labelWidth + 2;
+
+            EditorGUI.LabelField(labelRect, label);
+
+            var poolRect = position;
+            poolRect.x = labelRect.width;
+            poolRect.width -= labelRect.width;
+
+            if (m_PoolsAvailable == null || m_PoolsAvailable.Length <= 0)
             {
-                EditorGUI.PropertyField(position, property, label, true);
+                EditorGUI.LabelField(poolRect ,"There is no available pools");
                 return;
             }
-
 
             EditorGUI.BeginChangeCheck();
 
@@ -35,15 +45,6 @@ namespace VolumeBox.Toolbox.Editor
                 selectedPoolIndex = 0;
             }
 
-            var labelRect = position;
-            labelRect.width = EditorGUIUtility.labelWidth + 2;
-
-            EditorGUI.LabelField(labelRect, label);
-
-            var poolRect = position;
-            poolRect.x = labelRect.width;
-            poolRect.width -= labelRect.width;
-
             selectedPoolIndex = EditorGUI.Popup(poolRect, selectedPoolIndex, m_ParsedPoolTags);
 
             if(m_PoolsAvailable.Length <= 0)
@@ -54,26 +55,29 @@ namespace VolumeBox.Toolbox.Editor
             {
                 property.stringValue = m_PoolsAvailable[selectedPoolIndex];
             }
+
+            EditorGUI.EndChangeCheck();
         }
 
-        private void ValidatePools()
+        private void ValidatePools(SerializedProperty property)
         {
-            if(IsPoolsChanged || m_PoolerDataHolder == null)
+            if(m_PoolerDataHolder == null)
             {
-                if(m_PoolerDataHolder == null)
-                {
-                    m_PoolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
-                }
+                m_PoolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
+            }
 
-                if(m_PoolerDataHolder == null)
-                {
-                    return;
-                }
+            if(m_Target == null)
+            {
+                var target = property.GetValue();
+                m_Target = target as Component;
+            }
 
+            if(IsPoolsChanged || m_PoolsAvailable == null)
+            {
                 m_PoolsAvailable = new string[0];
 
                 m_PoolsAvailable = m_PoolsAvailable.Concat(m_PoolerDataHolder.PoolsList.ConvertAll(x => x.tag)).ToArray();
-                var scenePools = Resources.FindObjectsOfTypeAll<ScenePool>().ToList();
+                var scenePools = Resources.FindObjectsOfTypeAll<ScenePool>().Where(x => x.gameObject.scene == m_Target.gameObject.scene).ToList();
                 m_ParsedPoolTags = m_PoolsAvailable.ToArray();
 
                 scenePools.ForEach(x => 

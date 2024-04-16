@@ -71,7 +71,7 @@ namespace VolumeBox.Toolbox
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
         /// <returns>GameObject from pool</returns>
-        public static GameObject Spawn(string poolTag, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
+        public static GameObject Spawn(string poolTag, object data = null, Transform parent = null, Action<GameObject> spawnAction = null)
         {
             return Instance.Data.Spawn(poolTag, parent, data, spawnAction);
         }

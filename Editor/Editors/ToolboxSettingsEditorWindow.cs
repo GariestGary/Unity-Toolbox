@@ -7,7 +7,6 @@ namespace VolumeBox.Toolbox.Editor
 {
     public class ToolboxSettingsEditorWindow: EditorWindow
     {
-        [SerializeField] private VisualTreeAsset m_Document;
         [SerializeField] private Texture2D m_MainSettingsIcon;
         [SerializeField] private Texture2D m_PoolerIcon;
         [SerializeField] private Texture2D m_AudioPlayerIcon;
@@ -24,8 +23,6 @@ namespace VolumeBox.Toolbox.Editor
         private AudioPlayerEditor audioEditor;
 
         private int selectedTab;
-        private int prevSelectedTab;
-        private VisualElement currentContent;
 
         [MenuItem("Toolbox/Settings", priority = 1)]
         public static void ShowMyEditor()
@@ -85,52 +82,25 @@ namespace VolumeBox.Toolbox.Editor
             saverEditor = (DatabaseEditor)UnityEditor.Editor.CreateEditor(saverDataHolder);
         }
 
-        private void CreateGUI()
-        {
-            rootVisualElement.Add(m_Document.Instantiate());
-            var toolbar = new IMGUIContainer(() =>
-            {
-                selectedTab = DrawToolbar();
-            });
-            rootVisualElement.Add(toolbar);
-        }
-
         private void OnGUI()
         {
-            if (selectedTab == prevSelectedTab && currentContent != null)
-            {
-                return;
-            }
-
-            VisualElement content = new VisualElement();
-            
-            switch (selectedTab)
+            switch (DrawToolbar())
             {
                 case 0:
-                    content = MainSettingsGUI();
+                    settingsEditor?.DrawIMGUI();
                     break;
                 case 1:
-                    content = PoolerGUI();
+                    poolerEditor?.DrawIMGUI();
                     break;
                 case 2:
-                    content = AudioPlayerGUI();
+                    audioEditor?.DrawIMGUI();
                     break;
                 case 3:
-                    content = SaverGUI();
+                    saverEditor?.DrawIMGUI();
                     break;
                 default:
                     break;
             }
-
-            if(currentContent != null)
-            {
-                rootVisualElement.Remove(currentContent);
-            }
-
-            rootVisualElement.Add(content);
-
-            currentContent = content;
-            prevSelectedTab = selectedTab;
         }
 
         private int DrawToolbar()
@@ -142,16 +112,18 @@ namespace VolumeBox.Toolbox.Editor
                     InitEditors();
                 }
 
+                var oldSkin = GUI.skin;
                 GUI.skin = m_TabSkin;
-                var selectedIndex = GUILayout.Toolbar(selectedTab, new GUIContent[] 
+                selectedTab = GUILayout.Toolbar(selectedTab, new GUIContent[] 
                 {
                     new GUIContent("Main Settings", m_MainSettingsIcon), 
                     new GUIContent("Pooler", m_PoolerIcon), 
                     new GUIContent("Audio Player", m_AudioPlayerIcon), 
                     new GUIContent("Database", m_DatabaseIcon)
                 }, m_TabSkin.GetStyle("Tab"), GUILayout.Height(40));
+                GUI.skin = oldSkin;
 //
-                return selectedIndex;
+                return selectedTab;
             }
             else 
             {
@@ -165,29 +137,6 @@ namespace VolumeBox.Toolbox.Editor
 
                 return -1;
             }
-
-        }
-
-        private VisualElement MainSettingsGUI()
-        {
-            return settingsEditor?.CreateInspectorGUI();
-        }
-
-        private VisualElement PoolerGUI()
-        {
-            return poolerEditor?.CreateInspectorGUI();
-        }
-
-        private VisualElement AudioPlayerGUI()
-        {
-            
-            return audioEditor?.CreateInspectorGUI();
-        }
-
-        private VisualElement SaverGUI()
-        {
-            
-            return saverEditor?.CreateInspectorGUI();
         }
 
         private void OnLostFocus()

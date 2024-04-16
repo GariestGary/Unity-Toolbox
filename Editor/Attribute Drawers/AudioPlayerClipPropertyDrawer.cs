@@ -13,8 +13,8 @@ namespace VolumeBox.Toolbox.Editor
         public static bool IsClipsChanged { get; set; }
 
         private AudioPlayerDataHolder m_AudioPlayerDataHolder;
-        private Dictionary<string, string[]> m_AlbumClipsRelations = new();
-        private string[] m_Albums = new string[0];
+        private Dictionary<string, string[]> m_AlbumClipsRelations;
+        private string[] m_Albums;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -37,11 +37,22 @@ namespace VolumeBox.Toolbox.Editor
             labelRect.width = EditorGUIUtility.labelWidth + 2;
             var halfPropertyWidth = (position.width - labelRect.width) * 0.5f;
 
+
             #region ALBUM
             //Label
             var albumLabel = position;
             albumLabel.x = labelRect.width;
             albumLabel.width = 40;
+            
+            if(m_Albums == null || m_Albums.Length <= 0)
+            {
+                albumIndex = 0;
+                albumLabel.width = position.width - labelRect.width;
+                property.stringValue = string.Empty;
+                EditorGUI.LabelField(albumLabel, "There is no albums");
+                EditorGUI.EndChangeCheck();
+                return;
+            }
 
             EditorGUI.LabelField(albumLabel, "Album");
 
@@ -65,6 +76,23 @@ namespace VolumeBox.Toolbox.Editor
             var clipLabel = position;
             clipLabel.x = albumRect.x + albumRect.width + 5;
             clipLabel.width = 40;
+            
+            var clipsArray = new string[0];
+
+            if(m_AlbumClipsRelations.ContainsKey(albumName))
+            {
+                clipsArray = m_AlbumClipsRelations[albumName];
+            }
+
+            if(clipsArray == null || clipsArray.Length <= 0)
+            {
+                clipIndex = 0;
+                clipLabel.width = position.width - labelRect.width - halfPropertyWidth;
+                EditorGUI.LabelField(clipLabel, "There is no clips");
+                property.stringValue = string.Join("/", albumName, string.Empty);
+                EditorGUI.EndChangeCheck();
+                return;
+            }
 
             EditorGUI.LabelField(clipLabel, "Clip");
 
@@ -73,12 +101,6 @@ namespace VolumeBox.Toolbox.Editor
             clipRect.x = clipLabel.x + clipLabel.width;
             clipRect.width = halfPropertyWidth - clipLabel.width - 10;
 
-            var clipsArray = new string[0];
-
-            if(m_AlbumClipsRelations.ContainsKey(albumName))
-            {
-                clipsArray = m_AlbumClipsRelations[albumName];
-            }
 
             clipIndex = EditorGUI.Popup(clipRect, clipIndex, clipsArray);
 
@@ -114,14 +136,14 @@ namespace VolumeBox.Toolbox.Editor
 
         private void ValidateClips()
         {
-            if (IsClipsChanged || m_AudioPlayerDataHolder == null)
+            if (m_AudioPlayerDataHolder == null)
             {
-                m_AlbumClipsRelations.Clear();
+                m_AudioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
+            }
 
-                if(m_AudioPlayerDataHolder == null)
-                {
-                    m_AudioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
-                }
+            if (IsClipsChanged || m_Albums == null)
+            {
+                m_AlbumClipsRelations = new Dictionary<string, string[]>();
 
                 if(m_AudioPlayerDataHolder == null)
                 {

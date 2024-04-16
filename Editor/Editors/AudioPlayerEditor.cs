@@ -24,12 +24,12 @@ namespace VolumeBox.Toolbox.Editor
 
         public override VisualElement CreateInspectorGUI()
         {
-            var container = new IMGUIContainer(() => CreateIMGUI());
+            var container = new IMGUIContainer(() => DrawIMGUI());
 
             return container;
         }
 
-        public void CreateIMGUI()
+        public void DrawIMGUI()
         {
             serializedObject.Update();
 
