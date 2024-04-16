@@ -7,7 +7,8 @@ namespace VolumeBox.Toolbox
 {
     public class MessageReceiver: MonoCached
     {
-        [SerializeReference, SerializeField] private Message messageType;
+        [SerializeField, TypeDropdown] public int aaa;
+        [SerializeField, TypeDropdown] public Message messageType;
 
         public UnityEvent ReceivedEvent;
         private Subscriber sub;

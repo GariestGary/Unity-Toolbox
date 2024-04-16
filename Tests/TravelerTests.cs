@@ -14,8 +14,8 @@ namespace VolumeBox.Toolbox.Tests
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator SceneManagementTest()
         {
-            var test1 = "Test 1";
-            var test2 = "Test 2";
+            var test1 = "Test1";
+            var test2 = "Test2";
 
             yield return Traveler.LoadScene(test1).ToCoroutine();
 

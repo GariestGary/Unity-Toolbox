@@ -20,12 +20,6 @@ namespace VolumeBox.Toolbox.Editor
         {
             ValidateClips();
 
-            if(m_AudioPlayerDataHolder == null)
-            {
-                EditorGUI.PropertyField(position, property, label, true);
-                return;
-            }
-
             EditorGUI.BeginChangeCheck();
 
             var currentString = property.stringValue;
@@ -36,7 +30,6 @@ namespace VolumeBox.Toolbox.Editor
             var labelRect = position;
             labelRect.width = EditorGUIUtility.labelWidth + 2;
             var halfPropertyWidth = (position.width - labelRect.width) * 0.5f;
-
 
             #region ALBUM
             //Label
@@ -60,6 +53,11 @@ namespace VolumeBox.Toolbox.Editor
             var albumRect = position;
             albumRect.x = albumLabel.x + albumLabel.width + 5;
             albumRect.width = halfPropertyWidth - albumLabel.width;
+
+            if(albumIndex < 0)
+            {
+                albumIndex = 0;
+            }
 
             albumIndex = EditorGUI.Popup(albumRect, albumIndex, m_Albums);
             
@@ -101,6 +99,10 @@ namespace VolumeBox.Toolbox.Editor
             clipRect.x = clipLabel.x + clipLabel.width;
             clipRect.width = halfPropertyWidth - clipLabel.width - 10;
 
+            if(clipIndex < 0)
+            {
+                clipIndex = 0;
+            }
 
             clipIndex = EditorGUI.Popup(clipRect, clipIndex, clipsArray);
 

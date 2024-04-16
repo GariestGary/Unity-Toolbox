@@ -20,7 +20,7 @@ namespace VolumeBox.Toolbox
         [Serializable]
         private class MessageToSend
         {
-            [SerializeReference, SerializeField] private Message message;
+            [SerializeField, SerializeReference, TypeDropdown] private Message message;
 
             public Message Message
             {

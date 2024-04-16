@@ -22,13 +22,6 @@ namespace VolumeBox.Toolbox.Editor
             m_albums = serializedObject.FindProperty("albums");
         }
 
-        public override VisualElement CreateInspectorGUI()
-        {
-            var container = new IMGUIContainer(() => DrawIMGUI());
-
-            return container;
-        }
-
         public void DrawIMGUI()
         {
             serializedObject.Update();
@@ -160,6 +153,7 @@ namespace VolumeBox.Toolbox.Editor
                     EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
+                    EditorGUILayout.EndHorizontal();
                     AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
                     return;
                 }
@@ -303,6 +297,7 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
                 AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
                 return;
             }

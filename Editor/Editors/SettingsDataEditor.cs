@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,6 +28,8 @@ namespace VolumeBox.Toolbox.Editor
         private int selectedScene;
         private string[] scenesList;
 
+        private AdvancedDropdownState m_SceneDropdownState;
+
         private void OnEnable()
         {
             m_resolveAtPlay = serializedObject.FindProperty("AutoResolveScenesAtPlay");
@@ -36,6 +39,8 @@ namespace VolumeBox.Toolbox.Editor
             m_initialSceneArgs = serializedObject.FindProperty("InitialSceneArgs");
             m_manualFadeOut = serializedObject.FindProperty("ManualFadeOut");
             m_fadeOutDuration = serializedObject.FindProperty("FadeOutDuration");
+
+            m_SceneDropdownState = new AdvancedDropdownState();
 
             RebuildScenesList();
         }
@@ -74,13 +79,15 @@ namespace VolumeBox.Toolbox.Editor
             return false;
         }
 
+        private void OnSceneSelectedCallback(string sceneName)
+        {
+            serializedObject.Update();
+            m_initialSceneName.stringValue = sceneName;
+            serializedObject.ApplyModifiedProperties();
+        }
+
         public void DrawIMGUI()
         {
-            if(IsScenesChanged())
-            {
-                RebuildScenesList();
-            }
-
             var oldSkin = GUI.skin;
 
             serializedObject.Update();
@@ -167,8 +174,18 @@ namespace VolumeBox.Toolbox.Editor
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Initial Scene Name", GUILayout.Width(EditorGUIUtility.labelWidth));
-            selectedScene = EditorGUILayout.Popup(selectedScene, scenesList);
-            m_initialSceneName.stringValue = scenesList[selectedScene];
+
+            var rect = GUILayoutUtility.GetRect(new GUIContent(m_initialSceneName.stringValue), EditorStyles.iconButton, GUILayout.ExpandWidth(true), GUILayout.Height(EditorGUIUtility.singleLineHeight + 5));
+            var sceneClicked = GUI.Button(rect, m_initialSceneName.stringValue, EditorStyles.popup);
+            
+            if(sceneClicked)
+            {
+                var dropdown = new SceneDropdown(new AdvancedDropdownState(), OnSceneSelectedCallback);
+                dropdown.Show(rect);
+            }
+
+            //selectedScene = EditorGUILayout.Popup(selectedScene, scenesList);
+            //m_initialSceneName.stringValue = scenesList[selectedScene];
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
