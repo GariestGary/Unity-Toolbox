@@ -2,9 +2,7 @@
     "name": "VolumeBox.Toolbox.Editor",
     "rootNamespace": "VolumeBox.Toolbox.Editor",
     "references": [
-        "GUID:2ea4274ae009c2546baefa7922916f43",
-        "GUID:5fd453cd0d182422093c4a764fd5eadb",
-        "GUID:88be65f96b86746888c927a5c8ff3534"
+        "GUID:2ea4274ae009c2546baefa7922916f43"
     ],
     "includePlatforms": [
         "Editor"

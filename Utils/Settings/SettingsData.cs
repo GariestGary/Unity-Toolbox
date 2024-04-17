@@ -17,12 +17,6 @@ namespace VolumeBox.Toolbox
         [SerializeField]
         public SceneArgs InitialSceneArgs;
 
-        [SerializeField]
-        public bool ManualFadeOut;
-
-        [SerializeField]
-        public float FadeOutDuration = 0.5f;
-
         [HideInInspector] public bool AutoResolveScenesAtPlay = true;
         public const string poolerResourcesDataPath = "Toolbox/PoolerData.asset";
         public const string audioPlayerResourcesDataPath = "Toolbox/AudioPlayerData.asset";

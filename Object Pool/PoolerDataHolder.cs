@@ -27,9 +27,9 @@ namespace VolumeBox.Toolbox
 
             pools = new List<Pool>();
 
-            foreach (var t in poolsList)
+            for (int i = 0; i < poolsList.Count; i++)
             {
-                TryAddPool(t);
+                TryAddPool(poolsList[i]);
             }
 
             Messenger.Subscribe<SceneUnloadingMessage>(m => HandleSceneUnload(m.SceneName), null, true);
@@ -95,14 +95,14 @@ namespace VolumeBox.Toolbox
             var usedObjects = allObjectsCount - unusedObjects.Count;
             excessObjectsCount -= usedObjects;
 
-
             if (canBeCleared)
             {
                 for(int i = 0; i < excessObjectsCount; i++) 
                 {
-                    pool.objects.Remove(unusedObjects[i]);
-                    Destroy(unusedObjects[i].GameObject);
-                    _removeMessage.Obj = unusedObjects[i].GameObject;
+                    var unused = unusedObjects[i];
+                    pool.objects.Remove(unused);
+                    Destroy(unused.GameObject);
+                    _removeMessage.Obj = unused.GameObject;
                     _removeMessage.RemoveType = GameObjectRemoveType.Destroyed;
                     Messenger.Send(_removeMessage);
                 }
@@ -124,8 +124,10 @@ namespace VolumeBox.Toolbox
                 return false;
             }
 
-            foreach (var obj in pool.objects)
+            for (int i = 0; i < pool.objects.Count; i++)
             {
+                var obj = pool.objects[i];
+
                 TryDespawn(obj);
                 Destroy(obj.GameObject);
             }
@@ -140,9 +142,11 @@ namespace VolumeBox.Toolbox
 
             for (int i = 0; i < pools.Count; i++)
             {
-                if (pools[i].tag == tag)
+                var pool = pools[i];
+
+                if (pool.tag == tag)
                 {
-                    poolToRemove = pools[i];
+                    poolToRemove = pool;
                     break;
                 }
             }
@@ -186,7 +190,6 @@ namespace VolumeBox.Toolbox
             var pool = new Pool(poolToAdd.tag, poolToAdd.initialSize, objectPoolList);
             pools.Add(pool);
             return pool;
-
         }
 
         public Pool TryAddPool(string tag, GameObject obj, int size)
@@ -210,7 +213,6 @@ namespace VolumeBox.Toolbox
                 Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exists");
                 return null;
             }
-
 
             //get first unused obj
             var poolToUse = poolsToUse[UnityEngine.Random.Range(0, poolsToUse.Length)];
@@ -304,21 +306,25 @@ namespace VolumeBox.Toolbox
 
             for (int i = 0; i < pooledMono.Length; i++)
             {
-                if (pooledMono[i] == null)
+                var mono = pooledMono[i];
+
+                if (mono == null)
                 {
                     continue;
                 }
 
-                var type = pooledMono[i].GetType();
+                var type = mono.GetType();
                 var interfaces = type.GetInterfaces();
 
-                foreach (var inter in interfaces)
+                for (int j = 0; j < interfaces.Length; j++)
                 {
-                    if(inter.GetInterface("IPooledBase") != null)
+                    var inter = interfaces[j];
+
+                    if (inter.GetInterface("IPooledBase") != null)
                     {
                         var generic = inter.GetGenericArguments()[0];
                         var onSpawnMethod = inter.GetMethod("OnSpawn");
-                        onSpawnMethod.Invoke(pooledMono[i], new object[] { Convert.ChangeType(data, generic) });
+                        onSpawnMethod.Invoke(mono, new object[] { Convert.ChangeType(data, generic) });
                     }
                 }
             }
@@ -328,11 +334,13 @@ namespace VolumeBox.Toolbox
         {
             IDespawn[] despawns = obj.GetComponentsInChildren<IDespawn>(true);
 
-            foreach(var t in despawns)
+            for(int i = 0; i < despawns.Length; i++)
             {
-                if(t != null)
+                var despawnable = despawns[i];
+
+                if(despawnable != null)
                 {
-                    t.OnDespawn();
+                    despawnable.OnDespawn();
                 }
             }
         }
@@ -424,8 +432,10 @@ namespace VolumeBox.Toolbox
         {
             for (int i = 0; i < pools.Count; i++)
             {
-                foreach (var obj in pools[i].objects)
+                for (int j = 0; j < pools[i].objects.Count; j++)
                 {
+                    var obj = pools[i].objects[j];
+
                     if (obj.GameObject.scene.name == unloadedSceneName && obj.Used)
                     {
                         TryDespawn(obj);

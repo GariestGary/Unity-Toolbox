@@ -5,7 +5,8 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class SceneDropdownAttribute: Attribute
+    [AttributeUsage(AttributeTargets.Field)]
+    public class SceneDropdownAttribute: PropertyAttribute
     {
         
     }

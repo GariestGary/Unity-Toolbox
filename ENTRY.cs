@@ -37,16 +37,9 @@ namespace VolumeBox.Toolbox
 
             if(StaticData.Settings.AutoResolveScenesAtPlay)
             {
-                await Fader.In(0);
-
                 if (!string.IsNullOrEmpty(m_Settings.InitialSceneName) && m_Settings.InitialSceneName != "MAIN")
                 {
                     await Traveler.LoadScene(m_Settings.InitialSceneName, m_Settings.InitialSceneArgs);
-
-                    if (!m_Settings.ManualFadeOut)
-                    {
-                        await Fader.Out(m_Settings.FadeOutDuration);
-                    }
                 }
             }
 

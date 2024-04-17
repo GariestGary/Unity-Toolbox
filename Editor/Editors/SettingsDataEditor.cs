@@ -22,8 +22,6 @@ namespace VolumeBox.Toolbox.Editor
         private SerializedProperty m_targetFrameRate;
         private SerializedProperty m_initialSceneName;
         private SerializedProperty m_initialSceneArgs;
-        private SerializedProperty m_manualFadeOut;
-        private SerializedProperty m_fadeOutDuration;
 
         private int selectedScene;
         private string[] scenesList;
@@ -37,8 +35,6 @@ namespace VolumeBox.Toolbox.Editor
             m_targetFrameRate = serializedObject.FindProperty("TargetFrameRate");
             m_initialSceneName = serializedObject.FindProperty("InitialSceneName");
             m_initialSceneArgs = serializedObject.FindProperty("InitialSceneArgs");
-            m_manualFadeOut = serializedObject.FindProperty("ManualFadeOut");
-            m_fadeOutDuration = serializedObject.FindProperty("FadeOutDuration");
 
             m_SceneDropdownState = new AdvancedDropdownState();
 
@@ -180,7 +176,7 @@ namespace VolumeBox.Toolbox.Editor
             
             if(sceneClicked)
             {
-                var dropdown = new SceneDropdown(new AdvancedDropdownState(), OnSceneSelectedCallback);
+                var dropdown = new SceneAdvancedDropdown(new AdvancedDropdownState(), OnSceneSelectedCallback);
                 dropdown.Show(rect);
             }
 
@@ -192,19 +188,6 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.LabelField("Initial Scene Args", GUILayout.Width(LABEL_WIDTH));
             EditorGUILayout.PropertyField(m_initialSceneArgs, GUIContent.none);
             GUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Manual Fade Out", GUILayout.Width(LABEL_WIDTH));
-            m_manualFadeOut.boolValue = EditorGUILayout.Toggle(m_manualFadeOut.boolValue);
-            EditorGUILayout.EndHorizontal();
-
-            if(!m_manualFadeOut.boolValue)
-            {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Fade Out Duration", GUILayout.Width(LABEL_WIDTH));
-                m_fadeOutDuration.floatValue = EditorGUILayout.FloatField(m_fadeOutDuration.floatValue);
-                EditorGUILayout.EndHorizontal();
-            }
 
             serializedObject.ApplyModifiedProperties();
             
