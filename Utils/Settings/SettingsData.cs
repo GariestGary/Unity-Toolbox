@@ -20,7 +20,6 @@ namespace VolumeBox.Toolbox
         [HideInInspector] public bool AutoResolveScenesAtPlay = true;
         public const string poolerResourcesDataPath = "Toolbox/PoolerData.asset";
         public const string audioPlayerResourcesDataPath = "Toolbox/AudioPlayerData.asset";
-        public const string saverResourcesDataPath = "Toolbox/SaverData.asset";
 
         private void OnValidate()
         {

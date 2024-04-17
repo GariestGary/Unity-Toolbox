@@ -31,7 +31,6 @@ namespace VolumeBox.Toolbox
             Traveler.Instance.RunInternal();
             Updater.Instance.RunInternal();
             Pooler.Instance.RunInternal();
-            Database.Instance.RunInternal();
 
             Updater.InitializeObjects(SceneManager.GetActiveScene().GetRootGameObjects());
 
@@ -74,7 +73,6 @@ namespace VolumeBox.Toolbox
             Traveler.Instance.ClearInternal();
             Updater.Instance.ClearInternal();
             Pooler.Instance.ClearInternal();
-            Database.Instance.ClearInternal();
         }
 
         private void OnApplicationQuit()

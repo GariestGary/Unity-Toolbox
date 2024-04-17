@@ -26,8 +26,6 @@ namespace VolumeBox.Toolbox.Editor
         private int selectedScene;
         private string[] scenesList;
 
-        private AdvancedDropdownState m_SceneDropdownState;
-
         private void OnEnable()
         {
             m_resolveAtPlay = serializedObject.FindProperty("AutoResolveScenesAtPlay");
@@ -35,8 +33,6 @@ namespace VolumeBox.Toolbox.Editor
             m_targetFrameRate = serializedObject.FindProperty("TargetFrameRate");
             m_initialSceneName = serializedObject.FindProperty("InitialSceneName");
             m_initialSceneArgs = serializedObject.FindProperty("InitialSceneArgs");
-
-            m_SceneDropdownState = new AdvancedDropdownState();
 
             RebuildScenesList();
         }
@@ -55,24 +51,6 @@ namespace VolumeBox.Toolbox.Editor
             {
                 selectedScene = 0;
             }
-        }
-
-        private bool IsScenesChanged()
-        {
-            if(scenesList.Length != EditorBuildSettings.scenes.Length)
-            {
-                return true;
-            }
-
-            for (int i = 0; i < scenesList.Length; i++)
-            {
-                if (!EditorBuildSettings.scenes[i].path.Contains(scenesList[i]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private void OnSceneSelectedCallback(string sceneName)

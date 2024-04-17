@@ -15,11 +15,9 @@ namespace VolumeBox.Toolbox.Editor
 
         private PoolerDataHolder poolerDataHolder;
         private AudioPlayerDataHolder audioPlayerDataHolder;
-        private DatabaseDataHolder saverDataHolder;
 
         private SettingsDataEditor settingsEditor;
         private PoolerEditor poolerEditor;
-        private DatabaseEditor saverEditor;
         private AudioPlayerEditor audioEditor;
 
         private int selectedTab;
@@ -61,7 +59,6 @@ namespace VolumeBox.Toolbox.Editor
         {
             ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
-            ResourcesUtils.ResolveScriptable<DatabaseDataHolder>(SettingsData.saverResourcesDataPath);
             StaticData.CreateSettings();
         }
 
@@ -74,12 +71,10 @@ namespace VolumeBox.Toolbox.Editor
         {
             poolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             audioPlayerDataHolder = ResourcesUtils.ResolveScriptable<AudioPlayerDataHolder>(SettingsData.audioPlayerResourcesDataPath);
-            saverDataHolder = ResourcesUtils.ResolveScriptable<DatabaseDataHolder>(SettingsData.saverResourcesDataPath);
 
             settingsEditor = (SettingsDataEditor)UnityEditor.Editor.CreateEditor(StaticData.Settings);
             poolerEditor = (PoolerEditor)UnityEditor.Editor.CreateEditor(poolerDataHolder);
             audioEditor = (AudioPlayerEditor)UnityEditor.Editor.CreateEditor(audioPlayerDataHolder);
-            saverEditor = (DatabaseEditor)UnityEditor.Editor.CreateEditor(saverDataHolder);
         }
 
         private void OnGUI()
@@ -95,9 +90,6 @@ namespace VolumeBox.Toolbox.Editor
                 case 2:
                     audioEditor?.DrawIMGUI();
                     break;
-                case 3:
-                    saverEditor?.DrawIMGUI();
-                    break;
                 default:
                     break;
             }
@@ -107,7 +99,7 @@ namespace VolumeBox.Toolbox.Editor
         {
             if(StaticData.HasSettings)
             {
-                if(poolerDataHolder == null || audioPlayerDataHolder == null || saverDataHolder == null)
+                if(poolerDataHolder == null || audioPlayerDataHolder == null)
                 {
                     InitEditors();
                 }
@@ -119,7 +111,6 @@ namespace VolumeBox.Toolbox.Editor
                     new GUIContent("Main Settings", m_MainSettingsIcon), 
                     new GUIContent("Pooler", m_PoolerIcon), 
                     new GUIContent("Audio Player", m_AudioPlayerIcon), 
-                    new GUIContent("Database", m_DatabaseIcon)
                 }, m_TabSkin.GetStyle("Tab"), GUILayout.Height(40));
                 GUI.skin = oldSkin;
 //
