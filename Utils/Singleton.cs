@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Singleton<T> : MonoBehaviour where T: MonoBehaviour
+    public class MonoSingleton<T> : MonoBehaviour where T: MonoBehaviour
     {
         private static T instance;
         private static object lockObject = new object();
@@ -120,6 +120,29 @@ namespace VolumeBox.Toolbox
         private void OnDestroy()
         {
             destroyed = true;
+        }
+    }
+
+    public class Singleton<T> where T: class
+    {
+        private static T instance;
+        private static object lockObject = new object();
+
+        public static bool HasInstance => instance != null;
+
+        public static T Instance
+        {
+            get
+            {
+                lock (lockObject)
+                {
+                    if (instance == null)
+                    {
+                        var singleton = default(T);
+                    }
+                    return instance;
+                }
+            }
         }
     }
 }
