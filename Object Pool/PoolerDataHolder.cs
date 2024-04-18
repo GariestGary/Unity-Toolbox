@@ -187,7 +187,7 @@ namespace VolumeBox.Toolbox
                 CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
             }
 
-            var pool = new Pool(poolToAdd.tag, poolToAdd.initialSize, objectPoolList);
+            var pool = new Pool(poolToAdd.tag, poolToAdd.pooledObject, poolToAdd.initialSize, objectPoolList);
             pools.Add(pool);
             return pool;
         }
@@ -221,7 +221,7 @@ namespace VolumeBox.Toolbox
             //Create new object if last in list is active
             if (objToSpawn is null)
             {
-                CreateNewPoolObject(poolToUse.objects[0].GameObject, poolToUse.objects);
+                CreateNewPoolObject(poolToUse.referenceObject, poolToUse.objects);
                 objToSpawn = poolToUse.objects.Where(o => !o.Used).FirstOrDefault();
             }
 
@@ -268,7 +268,7 @@ namespace VolumeBox.Toolbox
             return Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
         }
         
-        private GameObject CreateNewPoolObject<T>(T obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
+        private GameObject CreateNewPoolObject(GameObject obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
         {
             Transform poolParent = null;
 
@@ -277,9 +277,9 @@ namespace VolumeBox.Toolbox
                 poolParent = objectPoolParent;
             }
 
-            GameObject poolObj = Instantiate(obj as GameObject, poolParent);
+            GameObject poolObj = Instantiate(obj, poolParent);
 
-            poolObj.name = (obj as GameObject).name;
+            poolObj.name = obj.name;
 
             Updater.InitializeObject(poolObj);
 
@@ -485,14 +485,16 @@ namespace VolumeBox.Toolbox
     {
         public string tag;
         public int defaultSize;
+        public GameObject referenceObject;
         public List<PooledGameObject> objects;
 
         public int CurrentObjectsCount => objects.Count;
 
-        public Pool(string tag, int defaultSize, List<PooledGameObject> objects = null)
+        public Pool(string tag, GameObject referenceObject, int defaultSize, List<PooledGameObject> objects = null)
         {
             this.tag = tag;
             this.defaultSize = defaultSize;
+            this.referenceObject = referenceObject;
 
             if(objects == null)
             {

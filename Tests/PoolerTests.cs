@@ -8,8 +8,6 @@ namespace VolumeBox.Toolbox.Tests
 {
     public class PoolerTests
     {
-        // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-        // `yield return null;` to skip a frame.
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator PoolerSpawnObjectTest()
         {
@@ -17,17 +15,22 @@ namespace VolumeBox.Toolbox.Tests
             GameObject pooledGO = new GameObject("Pooler Test");
             Pooler.TryAddPool("Test pool", pooledGO, 3);
 
-            GameObject sp = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
-            sp.name = "Pooler Test 1";
-            Pooler.DespawnOrDestroy(sp);
-            Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity).name = "Pooler Test 2";
-            Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity).name = "Pooler Test 3";
+            var test = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
+            test.name = "Pooler Test 1";
+            Pooler.DespawnOrDestroy(test);
+            var obj = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
+            obj.name = "Pooler Test 2";
+            obj = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
+            obj.name = "Pooler Test 3";
+
+            obj = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
 
             Assert.AreEqual
             (
                 true,
-                Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity).name.Contains("Pooler Test")
+                test == obj
             );
+                
 
             yield return null;
         }
