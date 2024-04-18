@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,128 +16,148 @@ namespace VolumeBox.Toolbox.Editor
         private AudioPlayerDataHolder m_AudioPlayerDataHolder;
         private Dictionary<string, string[]> m_AlbumClipsRelations;
         private string[] m_Albums;
+        private AudioPlayerClipAdvancedDropdown m_Dropdown;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            ValidateClips();
+            ValidateClips(property);
+            
+            var labelRect = position;
+            labelRect.width = EditorGUIUtility.labelWidth;
+            EditorGUI.LabelField(labelRect, label);
+
+            var dropdownRect = position;
+            dropdownRect.width -= labelRect.width + 2;
+            dropdownRect.x += labelRect.width + 2;
+            
+            if(m_Albums.Length <= 0)
+            {
+                EditorGUI.LabelField(dropdownRect, "There is no albums", EditorStyles.popup);
+                return;
+            }
+
+            ValidateProperty(property);
 
             EditorGUI.BeginChangeCheck();
 
-            var currentString = property.stringValue;
-            var (albumIndex, clipIndex) = Parse(currentString);
-
-            EditorGUI.LabelField(position, label);
-
-            var labelRect = position;
-            labelRect.width = EditorGUIUtility.labelWidth + 2;
-            var halfPropertyWidth = (position.width - labelRect.width) * 0.5f;
-
-            #region ALBUM
-            //Label
-            var albumLabel = position;
-            albumLabel.x = labelRect.width;
-            albumLabel.width = 40;
-            
-            if(m_Albums == null || m_Albums.Length <= 0)
+            if(m_Dropdown == null)
             {
-                albumIndex = 0;
-                albumLabel.width = position.width - labelRect.width;
-                property.stringValue = string.Empty;
-                EditorGUI.LabelField(albumLabel, "There is no albums");
-                EditorGUI.EndChangeCheck();
-                return;
+                m_Dropdown = new AudioPlayerClipAdvancedDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), m_AlbumClipsRelations, clip => OnClipSelectedCallback(clip, property));
             }
 
-            EditorGUI.LabelField(albumLabel, "Album");
+            var splits = property.stringValue.Split("/");
 
-            //Property
-            var albumRect = position;
-            albumRect.x = albumLabel.x + albumLabel.width + 5;
-            albumRect.width = halfPropertyWidth - albumLabel.width;
+            var albumName = splits.Length > 0 ? splits[0] : string.Empty;
+            var clipName = splits.Length > 1 ? splits[1] : string.Empty;
 
-            if(albumIndex < 0)
+            if(GUI.Button(dropdownRect, string.Format($"Album: {albumName} | Clip: {clipName}"), EditorStyles.popup))
             {
-                albumIndex = 0;
+                m_Dropdown.Show(dropdownRect);
             }
 
-            albumIndex = EditorGUI.Popup(albumRect, albumIndex, m_Albums);
-            
-            var albumName = string.Empty;
-            
-            if(albumIndex >= 0 && albumIndex < m_Albums.Length)
-            {
-                albumName = m_Albums[albumIndex];
-            }
-            #endregion
-
-            #region CLIP
-            //Label
-            var clipLabel = position;
-            clipLabel.x = albumRect.x + albumRect.width + 5;
-            clipLabel.width = 40;
-            
-            var clipsArray = new string[0];
-
-            if(m_AlbumClipsRelations.ContainsKey(albumName))
-            {
-                clipsArray = m_AlbumClipsRelations[albumName];
-            }
-
-            if(clipsArray == null || clipsArray.Length <= 0)
-            {
-                clipIndex = 0;
-                clipLabel.width = position.width - labelRect.width - halfPropertyWidth;
-                EditorGUI.LabelField(clipLabel, "There is no clips");
-                property.stringValue = string.Join("/", albumName, string.Empty);
-                EditorGUI.EndChangeCheck();
-                return;
-            }
-
-            EditorGUI.LabelField(clipLabel, "Clip");
-
-            //Property
-            var clipRect = position;
-            clipRect.x = clipLabel.x + clipLabel.width;
-            clipRect.width = halfPropertyWidth - clipLabel.width - 10;
-
-            if(clipIndex < 0)
-            {
-                clipIndex = 0;
-            }
-
-            clipIndex = EditorGUI.Popup(clipRect, clipIndex, clipsArray);
-
-            var clipName = string.Empty;
-
-            if(clipIndex >= 0 && clipIndex < clipsArray.Length)
-            {
-                clipName = clipsArray[clipIndex];
-            }
-            #endregion
-
-            property.stringValue = string.Join("/", albumName, clipName);   
+            EditorGUI.EndChangeCheck();
         }
 
-        private (int, int) Parse(string text)
+        private void OnClipSelectedCallback(string formattedClip, SerializedProperty property)
         {
-            var splits = text.Split("/");
-
-            if(splits == null || splits.Length < 2)
-            {
-                return (0, 0);
-            }
-
-            var albumIndex = Array.IndexOf(m_Albums, splits[0]);
-            var clipIndex = -1;
-            if (albumIndex > -1)
-            {
-                clipIndex = Array.IndexOf(m_AlbumClipsRelations[splits[0]], splits[1]);
-            }
-
-            return (albumIndex, clipIndex);
+            property.serializedObject.Update();
+            property.stringValue = formattedClip;
+            property.serializedObject.ApplyModifiedProperties();
         }
 
-        private void ValidateClips()
+        private void ValidateProperty(SerializedProperty property)
+        {
+            string clip;
+            string album;
+
+            if (!property.stringValue.IsValuable())
+            {
+                (album, clip) = GetDefaultAlbumAndClip();
+            }
+            else
+            {
+                var splits = property.stringValue.Split("/");
+
+                switch (splits.Length)
+                {
+                    case 0:
+                        (album, clip) = GetDefaultAlbumAndClip();
+                        break;
+
+                    case 1:
+                        album = splits[0];
+
+                        if (!AlbumExists(album))
+                        {
+                            album = m_Albums[0];
+                        }
+
+                        clip = GetDefaultClipOfAlbum(album);
+                        break;
+
+                    case 2:
+                        album = splits[0];
+                        clip = splits[1];
+
+                        if (!AlbumExists(album))
+                        {
+                            album = m_Albums[0];
+                        }
+
+                        if (!ClipExistsInAlbum(album, clip))
+                        {
+                            clip = GetDefaultClipOfAlbum(album);
+                        }
+
+                        break;
+
+                    default:
+                        (album, clip) = GetDefaultAlbumAndClip();
+                        break;
+                }
+            }
+
+            property.stringValue = string.Join("/", album, clip);
+        }
+
+        private (string, string) GetDefaultAlbumAndClip()
+        {
+            var album = m_Albums[0];
+            var clip = GetDefaultClipOfAlbum(album);
+            return (album, clip);
+        }
+
+        private string GetDefaultClipOfAlbum(string album)
+        {
+            if(!AlbumExists(album))
+            {
+                return string.Empty;
+            }
+
+            var clips = m_AlbumClipsRelations[album];
+            return clips.Length > 0 ? clips[0] : string.Empty;
+        }
+
+        private bool AlbumExists(string album)
+        {
+            return m_Albums.Contains(album);
+        }
+
+        private bool ClipExistsInAlbum(string album, string clip)
+        {
+            var albumExists = AlbumExists(album);
+
+            if(albumExists)
+            {
+                return m_AlbumClipsRelations[album].Contains(clip);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void ValidateClips(SerializedProperty property)
         {
             if (m_AudioPlayerDataHolder == null)
             {
@@ -159,6 +180,7 @@ namespace VolumeBox.Toolbox.Editor
                     m_AlbumClipsRelations.Add(album.albumName, album.clips.ConvertAll(c => c.id).ToArray());
                 }
 
+                m_Dropdown = new AudioPlayerClipAdvancedDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), m_AlbumClipsRelations, clip => OnClipSelectedCallback(clip, property));
                 IsClipsChanged = false;
             }
         }

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -8,16 +7,17 @@ namespace VolumeBox.Toolbox.Editor
     [CustomPropertyDrawer(typeof(FromPoolAttribute))]
     public class PoolerTagPropertyDrawer : PropertyDrawer
     {
-        public static bool IsPoolsChanged { get; set; }
+        private PoolAdvancedDropdown m_Dropdown;
+        private PoolerDataHolder m_DataHolder;
+        private string[] m_PoolerEntries;
+        private string[] m_SceneEntries;
+        private string m_SceneName;
 
-        private PoolerDataHolder m_PoolerDataHolder;
-        private Component m_Target;
-        private string[] m_PoolsAvailable;
-        private string[] m_ParsedPoolTags = new string[0];
+        public static bool IsPoolsChanged { get; set; }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            ValidatePools(property);
+            ValidateEntries(property);
 
             var labelRect = position;
             labelRect.width = EditorGUIUtility.labelWidth + 2;
@@ -28,66 +28,108 @@ namespace VolumeBox.Toolbox.Editor
             poolRect.x = labelRect.width;
             poolRect.width -= labelRect.width;
 
-            if (m_PoolsAvailable == null || m_PoolsAvailable.Length <= 0)
+            if(m_PoolerEntries.Length <= 0 && m_SceneEntries.Length <= 0)
             {
-                EditorGUI.LabelField(poolRect ,"There is no available pools");
+                EditorGUI.LabelField(poolRect, "There is no pools available", EditorStyles.popup);
                 return;
+            }
+
+            ValidateProperty(property);
+
+            if(m_Dropdown == null)
+            {
+                UpdateDropdown(property);
             }
 
             EditorGUI.BeginChangeCheck();
 
-            var currentPool = property.stringValue;
-            var selectedPoolIndex = Array.IndexOf(m_PoolsAvailable, currentPool);
-
-            if(selectedPoolIndex < 0)
+            if(GUI.Button(poolRect, property.stringValue, EditorStyles.popup))
             {
-                selectedPoolIndex = 0;
-            }
-
-            selectedPoolIndex = EditorGUI.Popup(poolRect, selectedPoolIndex, m_ParsedPoolTags);
-
-            if(m_PoolsAvailable.Length <= 0)
-            {
-                property.stringValue = string.Empty;
-            }
-            else
-            {
-                property.stringValue = m_PoolsAvailable[selectedPoolIndex];
+                m_Dropdown.Show(poolRect);
             }
 
             EditorGUI.EndChangeCheck();
         }
 
-        private void ValidatePools(SerializedProperty property)
+        private void ValidateEntries(SerializedProperty property)
         {
-            if(m_PoolerDataHolder == null)
+            if (m_DataHolder == null)
             {
-                m_PoolerDataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
+                m_DataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             }
 
-            if(m_Target == null)
+            var gameObject = (property.GetValue() as Component).gameObject;
+
+            m_PoolerEntries = GetPoolerEntries(m_DataHolder);
+            m_SceneEntries = GetSceneEntries(gameObject);
+            m_SceneName = gameObject.scene.name;
+        }
+
+        private void ValidateProperty(SerializedProperty property)
+        {
+            if(property.stringValue.IsValuable())
             {
-                var target = property.GetValue();
-                m_Target = target as Component;
-            }
-
-            if(IsPoolsChanged || m_PoolsAvailable == null)
-            {
-                m_PoolsAvailable = new string[0];
-
-                m_PoolsAvailable = m_PoolsAvailable.Concat(m_PoolerDataHolder.PoolsList.ConvertAll(x => x.tag)).ToArray();
-                var scenePools = Resources.FindObjectsOfTypeAll<ScenePool>().Where(x => x.gameObject.scene == m_Target.gameObject.scene).ToList();
-                m_ParsedPoolTags = m_PoolsAvailable.ToArray();
-
-                scenePools.ForEach(x => 
+                if(m_PoolerEntries.Contains(property.stringValue) || m_SceneEntries.Contains(property.stringValue))
                 {
-                    var convertedScenePoolTags = x.Pools.ConvertAll(y => y.tag);
-                    m_ParsedPoolTags = m_ParsedPoolTags.Concat(convertedScenePoolTags.ConvertAll(p => $"{p} [{x.gameObject.scene.name}]")).ToArray();
-                    m_PoolsAvailable = m_PoolsAvailable.Concat(convertedScenePoolTags).ToArray();
-                });
-
-                IsPoolsChanged = false;
+                    return;
+                }
             }
+
+            property.stringValue = m_PoolerEntries.Length > 0 ? m_PoolerEntries[0] : m_SceneEntries[0];
+        }
+
+        private void UpdateDropdown(SerializedProperty property)
+        {
+            m_Dropdown = new PoolAdvancedDropdown(
+                    new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
+                    m_PoolerEntries,
+                    m_SceneEntries,
+                    m_SceneName,
+                    name => OnPoolSelectedCallback(name, property));
+        }
+
+        private void OnPoolSelectedCallback(string poolName, SerializedProperty property)
+        {
+            property.serializedObject.Update();
+            property.stringValue = poolName;
+            property.serializedObject.ApplyModifiedProperties();
+        }
+
+        private string[] GetPoolerEntries(PoolerDataHolder dataHolder)
+        {
+            var entries = new string[0];
+
+            if (dataHolder.PoolsList.Count > 0)
+            {
+                entries = new string[dataHolder.PoolsList.Count];
+
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    entries[i] = dataHolder.PoolsList[i].tag;
+                }
+            }
+
+            return entries;
+        }
+
+        private string[] GetSceneEntries(GameObject sceneObject)
+        {
+            var scenePools = Resources.FindObjectsOfTypeAll<ScenePool>().Where(x => x.gameObject.scene == sceneObject.scene).ToArray();
+
+            var entries = new string[0];
+
+            if (scenePools.Length > 0)
+            {
+                for (int i = 0; i < scenePools.Length; i++)
+                {
+                    for (int j = 0; j < scenePools[i].Pools.Count; j++)
+                    {
+                        entries = entries.Append(scenePools[i].Pools[j].tag).ToArray();
+                    }
+                }
+            }
+
+            return entries;
         }
     }
 }
