@@ -56,12 +56,14 @@ namespace VolumeBox.Toolbox.Editor
             m_poolGCInterval.floatValue = interval;
             GUILayout.EndHorizontal();
 
-            EditorGUILayout.Space(3);
-
+            EditorGUILayout.Space(1);
             EditorGUILayout.BeginHorizontal();
 
+            EditorGUILayout.LabelField("Pools:", m_Skin.GetStyle("Label"));
+            
             if(m_poolsList.arraySize > 0)
             {
+                
                 if(GUILayout.Button("Expand All"))
                 {
                     SetExpandedStateForAll(true);
@@ -74,6 +76,7 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space(3);
 
             EditorGUILayout.BeginVertical();
             currentScrollPos = EditorGUILayout.BeginScrollView(currentScrollPos);
@@ -150,22 +153,22 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
-            GUILayout.Space(4);
+            GUILayout.Space(2);
             GUI.skin = oldSkin;
-            EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(25));
             GUILayout.Space(4);
             var tag = property.FindPropertyRelative("tag");
 
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, tag.stringValue, true);
+            EditorGUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, tag.stringValue, true, skin.GetStyle("Foldout"));
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndVertical();
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = buttonColor;
 
-            EditorGUILayout.BeginVertical(GUILayout.Width(25));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
                 if (EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {tag.stringValue} pool?", "Yes", "Cancel"))
                 {
@@ -179,9 +182,7 @@ namespace VolumeBox.Toolbox.Editor
                 }
             }
 
-            GUILayout.FlexibleSpace();
-
-            EditorGUILayout.EndVertical();
+            
             GUILayout.Space(4);
             EditorGUILayout.EndHorizontal();
 
@@ -202,7 +203,7 @@ namespace VolumeBox.Toolbox.Editor
                 //Tag draw
                 EditorGUILayout.BeginHorizontal();
 
-                EditorGUILayout.LabelField("Pool Tag", GUILayout.Width(labelsWidth));
+                EditorGUILayout.LabelField("Tag", GUILayout.Width(labelsWidth));
                 var prevTag = tag.stringValue;
                 tag.stringValue = EditorGUILayout.TextField(tag.stringValue);
 
@@ -225,8 +226,8 @@ namespace VolumeBox.Toolbox.Editor
                 //Pool size draw
                 EditorGUILayout.BeginHorizontal();
 
-                EditorGUILayout.LabelField("Initial Pool Size", GUILayout.Width(labelsWidth));
-                var initialSize = property.FindPropertyRelative("initialSize");
+                EditorGUILayout.LabelField("Size", GUILayout.Width(labelsWidth));
+                var initialSize = property.FindPropertyRelative("size");
                 var settedValue = EditorGUILayout.IntField(initialSize.intValue);
                 settedValue = Mathf.Clamp(settedValue, 1, int.MaxValue);
 
@@ -248,7 +249,7 @@ namespace VolumeBox.Toolbox.Editor
             }
             else
             {
-                GUILayout.Space(4);
+                GUILayout.Space(2);
             }
 
             EditorGUILayout.EndVertical();

@@ -16,21 +16,17 @@ namespace VolumeBox.Toolbox.Tests
             Pooler.TryAddPool("Test pool", pooledGO, 3);
 
             var test = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
-            test.name = "Pooler Test 1";
+            Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
+            Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
             Pooler.DespawnOrDestroy(test);
+
             var obj = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
-            obj.name = "Pooler Test 2";
-            obj = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
-            obj.name = "Pooler Test 3";
-
-            obj = Pooler.Spawn("Test pool", Vector3.zero, Quaternion.identity);
-
+            
             Assert.AreEqual
             (
                 true,
                 test == obj
             );
-                
 
             yield return null;
         }

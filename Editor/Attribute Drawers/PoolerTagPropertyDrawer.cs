@@ -17,6 +17,8 @@ namespace VolumeBox.Toolbox.Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.BeginProperty(position, GUIContent.none, property);
             ValidateEntries(property);
 
             var labelRect = position;
@@ -25,7 +27,7 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.LabelField(labelRect, label);
 
             var poolRect = position;
-            poolRect.x = labelRect.width;
+            poolRect.x += labelRect.width;
             poolRect.width -= labelRect.width;
 
             if(m_PoolerEntries.Length <= 0 && m_SceneEntries.Length <= 0)
@@ -41,13 +43,12 @@ namespace VolumeBox.Toolbox.Editor
                 UpdateDropdown(property);
             }
 
-            EditorGUI.BeginChangeCheck();
 
             if(GUI.Button(poolRect, property.stringValue, EditorStyles.popup))
             {
                 m_Dropdown.Show(poolRect);
             }
-
+            EditorGUI.EndProperty();
             EditorGUI.EndChangeCheck();
         }
 

@@ -58,8 +58,10 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             GUILayout.EndHorizontal();
-
+            EditorGUILayout.Space(3);
             EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.LabelField("Albums:", m_Skin.GetStyle("Label"));
 
             if(m_albums.arraySize > 0)
             {
@@ -131,20 +133,21 @@ namespace VolumeBox.Toolbox.Editor
             GUILayout.Space(3);
             GUI.skin = oldSkin;
 
-            EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(25));
 
             GUILayout.Space(5);
             var albumName = property.FindPropertyRelative("albumName");
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, albumName.stringValue, true);
+            
+            EditorGUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, albumName.stringValue, true, m_Skin.GetStyle("Foldout"));
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndVertical();
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = buttonColor;
 
-            EditorGUILayout.BeginVertical(GUILayout.Width(25));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
                 if(EditorUtility.DisplayDialog("Confirm delete", $"Are you sure want to delete {albumName.stringValue} album?", "Yes", "Cancel"))
                 {
@@ -159,10 +162,6 @@ namespace VolumeBox.Toolbox.Editor
                 }
             }
             GUI.backgroundColor = oldColor;
-
-            GUILayout.FlexibleSpace();
-
-            EditorGUILayout.EndVertical();
 
             GUILayout.Space(5);
             EditorGUILayout.EndHorizontal();
@@ -225,6 +224,8 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.BeginHorizontal();
 
+                EditorGUILayout.LabelField("Clips:", m_Skin.GetStyle("Label"));
+
                 if(m_clips.arraySize > 0)
                 {
                     if (GUILayout.Button("Expand All", GUILayout.Width(100)))
@@ -278,23 +279,39 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
             GUI.skin = oldSkin;
             GUILayout.Space(3);
-            EditorGUILayout.BeginHorizontal(GUILayout.Height(15));
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(25));
             GUILayout.Space(3);
             var clipId = property.FindPropertyRelative("id");
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true);
+            EditorGUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true, m_Skin.GetStyle("Foldout"));
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndVertical();
+            var clip = property.FindPropertyRelative("clip");
+            
+            if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
+            {
+                var clipValue = clip.objectReferenceValue as AudioClip;
+
+                if (clipValue != null)
+                {
+                    AudioUtils.StopAllPreviewClips();
+                    AudioUtils.PlayPreviewClip(clipValue);
+                }
+            }
+
+            if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
+            {
+                AudioUtils.StopAllPreviewClips();
+            }
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = buttonColor;
 
-            EditorGUILayout.BeginVertical(GUILayout.Width(15));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25)))
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
                 GUI.backgroundColor = oldColor;
                 list.DeleteArrayElementAtIndex(index);
-                EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
@@ -303,9 +320,6 @@ namespace VolumeBox.Toolbox.Editor
             }
             GUI.backgroundColor = oldColor;
 
-            GUILayout.FlexibleSpace();
-
-            EditorGUILayout.EndVertical();
             GUILayout.Space(3);
             EditorGUILayout.EndHorizontal();
 
@@ -335,7 +349,6 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.BeginHorizontal();
                 
                 EditorGUILayout.LabelField("Audio Clip", GUILayout.Width(labelSize));
-                var clip = property.FindPropertyRelative("clip");
                 EditorGUILayout.PropertyField(clip, GUIContent.none);
                 EditorGUILayout.EndHorizontal();
 
@@ -344,21 +357,6 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.BeginVertical();
                 GUILayout.Space(8);
 
-                if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Height(25), GUILayout.Width(25)))
-                {
-                    var clipValue = clip.objectReferenceValue as AudioClip;
-
-                    if(clipValue != null)
-                    {
-                        AudioUtils.StopAllPreviewClips();
-                        AudioUtils.PlayPreviewClip(clipValue);
-                    }
-                }
-
-                if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Height(25), GUILayout.Width(25)))
-                {
-                    AudioUtils.StopAllPreviewClips();
-                }
                 EditorGUILayout.EndVertical();
 
                 var previewSize = 75;
@@ -368,7 +366,7 @@ namespace VolumeBox.Toolbox.Editor
                 EditorGUILayout.EndHorizontal();
             }
 
-            GUILayout.Space(3);
+            GUILayout.Space(2);
             EditorGUILayout.EndVertical();
             GUILayout.Space(3);
             EditorGUILayout.EndHorizontal();
