@@ -61,10 +61,11 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.Space(3);
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField("Albums:", m_Skin.GetStyle("Label"));
 
             if(m_albums.arraySize > 0)
             {
+                EditorGUILayout.LabelField("Albums:", m_Skin.GetStyle("Label"));
+                
                 if (GUILayout.Button("Expand All"))
                 {
                     SetExpandedStateForAll(true);
@@ -153,7 +154,6 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     GUI.backgroundColor = oldColor;
                     list.DeleteArrayElementAtIndex(index);
-                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
@@ -224,10 +224,11 @@ namespace VolumeBox.Toolbox.Editor
 
                 EditorGUILayout.BeginHorizontal();
 
-                EditorGUILayout.LabelField("Clips:", m_Skin.GetStyle("Label"));
 
                 if(m_clips.arraySize > 0)
                 {
+                    EditorGUILayout.LabelField("Clips:", m_Skin.GetStyle("Label"));
+                    
                     if (GUILayout.Button("Expand All", GUILayout.Width(100)))
                     {
                         for (int j = 0; j < m_clips.arraySize; j++)

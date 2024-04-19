@@ -59,10 +59,10 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.Space(1);
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField("Pools:", m_Skin.GetStyle("Label"));
             
             if(m_poolsList.arraySize > 0)
             {
+                EditorGUILayout.LabelField("Pools:", m_Skin.GetStyle("Label"));
                 
                 if(GUILayout.Button("Expand All"))
                 {
@@ -174,7 +174,6 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     GUI.backgroundColor = oldColor;
                     list.DeleteArrayElementAtIndex(index);
-                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
                     PoolerTagPropertyDrawer.IsPoolsChanged = true;
