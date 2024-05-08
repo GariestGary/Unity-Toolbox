@@ -94,6 +94,11 @@ namespace VolumeBox.Toolbox
             return _openedScenes.Any(s => s.SceneDefinition.name == sceneName);
         }
 
+        public static async UniTask LoadScene(string sceneName, SceneArgs args = null)
+        {
+            await LoadScene<SceneHandlerBase>(sceneName, args);
+        }
+
         /// <summary>
         /// Loads scene with given name and args.
         /// </summary>
@@ -102,12 +107,12 @@ namespace VolumeBox.Toolbox
         /// </remarks>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        public static async UniTask LoadScene(string sceneName, SceneArgs args = null)
+        public static async UniTask<SceneHandlerBase> LoadScene<T>(string sceneName, SceneArgs args = null) where T: SceneHandlerBase
         {
             if(!DoesSceneExist(sceneName))
             {
                 Debug.LogWarning($"Scene with name {sceneName} you want to load doesn't exist");
-                return;
+                return null;
             }
 
             Messenger.Send(new SceneLoadingMessage(sceneName));
@@ -164,6 +169,7 @@ namespace VolumeBox.Toolbox
             //temp fix for situations when TryGetSceneHandler returns null after receiving SceneOpenedMessage
             await UniTask.DelayFrame(1);
             Messenger.Send(new SceneOpenedMessage(sceneName));
+            return handler;
         }
 
         /// <summary>
