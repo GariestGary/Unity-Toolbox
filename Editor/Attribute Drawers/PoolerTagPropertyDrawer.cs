@@ -59,11 +59,18 @@ namespace VolumeBox.Toolbox.Editor
                 m_DataHolder = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
             }
 
-            var gameObject = (property.GetValue() as Component).gameObject;
-
             m_PoolerEntries = GetPoolerEntries(m_DataHolder);
-            m_SceneEntries = GetSceneEntries(gameObject);
-            m_SceneName = gameObject.scene.name;
+
+            if(property.GetValue() is Component)
+            {
+                var gameObject = (property.GetValue() as Component).gameObject;
+                m_SceneEntries = GetSceneEntries(gameObject);
+                m_SceneName = gameObject.scene.name;
+            }
+            else
+            {
+                m_SceneEntries = new string[0];
+            }
         }
 
         private void ValidateProperty(SerializedProperty property)
