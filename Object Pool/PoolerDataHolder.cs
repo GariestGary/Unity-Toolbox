@@ -372,6 +372,7 @@ namespace VolumeBox.Toolbox
                     {
                         pgo = objToCheck;
                         found = true;
+                        TraversePooledObjectAndDespawnOtherPooledObjects(objectToDespawn.transform);
                         break;
                     }
                 }
@@ -390,6 +391,15 @@ namespace VolumeBox.Toolbox
             }
 
             return TryDespawn(pgo);
+        }
+
+        private void TraversePooledObjectAndDespawnOtherPooledObjects(Transform transform)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                TraversePooledObjectAndDespawnOtherPooledObjects(transform.GetChild(i));
+                TryDespawn(transform.GetChild(i).gameObject);
+            }
         }
 
         private bool TryDespawn(PooledGameObject pgo)

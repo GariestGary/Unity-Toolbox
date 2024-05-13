@@ -149,11 +149,7 @@ namespace VolumeBox.Toolbox
 
             OpenedScene newOpenedScene = new OpenedScene(sceneDefinition, handler, args);
 
-            if (handler == null)
-            {
-                Debug.Log($"There is no SceneHandler in scene '{sceneName}', skipping scene setup");
-            }
-            else
+            if (handler != null)
             {
                 Updater.InitializeMono(handler);
                 
