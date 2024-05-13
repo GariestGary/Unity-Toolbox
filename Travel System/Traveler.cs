@@ -107,7 +107,7 @@ namespace VolumeBox.Toolbox
         /// </remarks>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        public static async UniTask<SceneHandlerBase> LoadScene<T>(string sceneName, SceneArgs args = null) where T: SceneHandlerBase
+        public static async UniTask<T> LoadScene<T>(string sceneName, SceneArgs args = null) where T: SceneHandlerBase
         {
             if(!DoesSceneExist(sceneName))
             {
@@ -165,7 +165,7 @@ namespace VolumeBox.Toolbox
             //temp fix for situations when TryGetSceneHandler returns null after receiving SceneOpenedMessage
             await UniTask.DelayFrame(1);
             Messenger.Send(new SceneOpenedMessage(sceneName));
-            return handler;
+            return handler as T;
         }
 
         /// <summary>
