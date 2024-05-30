@@ -10,11 +10,7 @@ namespace VolumeBox.Toolbox
         {
             Args = args as TArgs;
 
-            if (Args == null)
-            {
-                Debug.Log("Current loaded scene args is null");
-            }
-            else
+            if (Args != null)
             {
                 if (args is not TArgs)
                 {
