@@ -59,10 +59,18 @@ namespace VolumeBox.Toolbox
 
 		public static Subscriber Subscribe<T>(Action<T> next, GameObject bind = null, bool keep = false) where T: Message
 		{
-			Action<object> callback = args => next((T)args);
-			var sub = new Subscriber(typeof(T), callback, bind, keep);
+			var sub = new Subscriber(typeof(T), Callback, bind, keep);
             Instance.subscribers.Add(sub);
             return sub;
+            void Callback(object args) => next((T)args);
+		}
+
+		public static Subscriber Subscribe<T>(Action next, GameObject bind = null, bool keep = false) where T : Message
+		{
+			var sub = new Subscriber(typeof(T), Callback, bind, keep);
+			Instance.subscribers.Add(sub);
+			return sub;
+			void Callback(object args) => next();
 		}
 
 		public static void Send<T>() where T: Message

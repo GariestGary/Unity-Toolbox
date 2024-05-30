@@ -138,7 +138,7 @@ namespace VolumeBox.Toolbox
                 {
                     if (instance == null)
                     {
-                        var singleton = default(T);
+                        instance = default(T);
                     }
                     return instance;
                 }

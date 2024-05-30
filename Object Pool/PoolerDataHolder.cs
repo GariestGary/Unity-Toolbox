@@ -208,7 +208,7 @@ namespace VolumeBox.Toolbox
 
             if(poolsToUse.Length <= 0)
             {
-                Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exists");
+                Debug.LogWarning($"Object pool with tag '{poolTag}' doesn't exists");
                 return null;
             }
 
@@ -226,7 +226,7 @@ namespace VolumeBox.Toolbox
             //Return null if last object is null;
             if (objToSpawn == null)
             {
-                Debug.Log("object from pool " + poolTag + " you trying to spawn is null");
+                Debug.Log($"object from pool '{poolTag}' you trying to spawn is null");
                 return null;
             }
 

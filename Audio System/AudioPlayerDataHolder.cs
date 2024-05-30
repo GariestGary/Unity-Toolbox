@@ -23,17 +23,17 @@ namespace VolumeBox.Toolbox
         {
             var album = GetAlbum(source);
 
-            var clip = GetClip(album.clips, id);
-
             if(album == null)
             {
-                Debug.LogWarning($"Album named {source} not found");
+                Debug.LogWarning($"Album named '{source}' not found");
                 return;
             }
+            
+            var clip = GetClip(album.clips, id);
 
             if (clip == null)
             {
-                Debug.LogWarning($"Clip named {id} not found");
+                Debug.LogWarning($"Clip named '{id}' not found");
                 return;
             }
 

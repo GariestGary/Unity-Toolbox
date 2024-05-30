@@ -307,8 +307,11 @@ namespace VolumeBox.Toolbox
             if(!Updater.HasInstance) return;
 
             Updater.RemoveMonoFromUpdate(this);
-            
-            Destroyed();
+
+            if (raised)
+            {
+                Destroyed();
+            }
         }
         #endregion
     }
