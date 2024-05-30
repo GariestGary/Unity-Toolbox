@@ -39,6 +39,23 @@ namespace VolumeBox.Toolbox.Tests
             Assert.AreEqual(true, foo.counter > 1);
         }
 
+        [UnityTest]
+        public IEnumerator IgnoreTimeScaleTest()
+        {
+            var testGO = new GameObject("Updater Test");
+            var foo = testGO.AddComponent<Foo>();
+            Updater.InitializeObject(testGO);
+
+            foo.IgnoreTimeScale = true;
+            yield return null;
+            Updater.TimeScale = 0;
+            yield return null;
+            Assert.AreEqual(true, foo.Delta > 0);
+            foo.IgnoreTimeScale = false;
+            yield return null;
+            Assert.AreEqual(true, foo.Delta == 0);
+        }
+
         private class Foo: MonoCached
         {
             public float Delta => delta;

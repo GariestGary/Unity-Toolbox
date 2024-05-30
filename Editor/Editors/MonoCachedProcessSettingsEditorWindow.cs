@@ -15,14 +15,18 @@ namespace VolumeBox.Toolbox.Editor
 
             var inHierarchy = new Toggle("Process If Inactive In Hierarchy");
             var self = new Toggle("Process If Inactive Self");
+            var ignoreTimeScale = new Toggle("Ignore Time Scale");
             var serializedObject = new SerializedObject(m_Target);
             var selfProperty = serializedObject.FindProperty("processIfInactiveSelf");
             var inHierarchyProperty = serializedObject.FindProperty("processIfInactiveInHierarchy");
+            var ignoreTimeScaleProperty = serializedObject.FindProperty("ignoreTimeScale");
+            ignoreTimeScale.BindProperty(ignoreTimeScaleProperty);
             inHierarchy.BindProperty(inHierarchyProperty);
             self.BindProperty(selfProperty);
             self.style.flexShrink = new StyleFloat(1);
             rootVisualElement.Add(self);
             rootVisualElement.Add(inHierarchy);
+            rootVisualElement.Add(ignoreTimeScale);
         }
 
         [MenuItem("CONTEXT/MonoCached/Process Settings")]

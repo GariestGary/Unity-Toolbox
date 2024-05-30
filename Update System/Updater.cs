@@ -197,7 +197,8 @@ namespace VolumeBox.Toolbox
 
             for (int i = 0; i < monos.Count; i++)
             {
-                monos[i].ProcessInternal(0, delta);
+                var deltaToUse = monos[i].IgnoreTimeScale ? Time.deltaTime : delta;
+                monos[i].ProcessInternal(0, deltaToUse);
             }
         }
 
@@ -207,7 +208,8 @@ namespace VolumeBox.Toolbox
 
             for (int i = 0; i < monos.Count; i++)
             {
-                monos[i].ProcessInternal(1, fixedDelta);
+                var deltaToUse = monos[i].IgnoreTimeScale ? Time.fixedDeltaTime : fixedDelta;
+                monos[i].ProcessInternal(1, deltaToUse);
             }
         }
 
@@ -215,7 +217,8 @@ namespace VolumeBox.Toolbox
         {
             for (int i = 0; i < monos.Count; i++)
             {
-                monos[i].ProcessInternal(2, delta);
+                var deltaToUse = monos[i].IgnoreTimeScale ? Time.deltaTime : delta;
+                monos[i].ProcessInternal(2, deltaToUse);
             }
         }
         #endregion

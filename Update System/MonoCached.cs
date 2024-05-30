@@ -12,6 +12,7 @@ namespace VolumeBox.Toolbox
     {
         [SerializeField, HideInInspector] private bool processIfInactiveSelf = false;
         [SerializeField, HideInInspector] private bool processIfInactiveInHierarchy = false;
+        [SerializeField, HideInInspector] private bool ignoreTimeScale = false;
 
         protected float delta;
         protected float fixedDelta;
@@ -33,25 +34,26 @@ namespace VolumeBox.Toolbox
         {
             get => processIfInactiveSelf;
 
-            set
-            {
-                processIfInactiveSelf = value;
-            }
+            set => processIfInactiveSelf = value;
         }
 
         public bool ProcessIfInactiveInHierarchy
         {
             get => processIfInactiveInHierarchy;
 
-            set
-            {
-                processIfInactiveInHierarchy = value;
-            }
+            set => processIfInactiveInHierarchy = value;
+        }
+
+        public bool IgnoreTimeScale
+        {
+            get => ignoreTimeScale;
+
+            set => ignoreTimeScale = value;
         }
 
         public float Interval
         {
-            get { return interval; }
+            get => interval;
             set
             {
                 if (value < 0)
