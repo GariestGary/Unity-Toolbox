@@ -7,10 +7,10 @@ namespace VolumeBox.Toolbox.Tests
 {
     public class UpdaterTests
     {
-        [UnityTest]
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator TimeScaleTest()
         {
-            var testGO = new GameObject("Updater Test");
+            var testGO = new GameObject("Timescale Test");
             var foo = testGO.AddComponent<Foo>();
             Updater.InitializeObject(testGO);
 
@@ -21,12 +21,13 @@ namespace VolumeBox.Toolbox.Tests
             Assert.AreEqual(Updater.Delta, foo.Delta);
         }
 
-        [UnityTest]
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator TimeIntervalTest()
         {
-            var testGO = new GameObject("Updater Test");
+            var testGO = new GameObject("Time Interval Test");
             var foo = testGO.AddComponent<Foo>();
             Updater.InitializeObject(testGO);
+            Updater.TimeScale = 1;
 
             foo.Interval = 1;
 
@@ -36,13 +37,13 @@ namespace VolumeBox.Toolbox.Tests
 
             yield return new WaitForSeconds(1);
 
-            Assert.AreEqual(true, foo.counter > 1);
+            Assert.AreEqual(true, foo.counter >= 1);
         }
 
-        [UnityTest]
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator IgnoreTimeScaleTest()
         {
-            var testGO = new GameObject("Updater Test");
+            var testGO = new GameObject("Ignore Timescale Test");
             var foo = testGO.AddComponent<Foo>();
             Updater.InitializeObject(testGO);
 

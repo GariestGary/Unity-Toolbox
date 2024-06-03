@@ -6,7 +6,7 @@ namespace VolumeBox.Toolbox
     {
         protected TArgs Args;
 
-        sealed protected override void OnLoadCallback(SceneArgs args)
+        protected sealed override void OnLoadCallback(SceneArgs args)
         {
             Args = args as TArgs;
 
@@ -14,7 +14,7 @@ namespace VolumeBox.Toolbox
             {
                 if (args is not TArgs)
                 {
-                    Debug.Log($"Current loaded scene expected {typeof(TArgs)} args, but provided with {args.GetType()}");
+                    Debug.Log($"Current loaded {gameObject.scene.name} scene expected {typeof(TArgs)} args, but provided with {args.GetType()}");
                 }
             }
 
