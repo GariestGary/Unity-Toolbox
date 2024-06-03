@@ -7,7 +7,7 @@ namespace VolumeBox.Toolbox
 {
     public class Messenger: ToolWrapper<Messenger>
 	{
-		private List<Subscriber> subscribers = new List<Subscriber>();
+		private List<Subscriber> subscribers = new();
 
         protected override void Run()
         {
@@ -21,15 +21,15 @@ namespace VolumeBox.Toolbox
 
 			var sceneSubs = Instance.subscribers.Where(x => x.BindedObject != null && x.BindedObject.scene.name == scene).ToList();
 
-			for (int i = 0; i < sceneSubs.Count; i++)
+			foreach (var sub in sceneSubs)
 			{
-				RemoveSubscriber(sceneSubs[i]);
+				RemoveSubscriber(sub);
 			}
 		}
 
 		private static void CheckRemovedObject(GameObject obj)
 		{
-			var bindedSub = Instance.subscribers.Where(x => x.HasBind && x.BindedObject == obj).FirstOrDefault();
+			var bindedSub = Instance.subscribers.FirstOrDefault(x => x.HasBind && x.BindedObject == obj);
 
 			if(bindedSub is not null)
 			{
@@ -57,6 +57,14 @@ namespace VolumeBox.Toolbox
 			}
         }
 
+        public static void RemoveSubscribers(IEnumerable<Subscriber> subscribers)
+        {
+	        foreach (var subscriber in subscribers)
+	        {
+		        RemoveSubscriber(subscriber);
+	        }
+        }
+
 		public static Subscriber Subscribe<T>(Action<T> next, GameObject bind = null, bool keep = false) where T: Message
 		{
 			var sub = new Subscriber(typeof(T), Callback, bind, keep);
@@ -82,32 +90,36 @@ namespace VolumeBox.Toolbox
 
 		public static void Send<T>(T message) where T: Message
 		{
-			if(message == null)
-			{
-				message = (T)Activator.CreateInstance(typeof(T));
-			}
+			message ??= (T)Activator.CreateInstance(typeof(T));
 
-			var receivers = Instance.subscribers.Where(x => x.Type == message.GetType());
+			var receivers = Instance.subscribers.Where(x => x.Type == message.GetType()).ToList();
 
-			receivers.ToList().ForEach(x =>
+			for (int i = 0; i < receivers.Count(); i++)
 			{
+				var receiver = receivers[i];
+				
 				try
 				{
-					if(x.HasBind && (x.BindedObject == null))// || x.BindedObject.transform == ))
+					if(receiver.HasBind && (receiver.BindedObject == null))
 					{
-						RemoveSubscriber(x);
+						RemoveSubscriber(receiver);
 						return;
 					}
 				}
 				catch
 				{
-					RemoveSubscriber(x);
+					RemoveSubscriber(receiver);
 					return;
 
 				}
 
-				x.Callback.Invoke(message);
-			});
+				receiver.Callback.Invoke(message);
+			}
+			
+			foreach (var receiver in receivers)
+			{
+				
+			}
         }
 
 		protected override void Clear()

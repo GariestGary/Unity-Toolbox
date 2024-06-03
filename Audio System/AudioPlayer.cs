@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace VolumeBox.Toolbox
 {
@@ -56,6 +56,16 @@ namespace VolumeBox.Toolbox
         public static void StopAll()
         {
             Instance.Data.StopAll();
+        }
+        
+        public void AddAlbum(string albumName, AudioMixerGroup mixerGroup = null, AudioSource source = null)
+        {
+            Instance.Data.AddAlbum(albumName, defaultAudioSource, mixerGroup, source);
+        }
+
+        public void AddClipToAlbum(string clipID, string albumName, AudioClip clip)
+        {
+            Instance.Data.AddClipToAlbum(clipID, albumName, clip);
         }
     }
 }

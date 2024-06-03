@@ -178,7 +178,7 @@ namespace VolumeBox.Toolbox
 
             if (sceneToUnload == null)
             {
-                Debug.LogWarning($"Scene with name {sceneName} you want to unload doesn't exist");
+                Debug.LogWarning($"Scene with name {sceneName} you want to unload was not loaded before. Skipping");
                 return;
             }
 
@@ -201,7 +201,7 @@ namespace VolumeBox.Toolbox
             }
 
             _currentUnloadingSceneOperation = null;
-
+            await Resources.UnloadUnusedAssets();
             Messenger.Send(new SceneUnloadedMessage(sceneName));
         }
 

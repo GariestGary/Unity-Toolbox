@@ -42,6 +42,11 @@ namespace VolumeBox.Toolbox
 
         public void PlayFormatted(string formattedId, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
+            if (string.IsNullOrEmpty(formattedId))
+            {
+                return;
+            }
+            
             var split = formattedId.Split('/');
 
             if(split == null || split.Length < 2)
@@ -127,6 +132,32 @@ namespace VolumeBox.Toolbox
                 1 => clips[0].clip,
                 _ => clips[UnityEngine.Random.Range(0, clips.Length)].clip
             };
+        }
+
+        public void AddAlbum(string albumName, AudioSource defaultSource, AudioMixerGroup mixerGroup = null, AudioSource source = null)
+        {
+            albums.Add(new AudioAlbum()
+            {
+                albumName = albumName,
+                mixerGroup = mixerGroup,
+                source = source == null ? defaultSource : source
+            });
+        }
+
+        public void AddClipToAlbum(string clipID, string albumName, AudioClip clip)
+        {
+            var album = GetAlbum(albumName);
+
+            if (album == null)
+            {
+                Debug.LogError($"There is no album named {albumName} to add {clipID}");
+                return;
+            }
+            
+            album.clips.Add(new AudioClipInfo()
+            {
+                clip = clip, id =  clipID
+            });
         }
 
         public void Clear()
