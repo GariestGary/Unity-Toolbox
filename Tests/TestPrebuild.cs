@@ -6,6 +6,7 @@ namespace VolumeBox.Toolbox.Tests
     {
         public void Setup()
         {
+            StaticData.Settings.AutoResolveScenesAtPlay = false;
             var msg = Messenger.Instance;
             var pool = Pooler.Instance;
             var trvl = Traveler.Instance;

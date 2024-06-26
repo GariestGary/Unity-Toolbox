@@ -5,6 +5,8 @@ namespace VolumeBox.Toolbox
 {
     public class Pooler: ResourcesToolWrapper<Pooler, PoolerDataHolder>
     {
+        [SerializeField] private Transform _PredefinedRoot;
+
         public override string GetDataPath()
         {
             return SettingsData.poolerResourcesDataPath;
@@ -13,6 +15,7 @@ namespace VolumeBox.Toolbox
         protected override void PostLoadRun()
         {
             Data.Run();
+            Data.SetCustomRoot(_PredefinedRoot);
         }
 
         protected override void Clear()
@@ -51,7 +54,7 @@ namespace VolumeBox.Toolbox
         }
 
         /// <summary>
-        /// Spawns GameObject from pool with specified tag, then calls all OnSpawn methods in it
+        /// Spawns GameObject from pool with specified tag
         /// </summary>
         /// <param name="poolTag">pool tag with necessary object</param>
         /// <param name="position">initial position</param>
@@ -59,21 +62,49 @@ namespace VolumeBox.Toolbox
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
         /// <returns>GameObject from pool</returns>
-        public static GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
+        public static GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
         {
-            return Instance.Data.Spawn(poolTag, position, rotation, parent, data, spawnAction);
+            return Instance.Data.Spawn(poolTag, position, rotation, parent, data);
         }
 
         /// <summary>
-        /// Spawns GameObject from pool with specified tag, then calls all OnSpawn methods in it
+        /// Spawns GameObject from pool with specified tag
         /// </summary>
         /// <param name="poolTag">pool tag with necessary object</param>
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
         /// <returns>GameObject from pool</returns>
-        public static GameObject Spawn(string poolTag, object data = null, Transform parent = null, Action<GameObject> spawnAction = null)
+        public static GameObject Spawn(string poolTag, object data = null, Transform parent = null)
         {
-            return Instance.Data.Spawn(poolTag, parent, data, spawnAction);
+            return Instance.Data.Spawn(poolTag, parent, data);
+        }
+
+        /// <summary>
+        /// Spawns GameObject from pool with specified tag and returns specified component from it
+        /// </summary>
+        /// <typeparam name="T">Component type</typeparam>
+        /// <param name="poolTag">pool tag with necessary object</param>
+        /// <param name="position">initial position</param>
+        /// <param name="rotation">initial rotation</param>
+        /// <param name="parent">parent transform for GameObject</param>
+        /// <param name="data">data to provide in GameObject</param>
+        /// <returns>Component from spawned GameObject</returns>
+        public static T Spawn<T>(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null) where T: Component
+        {
+            return Spawn(poolTag, position, rotation, parent, data).GetComponent<T>();
+        }
+
+        /// <summary>
+        /// Spawns GameObject from pool with specified tag and returns specified component from it
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="poolTag"></param>
+        /// <param name="data"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static T Spawn<T>(string poolTag, object data = null, Transform parent = null)
+        {
+            return Spawn(poolTag, data, parent).GetComponent<T>();
         }
 
         /// <summary>

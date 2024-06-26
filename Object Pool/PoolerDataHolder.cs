@@ -23,7 +23,7 @@ namespace VolumeBox.Toolbox
 
         public void Run()
         {
-            objectPoolParent = new GameObject("Pool Parent").transform;
+            SetCustomRoot(null);
 
             pools = new List<Pool>();
 
@@ -37,6 +37,18 @@ namespace VolumeBox.Toolbox
             _removeMessage = new GameObjectRemovedMessage();
 
             EnableGC();
+        }
+
+        public void SetCustomRoot(Transform root)
+        {
+            if(root == null)
+            {
+                objectPoolParent = new GameObject("Pool Parent").transform;
+            }
+            else
+            {
+                objectPoolParent = root;
+            }
         }
 
         #region Garbage Collector
@@ -196,12 +208,12 @@ namespace VolumeBox.Toolbox
         }
 
         #region Instantiating
-        public GameObject Spawn(string poolTag, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
+        public GameObject Spawn(string poolTag, Transform parent = null, object data = null)
         {
-            return Spawn(poolTag, Vector3.zero, Quaternion.identity, parent, data, spawnAction);
+            return Spawn(poolTag, Vector3.zero, Quaternion.identity, parent, data);
         }
         
-        public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, Action<GameObject> spawnAction = null)
+        public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
         {
             //Returns null if object pool with specified tag doesn't exists
             var poolsToUse = pools.Where(p => p.tag == poolTag).ToArray();
@@ -244,11 +256,6 @@ namespace VolumeBox.Toolbox
 
             //Call all spawn methods in gameobject
             CallSpawns(objToSpawn.GameObject, data);
-
-            if (spawnAction != null)
-            {
-                spawnAction.Invoke(objToSpawn.GameObject);
-            }
 
             objToSpawn.Used = true;
             

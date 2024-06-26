@@ -8,8 +8,15 @@ namespace VolumeBox.Toolbox
     public class Messenger: ToolWrapper<Messenger>
 	{
 		private List<Subscriber> subscribers = new();
+		private Dictionary<Type, Message> _MessagesCache = new();
 
-        protected override void Run()
+#if TOOLBOX_DEBUG
+
+		public Dictionary<Type, Message> MessagesCache => _MessagesCache;		
+
+#endif
+
+		protected override void Run()
         {
             Subscribe<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName), null, true);
 			Subscribe<GameObjectRemovedMessage>(m => CheckRemovedObject(m.Obj), null, true);
@@ -81,12 +88,41 @@ namespace VolumeBox.Toolbox
 			void Callback(object args) => next();
 		}
 
+#if TOOLBOX_DEBUG
+		public static bool Send<T>() where T : Message
+#else
 		public static void Send<T>() where T: Message
+#endif
 		{
-			var message = (T)Activator.CreateInstance(typeof(T));
+			T msg = null;
 
-			Send(message);
-        }
+#if TOOLBOX_DEBUG
+			var usedCache = false;
+#endif
+
+			if(StaticData.Settings.UseMessageCaching && Instance._MessagesCache.TryGetValue(typeof(T), out var cachedMessage))
+			{
+				msg = cachedMessage as T;
+#if TOOLBOX_DEBUG
+				usedCache = true;
+#endif
+			}
+			else
+			{
+				var message = (T)Activator.CreateInstance(typeof(T));
+
+				if(StaticData.Settings.UseMessageCaching)
+				{
+					Instance._MessagesCache.Add(typeof(T), message);
+				}
+			}
+
+			Send(msg);
+
+#if TOOLBOX_DEBUG
+			return usedCache;
+#endif
+		}
 
 		public static void Send<T>(T message) where T: Message
 		{
@@ -121,6 +157,13 @@ namespace VolumeBox.Toolbox
 				
 			}
         }
+
+		public static int ClearMessageCache()
+		{
+			var clearedCount = Instance._MessagesCache.Count;
+			Instance._MessagesCache.Clear();
+			return clearedCount;
+		}
 
 		protected override void Clear()
 		{

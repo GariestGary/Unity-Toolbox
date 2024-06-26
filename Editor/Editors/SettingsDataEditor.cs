@@ -68,6 +68,7 @@ namespace VolumeBox.Toolbox.Editor
 
             EditorGUI.BeginChangeCheck();
 
+            //SCENE MANAGEMENT
             GUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(5);
@@ -90,6 +91,8 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
 
+
+            //TIMINGS
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(5);
             //HEADER
@@ -136,7 +139,7 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
 
-
+            //INITIAL SCENE
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(5);
             //HEADER
@@ -158,8 +161,6 @@ namespace VolumeBox.Toolbox.Editor
                 dropdown.Show(rect);
             }
 
-            //selectedScene = EditorGUILayout.Popup(selectedScene, scenesList);
-            //m_initialSceneName.stringValue = scenesList[selectedScene];
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -167,6 +168,30 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.PropertyField(m_initialSceneArgs, GUIContent.none);
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(3);
+            EditorGUILayout.EndVertical();
+            GUILayout.Space(5);
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(5);
+
+
+            //MESSENGER
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(5);
+            //HEADER
+            GUI.skin = m_Skin;
+            EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
+            GUI.skin = oldSkin;
+            EditorGUILayout.LabelField("Messenger", EditorStyles.largeLabel);
+            EditorGUILayout.Space(5);
+
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Message Caching", GUILayout.Width(EditorGUIUtility.labelWidth));
+            StaticData.Settings.UseMessageCaching = EditorGUILayout.Toggle(StaticData.Settings.UseMessageCaching, GUILayout.Width(EditorGUIUtility.labelWidth));
+            GUILayout.EndHorizontal();
+
+
+            //VALIDATING DATA
             serializedObject.ApplyModifiedProperties();
             
             if(EditorGUI.EndChangeCheck())

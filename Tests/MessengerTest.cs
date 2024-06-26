@@ -77,6 +77,19 @@ namespace VolumeBox.Toolbox.Tests
             yield return null;
         }
 
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+        public IEnumerator MessageCachingTest()
+        {
+            StaticData.Settings.UseMessageCaching = true;
+
+            Assert.AreEqual(0, Messenger.ClearMessageCache());
+            Messenger.Send<MockMessage>();
+            Assert.AreEqual(true, Messenger.Send<MockMessage>());
+            Assert.AreEqual(1, Messenger.ClearMessageCache());
+
+            yield return null;
+        }
+
         private void React(string test)
         {
             message = test;

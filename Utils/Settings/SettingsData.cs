@@ -17,6 +17,9 @@ namespace VolumeBox.Toolbox
         [SerializeField]
         public SceneArgs InitialSceneArgs;
 
+        [SerializeField]
+        public bool UseMessageCaching = true;
+
         [HideInInspector] public bool AutoResolveScenesAtPlay = true;
         public const string poolerResourcesDataPath = "Toolbox/PoolerData.asset";
         public const string audioPlayerResourcesDataPath = "Toolbox/AudioPlayerData.asset";
