@@ -1,20 +1,38 @@
-using System;
-using System.Globalization;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
-    public class Singleton<T> : MonoBehaviour where T: MonoBehaviour
+    public class MonoSingleton<T> : MonoBehaviour where T: MonoBehaviour
     {
         private static T instance;
         private static object lockObject = new object();
+        private static bool destroyed = false;
+        private static bool reinstantiateIfDestroyed = true;
 
         public static bool HasInstance => instance != null;
+        public static bool ReinstantiateIfDestroyed
+        {
+            get
+            {
+                return reinstantiateIfDestroyed;
+            }
+            set
+            {
+                if(value)
+                {
+                    destroyed = false;
+                }
+
+                reinstantiateIfDestroyed = value;
+            }
+        }
 
         public static T Instance 
         { 
             get
             {
+                if (!reinstantiateIfDestroyed && destroyed) return null;
+                
                 lock (lockObject)
                 {
                     if (instance == null)
@@ -24,6 +42,7 @@ namespace VolumeBox.Toolbox
                         if (instance == null)
                         {
                             var singleton = new GameObject("[SINGLETON] " + typeof(T));
+                            destroyed = false;
                             instance = singleton.AddComponent<T>();
                         }
                     }
@@ -35,6 +54,11 @@ namespace VolumeBox.Toolbox
         public static void DontDestroy()
         {
             DontDestroyOnLoad(Instance.gameObject);
+        }
+
+        private void OnDestroy()
+        {
+            destroyed = true;
         }
     }
 
@@ -42,11 +66,33 @@ namespace VolumeBox.Toolbox
     {
         private static T instance;
         private static object lockObject = new object();
-        
-        public static bool HasInstance => instance != null;
+        private static bool destroyed = false;
+        private static bool reinstantiateIfDestroyed = true;
 
-        public static T Instance { get 
+        public static bool HasInstance => instance != null;
+        public static bool ReinstantiateIfDestroyed
+        {
+            get
             {
+                return reinstantiateIfDestroyed;
+            }
+            set
+            {
+                if (value)
+                {
+                    destroyed = false;
+                }
+
+                reinstantiateIfDestroyed = value;
+            }
+        }
+
+        public static T Instance 
+        { 
+            get 
+            {
+                if (!reinstantiateIfDestroyed && destroyed) return null;
+
                 lock (lockObject)
                 {
                     if (instance == null)
@@ -56,9 +102,11 @@ namespace VolumeBox.Toolbox
                         if (instance == null)
                         {
                             var singleton = new GameObject("[SINGLETON] " + typeof(T));
+                            destroyed = false;
                             instance = singleton.AddComponent<T>();
                         }
                     }
+                    
                     return instance;
                 }
             } 
@@ -67,6 +115,34 @@ namespace VolumeBox.Toolbox
         public static void DontDestroy()
         {
             DontDestroyOnLoad(Instance.gameObject);
+        }
+
+        private void OnDestroy()
+        {
+            destroyed = true;
+        }
+    }
+
+    public class Singleton<T> where T: class
+    {
+        private static T instance;
+        private static object lockObject = new object();
+
+        public static bool HasInstance => instance != null;
+
+        public static T Instance
+        {
+            get
+            {
+                lock (lockObject)
+                {
+                    if (instance == null)
+                    {
+                        instance = default(T);
+                    }
+                    return instance;
+                }
+            }
         }
     }
 }

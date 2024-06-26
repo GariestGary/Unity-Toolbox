@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace VolumeBox.Toolbox
 {
-    public interface IPooled
+    public interface IPooled<T>: IPooledBase
     {
-        void OnSpawn(object data);
+        void OnSpawn(T data);
     }
+
+    public interface IPooledBase { }
 }

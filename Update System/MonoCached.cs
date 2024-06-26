@@ -1,20 +1,18 @@
-using NaughtyAttributes;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#else
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+
+#endif
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
     public class MonoCached : MonoBehaviour
     {
-        [Foldout("Process Settings")]
-        [SerializeField]
-        private bool processIfInactiveSelf = false;
-        [Foldout("Process Settings")]
-        [SerializeField]
-        private bool processIfInactiveInHierarchy = false;
+        [SerializeField, HideInInspector] private bool processIfInactiveSelf = false;
+        [SerializeField, HideInInspector] private bool processIfInactiveInHierarchy = false;
+        [SerializeField, HideInInspector] private bool ignoreTimeScale = false;
 
         protected float delta;
         protected float fixedDelta;
@@ -36,25 +34,26 @@ namespace VolumeBox.Toolbox
         {
             get => processIfInactiveSelf;
 
-            set
-            {
-                processIfInactiveSelf = value;
-            }
+            set => processIfInactiveSelf = value;
         }
 
         public bool ProcessIfInactiveInHierarchy
         {
             get => processIfInactiveInHierarchy;
 
-            set
-            {
-                processIfInactiveInHierarchy = value;
-            }
+            set => processIfInactiveInHierarchy = value;
+        }
+
+        public bool IgnoreTimeScale
+        {
+            get => ignoreTimeScale;
+
+            set => ignoreTimeScale = value;
         }
 
         public float Interval
         {
-            get { return interval; }
+            get => interval;
             set
             {
                 if (value < 0)
@@ -86,20 +85,6 @@ namespace VolumeBox.Toolbox
         }
         #endregion
 
-        private void HandleProcessSubscribe()
-        {
-            Updater.ProcessTick += ProcessInvokeControl;
-            Updater.FixedProcessTick += FixedProcessInvokeControl;
-            Updater.LateProcessTick += LateProcessInvokeControl;
-        }
-
-        private void HandleProcessUnsubscribe()
-        {
-            Updater.ProcessTick -= ProcessInvokeControl;
-            Updater.FixedProcessTick -= FixedProcessInvokeControl;
-            Updater.LateProcessTick -= LateProcessInvokeControl;
-        }
-
         private void OnRise()
         {
             if (raised) return;
@@ -118,7 +103,31 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
-        private void ProcessInvokeControl(float extDelta)
+        public void ProcessInternal(int type, float delta)
+        {
+            if (type == 0)
+            {
+                ProcessControl(delta);
+            }
+            else if(type == 1)
+            {
+                FixedProcessControl(delta);
+            }
+            else if(type == 2)
+            {
+                LateProcessControl(delta);
+            }
+            else if(type == 3)
+            {
+                OnRise();
+            }
+            else if(type == 4)
+            {
+                OnReady();
+            }
+        }
+
+        private void ProcessControl(float extDelta)
         {
             if (Interval > 0)
             {
@@ -137,7 +146,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private void FixedProcessInvokeControl(float extFixedDelta)
+        private void FixedProcessControl(float extFixedDelta)
         {
             if (Interval > 0)
             {
@@ -154,7 +163,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private void LateProcessInvokeControl(float extDelta)
+        private void LateProcessControl(float extDelta)
         {
             if (Interval > 0)
             {
@@ -219,7 +228,7 @@ namespace VolumeBox.Toolbox
         {
             this.delta = delta;
 
-            if(pausedByActiveState || pausedManual) return;
+            if(Paused) return;
 
             Tick();
         }
@@ -228,14 +237,14 @@ namespace VolumeBox.Toolbox
         {
             this.fixedDelta = fixedDelta;
 
-            if(pausedByActiveState || pausedManual) return;
+            if(Paused) return;
 
             FixedTick();
         }
 
         private void LateProcess(float delta)
         {
-            if(pausedByActiveState || pausedManual) return;
+            if(Paused) return;
 
             LateTick();
         }
@@ -297,13 +306,12 @@ namespace VolumeBox.Toolbox
         {
             if(!Updater.HasInstance) return;
 
-            Updater upd = Updater.Instance;
-            
-            if(upd == null) return;
+            Updater.RemoveMonoFromUpdate(this);
 
-            HandleProcessUnsubscribe();
-            
-            Destroyed();
+            if (raised)
+            {
+                Destroyed();
+            }
         }
         #endregion
     }

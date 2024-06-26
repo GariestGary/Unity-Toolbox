@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,22 +5,36 @@ namespace VolumeBox.Toolbox
 {
     public class ScenePool : MonoCached
     {
-        [SerializeField] private List<PoolData> pools;
+        [SerializeField] private List<PoolData> m_Pools;
 
-        private bool _initialized = false;
+        private bool m_Initialized = false;
 
-        protected override void OnActivate()
+        private List<Pool> m_CurrentPools = new List<Pool>();
+
+        public List<PoolData> Pools => m_Pools;
+
+        protected override void Rise()
         {
-            if (_initialized) return;
+            InitializePools();
+        }
 
-            pools.ForEach(p => Pooler.Instance.TryAddPool(p));
+        private void InitializePools()
+        {
+            if (m_Initialized) return;
 
-            _initialized = true;
+            m_CurrentPools = new List<Pool>();
+
+            foreach (var pool in m_Pools) 
+            {
+                m_CurrentPools.Add(Pooler.TryAddPool(pool));
+            }
+
+            m_Initialized = true;
         }
 
         protected override void Destroyed()
         {
-            pools.ForEach(p => Pooler.Instance.TryRemovePool(p.tag));
+            m_CurrentPools.ForEach(p => Pooler.TryRemovePool(p));
         }
     }
 }

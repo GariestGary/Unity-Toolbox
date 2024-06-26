@@ -1,6 +1,5 @@
 using System;
-using System.Diagnostics;
-using System.Reflection;
+using UnityEngine;
 
 namespace VolumeBox.Toolbox
 {
@@ -9,17 +8,23 @@ namespace VolumeBox.Toolbox
     {
         private Type type;
         private Action<object> callback;
-        private string relatedSceneName;
+        private GameObject bindedObject;
+        private bool hasBind;
+        private bool keep;
 
         public Type Type => type;
         public Action<object> Callback => callback;
-        public string RelatedSceneName => relatedSceneName;
+        public GameObject BindedObject => bindedObject;
+        public bool HasBind => hasBind;
+        public bool Keep => keep;
 
-        public Subscriber(Type type, Action<object> callback, string relatedSceneName = null)
+        public Subscriber(Type type, Action<object> callback, GameObject bindedObject = null, bool keep = false)
         {
-            this.relatedSceneName = relatedSceneName;
+            this.bindedObject = bindedObject;
             this.callback = callback;
             this.type = type;
+            this.keep = keep;
+            this.hasBind = bindedObject != null;
         }
 
     }

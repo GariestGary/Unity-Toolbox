@@ -1,201 +1,71 @@
-using NaughtyAttributes;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using VolumeBox.Toolbox;
+using UnityEngine.Audio;
 
 namespace VolumeBox.Toolbox
 {
-    public class AudioPlayer : Singleton<AudioPlayer>, IRunner
+    public class AudioPlayer: ResourcesToolWrapper<AudioPlayer, AudioPlayerDataHolder>
     {
-        [SerializeField] private AudioSource bgMusicSource;
-        [SerializeField] private AudioSource uiSource;
-        [SerializeField] private AudioSource atmosphereSource;
-        [SerializeField] private AudioSource soundsSource;
-        [Header("Audio Clips")]
-        [AllowNesting]
-        [SerializeField] private List<AudioClipInfo> music;
-        [SerializeField] private List<AudioClipInfo> ui;
-        [SerializeField] private List<AudioClipInfo> atmos;
-        [SerializeField] private List<AudioClipInfo> sounds;
+        [SerializeField] private Transform audioSourcesRoot;
+        [SerializeField] private AudioSource defaultAudioSource;
 
-        [Inject] private Messager msg;
-
-        public const float DefaultVolume = 1;
-        public const float DefaultPitch = 1;
-
-        public void Run()
+        public override string GetDataPath()
         {
-            msg.SubscribeKeeping<PlayMusicMessage>(x => PlayMusic(x.id, x.volume, x.loop));
-            msg.SubscribeKeeping<PlayUIMessage>(x => PlayUI(x.id, x.volume, x.loop));
-            msg.SubscribeKeeping<PlayAtmosMessage>(x => PlayAtmos(x.id, x.volume, x.loop));
-            msg.SubscribeKeeping<PlaySoundMessage>(x => PlaySound(x.id, x.volume, x.loop, x.pitch, x.stopIfPlaying));
-            msg.SubscribeKeeping<StopMusicMessage>(_ => StopMusic());
+            return SettingsData.audioPlayerResourcesDataPath;
         }
 
-        public void PlaySound(string id, float volume = DefaultVolume, bool loop = false, float pitch = 1, bool stopIfPlaying = true)
+        protected override void PostLoadRun()
         {
-            AudioClip clip = GetClip(sounds, id);
+            Data.Run();
 
-            PlaySound(clip, volume, loop, pitch, stopIfPlaying);
+            foreach (var album in Data.Albums)
+            {
+                if(album.useSeparateSource)
+                {
+                    var newSourceObj = new GameObject($"{album.albumName} Audio Source");
+                    newSourceObj.transform.SetParent(audioSourcesRoot);
+                    album.source = newSourceObj.AddComponent<AudioSource>();
+                    album.source.outputAudioMixerGroup = album.mixerGroup;
+                }
+                else
+                {
+                    album.source = defaultAudioSource;
+                }
+            }
         }
 
-        public void PlaySound(AudioClip clip, float volume = DefaultVolume, bool loop = false, float pitch = 1, bool stopIfPlaying = true)
+        protected override void Clear()
         {
-            PlayOneShot(soundsSource, clip, volume, pitch, stopIfPlaying);
+            Data?.Clear();
         }
 
-        //ATMOSPHERE
-        public void PlayAtmos(string id, float volume = DefaultVolume, bool loop = true)
+        public static void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
-            AudioClip clip = GetClip(atmos, id);
-
-            PlayAtmos(clip, volume, loop);
+            Instance.Data.Play(source, id, volume, pitch, loop, playType);
         }
 
-        public void PlayAtmos(AudioClip clip, float volume = DefaultVolume, bool loop = true)
+        public static void Play(string formattedId, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
-            Play(atmosphereSource, clip, volume, loop);
+            Instance.Data.PlayFormatted(formattedId, volume, pitch, loop, playType);
         }
 
-        //UI
-        public void PlayUI(string id, float volume = DefaultVolume, bool loop = true)
+        public void StopAudio(string source)
         {
-            AudioClip clip = GetClip(ui, id);
-            PlayUI(clip, volume, loop);
+            Instance.Data.StopAudio(source);
         }
 
-        public void PlayUI(AudioClip clip, float volume = DefaultVolume, bool loop = true)
+        public static void StopAll()
         {
-            PlayOneShot(uiSource, clip, volume);
-        }
-
-        //MUSIC
-        public void PlayMusic(string id, float volume = DefaultVolume, bool loop = true)
-        {
-            AudioClip clip = GetClip(music, id);
-
-            PlayMusic(clip, volume, loop);
-        }
-
-        public void PlayMusic(AudioClip clip, float volume = DefaultVolume, bool loop = true)
-        {
-            Play(bgMusicSource, clip, volume, loop);
-        }
-
-        public void StopMusic()
-        {
-            bgMusicSource.Pause();
-        }
-
-        public void PlaySoundOneShot(AudioClip clip, float volume = DefaultVolume, float pitch = 1, bool stopIfPlaying = true)
-        {
-            PlayOneShot(soundsSource, clip, volume, pitch, stopIfPlaying);
-        }
-
-        public void PlaySoundOneShot(string id, float volume = DefaultVolume, float pitch = 1, bool stopIfPlaying = true)
-        {
-            PlayOneShot(soundsSource, GetClip(sounds, id), volume, pitch, stopIfPlaying);
+            Instance.Data.StopAll();
         }
         
-
-        public void Play(AudioSource source, AudioClip clip, float volume = DefaultVolume, bool loop = false)
+        public void AddAlbum(string albumName, AudioMixerGroup mixerGroup = null, AudioSource source = null)
         {
-            if (source == null || clip == null) return;
-
-            source.Stop();
-
-            source.loop = loop;
-            source.clip = clip;
-            source.volume = volume;
-
-            source.Play();
+            Instance.Data.AddAlbum(albumName, defaultAudioSource, mixerGroup, source);
         }
 
-        public void PlayOneShot(AudioSource source, AudioClip clip, float volume = DefaultVolume, float pitch = 1, bool stopIfPlaying = true)
+        public void AddClipToAlbum(string clipID, string albumName, AudioClip clip)
         {
-            if (source == null || clip == null) return;
-            source.pitch = pitch;
-
-            if(stopIfPlaying && source.isPlaying)
-            {
-                source.Stop();
-            }
-
-            source.PlayOneShot(clip, volume);
+            Instance.Data.AddClipToAlbum(clipID, albumName, clip);
         }
-
-        
-        private AudioClip GetClip(List<AudioClipInfo> list, string id)
-        {
-            AudioClipInfo[] clips = list.Where(x => x.id == id).ToArray();
-
-            if(clips.Length == 0)
-            {
-                return null;
-            }
-
-            if(clips.Length == 1) 
-            {
-                return clips[0].clip;
-            }
-
-            return clips[UnityEngine.Random.Range(0, clips.Length)].clip;
-        }
-
-        public void SetOnOffMusic(bool active)
-        {
-            bgMusicSource.enabled = active;
-        }
-    }
-
-    [Serializable]
-    public class AudioClipInfo
-    {
-        public string id;
-        public Sprite s;
-        public AudioClip clip;
-    }
-
-    [Serializable]
-    public class PlayMusicMessage: Message
-    {
-        public string id;
-        public float volume = AudioPlayer.DefaultVolume;
-        public bool loop = true;
-    }
-
-    [Serializable]
-    public class PlayUIMessage: Message
-    {
-        public string id;
-        public float volume = AudioPlayer.DefaultVolume;
-        public bool loop = false;
-    }
-
-    [Serializable]
-    public class PlayAtmosMessage: Message
-    {
-        public string id;
-        public float volume = AudioPlayer.DefaultVolume;
-        public bool loop = true;
-    }
-
-    [Serializable]
-    public class PlaySoundMessage: Message
-    {
-        public string id;
-        public float volume = AudioPlayer.DefaultVolume;
-        public float pitch = AudioPlayer.DefaultPitch;
-        public bool loop = false;
-        public bool stopIfPlaying = true;
-    }
-
-    [Serializable]
-    public class StopMusicMessage : Message
-    {
-        
     }
 }

@@ -1,21 +1,20 @@
-using System;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using NaughtyAttributes;
-using System.Diagnostics;
-using UnityEngine.Profiling;
 
 namespace VolumeBox.Toolbox
 {
-    public class Updater : Singleton<Updater>, IRunner
+    /// <summary>
+    /// Class that controls lifecycle of <see cref="MonoCached">MonoCached</see> objects
+    /// </summary>
+    public class Updater : ToolWrapper<Updater>
     {
+        #pragma warning disable
         private static float timeScale = 1;
         private static float delta;
+        #pragma warning restore
         
-        public float UnscaledDelta => Time.deltaTime;
+        public static float UnscaledDelta => Time.deltaTime;
         public static float TimeScale
         {
             get
@@ -27,11 +26,7 @@ namespace VolumeBox.Toolbox
                 if(value < 0)
                 {
                     timeScale = 0f;
-                } 
-                else if(value > 1)
-                {
-                    timeScale = 1f;
-                } 
+                }
                 else
                 {
                     timeScale = value;
@@ -40,119 +35,158 @@ namespace VolumeBox.Toolbox
         }
         public static float Delta => delta;
 
-        public static event Action<float> ProcessTick;
-        public static event Action<float> FixedProcessTick;
-        public static event Action<float> LateProcessTick;
+        private List<MonoCached> monos = new List<MonoCached>();
 
-        private MethodInfo riseMethod;
-        private MethodInfo readyMethod;
-        private MethodInfo subscribeProcessMethod;
-
-        public void Run()
+        protected override void Run()
         {
-            riseMethod = typeof(MonoCached).GetMethod("OnRise", BindingFlags.NonPublic | BindingFlags.Instance);
-            readyMethod = typeof(MonoCached).GetMethod("OnReady", BindingFlags.NonPublic | BindingFlags.Instance);
-            subscribeProcessMethod = typeof(MonoCached).GetMethod("HandleProcessSubscribe", BindingFlags.NonPublic | BindingFlags.Instance);
+            
+        }
+
+        protected override void Clear()
+        {
+            
         }
 
         /// <summary>
-        /// Injects given GameObjects, rises and ready them, and then adds them to process
+        /// Invokes Rise and Ready on given GameObjects, and then adds them to process
         /// </summary>
         /// <param name="objs">Array of GameObjects</param>
-        public void InitializeObjects(GameObject[] objs)
+        public static void InitializeObjects(GameObject[] objs)
         {
+            MonoCached[] monos = new MonoCached[0];
+
             foreach(var obj in objs)
             {
-                if (obj == null) return;
-
-                Resolver.Instance.Inject(obj);
-
-                MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
-
-                foreach (var mono in objMonos)
-                {
-                    InvokeRise(mono);
-                }
+                var components = obj.GetComponentsInChildren<MonoCached>(true);
+                monos = monos.Concat(components).ToArray();
             }
 
-            foreach (var obj in objs)
+            foreach (var mono in monos)
             {
-                if (obj == null) return;
-
-                MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
-
-                foreach (var mono in objMonos)
+                if (mono == null || Instance.monos.Contains(mono))
                 {
-                    InvokeReady(mono);
+                    continue;
                 }
+
+                InvokeRise(mono);
             }
 
-            foreach (var obj in objs)
+            foreach (var mono in monos)
             {
-                if (obj == null) return;
-
-                MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
-
-                foreach (var mono in objMonos)
+                if (mono == null || Instance.monos.Contains(mono))
                 {
-                    InvokeProcessSubscription(mono);
+                    continue;
                 }
+
+                InvokeReady(mono);
+            }
+
+            foreach (var mono in monos)
+            {
+                if (mono == null || Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
+                Instance.monos.Add(mono);
             }
         }
 
         /// <summary>
-        /// Injects given GameObject, rises and ready it, and then adds it to process
+        /// Removes all GameObjects from process
+        /// </summary>
+        /// <param name="objs">Array of GameObjects</param>
+        public static void RemoveObjectsFromUpdate(GameObject[] objs)
+        {
+            MonoCached[] monos = new MonoCached[0];
+
+            foreach (var obj in objs)
+            {
+                var components = obj.GetComponentsInChildren<MonoCached>(true);
+                monos = monos.Concat(components).ToArray();
+            }
+
+            foreach (var mono in monos)
+            {
+                RemoveMonoFromUpdate(mono);
+            }
+        }
+
+        /// <summary>
+        /// Invokes Rise and Ready on given GameObject, and then adds it to process
         /// </summary>
         /// <param name="obj"></param>
-        public void InitializeObject(GameObject obj)
+        public static void InitializeObject(GameObject obj)
         {
             if (obj == null) return;
-
-            Resolver.Instance.Inject(obj);
 
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
             foreach (var mono in objMonos)
             {
+                if (Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
                 InvokeRise(mono);
             }
 
             foreach (var mono in objMonos)
             {
+                if (Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
                 InvokeReady(mono);
             }
 
             foreach (var mono in objMonos)
             {
-                InvokeProcessSubscription(mono);
+                if (Instance.monos.Contains(mono))
+                {
+                    continue;
+                }
+
+                Instance.monos.Add(mono);
             }
         }
 
-        public void InitializeMono(MonoCached mono)
+        /// <summary>
+        /// Invokes Rise and Ready on given MonoCached, and then adds it to process
+        /// </summary>
+        public static void InitializeMono(MonoCached mono)
+        {
+            if (mono == null && !Instance.monos.Contains(mono)) return;
+
+            InvokeRise(mono);
+            InvokeReady(mono);
+            Instance.monos.Add(mono);
+            mono.Resume();
+        }
+
+        /// <summary>
+        /// Removes given MonoCached from process
+        /// </summary>
+        public static void RemoveMonoFromUpdate(MonoCached mono)
         {
             if (mono == null) return;
 
-            Resolver.Instance.Inject(mono);
-            InvokeRise(mono);
-            InvokeReady(mono);
-            InvokeProcessSubscription(mono);
+            mono.Pause();
+            Instance.monos.Remove(mono);
         }
         
 
         #region Invoke Reflection Methods
-        private void InvokeRise(MonoCached mono)
+        private static void InvokeRise(MonoCached mono)
         {
-            riseMethod.Invoke(mono, null);
+            mono.ProcessInternal(3, 0);
         }
 
-        private void InvokeReady(MonoCached mono)
+        private static void InvokeReady(MonoCached mono)
         {
-            readyMethod.Invoke(mono, null);
-        }
-
-        private void InvokeProcessSubscription(MonoCached mono)
-        {
-            subscribeProcessMethod.Invoke(mono, null);
+            mono.ProcessInternal(4, 0);
         }
         #endregion
 
@@ -160,18 +194,32 @@ namespace VolumeBox.Toolbox
         private void Update()
         {
             delta = Time.deltaTime * TimeScale;
-            ProcessTick?.Invoke(delta);
+
+            for (int i = 0; i < monos.Count; i++)
+            {
+                var deltaToUse = monos[i].IgnoreTimeScale ? Time.deltaTime : delta;
+                monos[i].ProcessInternal(0, deltaToUse);
+            }
         }
 
         private void FixedUpdate()
         {
             float fixedDelta = Time.fixedDeltaTime * timeScale;
-            FixedProcessTick?.Invoke(fixedDelta);  
+
+            for (int i = 0; i < monos.Count; i++)
+            {
+                var deltaToUse = monos[i].IgnoreTimeScale ? Time.fixedDeltaTime : fixedDelta;
+                monos[i].ProcessInternal(1, deltaToUse);
+            }
         }
 
         private void LateUpdate()
         {
-            LateProcessTick?.Invoke(delta);
+            for (int i = 0; i < monos.Count; i++)
+            {
+                var deltaToUse = monos[i].IgnoreTimeScale ? Time.deltaTime : delta;
+                monos[i].ProcessInternal(2, deltaToUse);
+            }
         }
         #endregion
     }

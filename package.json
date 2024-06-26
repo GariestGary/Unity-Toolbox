@@ -1,12 +1,10 @@
 {
   "name": "com.volumebox.toolbox",
-  "version": "0.0.23",
+  "version": "1.2.5",
   "displayName": "VolumeBox Toolbox",
   "description": "Architecture solution for simplifying process of creating games",
   "dependencies": {
-    "com.solidalloy.type-references": "2.16.0",
-    "com.dbrizov.naughtyattributes": "2.1.4",
-	"com.cysharp.unitask": "2.3.3"
+	  "com.cysharp.unitask": "2.5.4"
   },
   "keywords": [
     "toolbox",

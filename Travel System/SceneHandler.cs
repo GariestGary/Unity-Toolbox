@@ -1,9 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using UnityEngine.Serialization;
-using System;
 
 namespace VolumeBox.Toolbox
 {
@@ -11,19 +6,15 @@ namespace VolumeBox.Toolbox
     {
         protected TArgs Args;
 
-        sealed protected override void OnLoadCallback(SceneArgs args)
+        protected sealed override void OnLoadCallback(SceneArgs args)
         {
             Args = args as TArgs;
 
-            if (Args == null)
-            {
-                Debug.Log("Current loaded scene args is null");
-            }
-            else
+            if (Args != null)
             {
                 if (args is not TArgs)
                 {
-                    Debug.Log($"Current loaded scene expected {typeof(TArgs)} args, but provided with {args.GetType()}");
+                    Debug.Log($"Current loaded {gameObject.scene.name} scene expected {typeof(TArgs)} args, but provided with {args.GetType()}");
                 }
             }
 

@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using VolumeBox.Toolbox;
-
-public class MonoCachedComponent : MonoCached
+namespace VolumeBox.Toolbox.Tests
 {
-    
+    public class MonoCachedComponent : MonoCached
+    {
+        
+    }
 }

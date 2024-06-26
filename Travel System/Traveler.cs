@@ -3,34 +3,43 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 
 namespace VolumeBox.Toolbox
 {
-    public class Traveler : CachedSingleton<Traveler>, IRunner
+    public class Traveler : ToolWrapper<Traveler>
     {
         private static AsyncOperation _currentUnloadingSceneOperation;
         private static AsyncOperation _currentLoadingSceneOperation;
         private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
         private static MethodInfo _onLoadMethod;
         private static MethodInfo _onUnloadMethod;
+        private static MethodInfo _scenePoolInitMethod;
 
-        public void Run()
+        protected override void Run()
         {
             _openedScenes = new List<OpenedScene>();
+            InitReflectionMethods();
+            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args).Forget(), null, true);
+            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName).Forget(), null, true);
+            Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes().Forget(), null, true);
+        }
+
+        protected override void Clear()
+        {
+            
+        }
+
+        private static void InitReflectionMethods()
+        {
             _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
             _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            Messager.Instance.SubscribeKeeping<LoadSceneMessage>(m => LoadScene(m.sceneName, m.args, m.additive));
-            Messager.Instance.SubscribeKeeping<UnloadSceneMessage>(m => UnloadScene(m.sceneName));
-            Messager.Instance.SubscribeKeeping<UnloadAllScenesMessage>(_ => UnloadAllScenes());
+            _scenePoolInitMethod = typeof(ScenePool).GetMethod("InitializePools", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
-        /// Returns SceneHandler with specified type, if it exists among loaded scenes
+        /// Returns SceneHandler of specified type if it exists among loaded scenes
         /// </summary>
         /// <typeparam name="T">Type of SceneHandler which located in necessary scene hierarchy</typeparam>
         /// <returns>Instance of an requested SceneHandler, or null if it doesn't exist</returns>
@@ -58,67 +67,91 @@ namespace VolumeBox.Toolbox
         }
 
         /// <summary>
-        /// Loads scene with given name and args. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// Returns all SceneHandlers of specified type if they exists among loaded scenes
         /// </summary>
+        /// <typeparam name="T">Type of SceneHandlers which located in necessary scene hierarchy</typeparam>
+        /// <returns>List of all requested SceneHandlers, or empty list if they doesn't exist</returns>
+        public static List<T> TryGetAllSceneHandlers<T>() where T: SceneHandlerBase
+        {
+            List<T> openedScenes = new List<T>();
+
+            for (int i = 0; i < _openedScenes.Count; i++)
+            {
+                if (_openedScenes[i].Handler != null && _openedScenes[i].Handler.GetType() == typeof(T))
+                {
+                    openedScenes.Add(_openedScenes[i].Handler as T);
+                }
+            }
+
+            return openedScenes;
+        }
+
+        /// <summary>
+        /// Returns true if specified scene is opened in hierarchy
+        /// </summary>
+        public static bool IsSceneOpened(string sceneName)
+        {
+            return _openedScenes.Any(s => s.SceneDefinition.name == sceneName);
+        }
+
+        public static async UniTask LoadScene(string sceneName, SceneArgs args = null)
+        {
+            await LoadScene<SceneHandlerBase>(sceneName, args);
+        }
+
+        /// <summary>
+        /// Loads scene with given name and args.
+        /// </summary>
+        /// <remarks>
+        /// It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
+        /// </remarks>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        public static async UniTask LoadScene(string sceneName, SceneArgs args = null, bool isAdditive = true)
+        public static async UniTask<T> LoadScene<T>(string sceneName, SceneArgs args = null) where T: SceneHandlerBase
         {
             if(!DoesSceneExist(sceneName))
             {
                 Debug.LogWarning($"Scene with name {sceneName} you want to load doesn't exist");
-                return;
+                return null;
             }
 
-            await QueueSceneLoad(sceneName);
-
-            if(!isAdditive)
-            {
-                await UnloadAllScenes();
-            }
-
-            _currentLoadingSceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-
-            while (_currentLoadingSceneOperation != null && !_currentLoadingSceneOperation.isDone)
-            {
-                await UniTask.Yield();
-            }
-
+            Messenger.Send(new SceneLoadingMessage(sceneName));
+            await WaitForLoadingOperationsEnd(sceneName);
+            var loadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            _currentLoadingSceneOperation = loadingOperation;
+            await loadingOperation;
+            Messenger.Send(new SceneLoadedMessage(sceneName));
             Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
-
+            await UniTask.DelayFrame(1);
+            GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
             SceneHandlerBase handler = null;
 
-            await UniTask.DelayFrame(1);
-
-            GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
-
-            //Search for DI bindings
+            //traverse all objects
             foreach (var obj in sceneObjects)
             {
-                Resolver.Instance.SearchObjectBindings(obj);
-            }
+                var scenePools = obj.GetComponentsInChildren<ScenePool>(true);
 
-
-            //Search for scene handler
-            foreach (var obj in sceneObjects)
-            {
-                handler = obj.GetComponent<SceneHandlerBase>();
-
-                if (handler != null)
+                foreach(var scenePool in scenePools)
                 {
-                    break;
+                    if(_scenePoolInitMethod == null)
+                    {
+                        InitReflectionMethods();
+                    }
+
+                    _scenePoolInitMethod.Invoke(scenePool, null);
+                }
+
+                if (handler == null)
+                {
+                    handler = obj.GetComponent<SceneHandlerBase>();
                 }
             }
 
             OpenedScene newOpenedScene = new OpenedScene(sceneDefinition, handler, args);
 
-            if (handler == null)
+            if (handler != null)
             {
-                Debug.Log($"There is no SceneHandler in scene '{sceneName}', skipping scene setup");
-            }
-            else
-            {
-                Updater.Instance.InitializeMono(handler);
+                Updater.InitializeMono(handler);
                 
                 if (_onLoadMethod != null)
                 {
@@ -127,14 +160,12 @@ namespace VolumeBox.Toolbox
             }
 
             _openedScenes.Add(newOpenedScene);
-
-            var parameters = new object[] { };
-
-            Updater.Instance.InitializeObjects(sceneObjects);
-
+            Updater.InitializeObjects(sceneObjects);
             _currentLoadingSceneOperation = null;
-
-            Messager.Instance.Send(new SceneOpenedMessage(sceneName));
+            //temp fix for situations when TryGetSceneHandler returns null after receiving SceneOpenedMessage
+            await UniTask.DelayFrame(1);
+            Messenger.Send(new SceneOpenedMessage(sceneName));
+            return handler as T;
         }
 
         /// <summary>
@@ -147,18 +178,20 @@ namespace VolumeBox.Toolbox
 
             if (sceneToUnload == null)
             {
-                Debug.LogWarning($"Scene with name {sceneName} you want to unload doesn't exist");
+                Debug.LogWarning($"Scene with name {sceneName} you want to unload was not loaded before. Skipping");
                 return;
             }
 
-            await QueueSceneLoad(sceneName);
+            await WaitForLoadingOperationsEnd(sceneName);
 
-            Messager.Instance.Send(new SceneUnloadingMessage(sceneName));
+            Messenger.Send(new SceneUnloadingMessage(sceneName));
 
             if (_onUnloadMethod != null && sceneToUnload.Handler != null)
             {
                 _onUnloadMethod.Invoke(sceneToUnload.Handler, null);
             }
+
+            Updater.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());
 
             _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
 
@@ -168,21 +201,24 @@ namespace VolumeBox.Toolbox
             }
 
             _currentUnloadingSceneOperation = null;
-
-            Messager.Instance.Send(new SceneUnloadedMessage(sceneName));
+            await Resources.UnloadUnusedAssets();
+            Messenger.Send(new SceneUnloadedMessage(sceneName));
         }
 
-        private static async UniTask QueueSceneLoad(string sceneName)
+        private static async UniTask WaitForLoadingOperationsEnd(string sceneName)
         {
             if(!CanLoadSceneNow(sceneName))
             {
-                bool unloaded = _currentUnloadingSceneOperation == null || _currentUnloadingSceneOperation.isDone;
-                bool loaded = _currentLoadingSceneOperation == null || _currentLoadingSceneOperation.isDone;
+                await UniTask.WaitUntil(() =>
+                _currentUnloadingSceneOperation == null || 
+                _currentUnloadingSceneOperation.isDone && 
+                _currentLoadingSceneOperation == null || 
+                _currentLoadingSceneOperation.isDone);
 
-                while (!unloaded || !loaded)
-                {
-                    await UniTask.Yield();
-                }
+                _currentLoadingSceneOperation = null;
+                _currentUnloadingSceneOperation = null;
+                
+                await UniTask.DelayFrame(1);
             }
         }
 
@@ -209,6 +245,9 @@ namespace VolumeBox.Toolbox
             return false;
         }
 
+        /// <summary>
+        /// Unloads all opened scenes except 'MAIN'
+        /// </summary>
         public static async UniTask UnloadAllScenes()
         {
             var unloadings = new List<UniTask>();
@@ -241,14 +280,12 @@ namespace VolumeBox.Toolbox
         }
     }
 
-
-
     #region Traveler's class messages
 
     [Serializable]
     public class UnloadSceneMessage: Message
     {
-        public string sceneName;
+        public string SceneName;
     }
 
     public class UnloadAllScenesMessage: Message
@@ -259,9 +296,8 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class LoadSceneMessage: Message
     {
-        public string sceneName;
-        public SceneArgs args;
-        public bool additive;
+        public string SceneName;
+        public SceneArgs Args;
     }
 
     [Serializable]
@@ -346,23 +382,6 @@ namespace VolumeBox.Toolbox
 
         }
     }
-
-    [Serializable]
-    public class GameplaySceneOpenedMessage : SceneMessage
-    {
-        public GameplaySceneOpenedMessage(string sceneName) : base(sceneName)
-        {
-        }
-
-        public GameplaySceneOpenedMessage()
-        {
-
-        }
-    }
-
-    public class UIOpenedMessage: Message { }
-
-    public class UIClosedMessage: Message { }
 
     #endregion
 }
