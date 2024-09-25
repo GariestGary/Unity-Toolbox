@@ -263,73 +263,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56ca6f40469ebc0498a0fecd8c45dd76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &445832163
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 445832165}
-  - component: {fileID: 445832164}
-  m_Layer: 0
-  m_Name: Test
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &445832164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 445832163}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cce3319f99fe2eb42a133699f116ce06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  processIfInactiveSelf: 0
-  processIfInactiveInHierarchy: 0
-  ignoreTimeScale: 0
-  _Albums:
-  - albumName: A
-    source: {fileID: 0}
-    useSeparateSource: 0
-    mixerGroup: {fileID: 0}
-    clips:
-    - id: win_theme
-      clip: {fileID: 8300000, guid: e3f372b32274f0c4abcac88016277b78, type: 3}
-      volume: 0
-  - albumName: B
-    source: {fileID: 0}
-    useSeparateSource: 0
-    mixerGroup: {fileID: 0}
-    clips:
-    - id: click
-      clip: {fileID: 8300000, guid: e241a1873a424da45922ff6e706700fb, type: 3}
-      volume: 0
-    - id: sad_theme
-      clip: {fileID: 8300000, guid: d3fae2f08cdd99e4dab09985d3526fd9, type: 3}
-      volume: 0
---- !u!4 &445832165
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 445832163}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &724254137
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,7 +307,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.093
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -464,4 +397,3 @@ SceneRoots:
   m_Roots:
   - {fileID: 345305236}
   - {fileID: 724254138}
-  - {fileID: 445832165}
