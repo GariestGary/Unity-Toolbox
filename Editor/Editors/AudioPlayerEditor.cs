@@ -12,10 +12,10 @@ namespace VolumeBox.Toolbox.Editor
 
         private SerializedProperty m_albums;
         private Vector2 currentScrollPosition;
-        private float labelSize = 110;
         private string albumSearchValue;
 
-        private Color buttonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
+        public static float LabelSize = 110;
+        public static Color RedButtonColor = new Color(0.8705882352941176f, 0.3450980392156863f, 0.3450980392156863f);
 
         private void OnEnable()
         {
@@ -92,12 +92,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if(album.FindPropertyRelative("albumName").stringValue.ToLower().Contains(albumSearchValue.ToLower()))
                     {
-                        DrawAlbum(album, m_albums, i);
+                        DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize);
                     }
                 }
                 else
                 {
-                    DrawAlbum(album, m_albums, i);
+                    DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize);
                 }
                 GUILayout.Space(3);
             }
@@ -124,12 +124,12 @@ namespace VolumeBox.Toolbox.Editor
             }
         }
 
-        private void DrawAlbum(SerializedProperty property, SerializedProperty list, int index)
+        public static void DrawAlbum(SerializedProperty property, SerializedProperty list, int index, GUISkin skin, Color removeButtonColor, float labelSize)
         {
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(3);
             var oldSkin = GUI.skin;
-            GUI.skin = m_Skin;
+            GUI.skin = skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
             GUILayout.Space(3);
             GUI.skin = oldSkin;
@@ -141,12 +141,12 @@ namespace VolumeBox.Toolbox.Editor
             
             EditorGUILayout.BeginVertical();
             GUILayout.FlexibleSpace();
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, albumName.stringValue, true, m_Skin.GetStyle("Foldout"));
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, albumName.stringValue, true, skin.GetStyle("Foldout"));
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndVertical();
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = buttonColor;
+            GUI.backgroundColor = removeButtonColor;
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
@@ -201,6 +201,7 @@ namespace VolumeBox.Toolbox.Editor
                     var newClip = m_clips.GetArrayElementAtIndex(0);
                     newClip.isExpanded = false;
                     newClip.FindPropertyRelative("id").stringValue = string.Empty;
+                    newClip.FindPropertyRelative("volume").floatValue = 1;
                     AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
                 }
 
@@ -227,7 +228,7 @@ namespace VolumeBox.Toolbox.Editor
 
                 if(m_clips.arraySize > 0)
                 {
-                    EditorGUILayout.LabelField("Clips:", m_Skin.GetStyle("Label"));
+                    EditorGUILayout.LabelField("Clips:", skin.GetStyle("Label"));
                     
                     if (GUILayout.Button("Expand All", GUILayout.Width(100)))
                     {
@@ -256,7 +257,7 @@ namespace VolumeBox.Toolbox.Editor
 
                 for (int i = 0; i < m_clips.arraySize; i++)
                 {
-                    DrawClip(m_clips.GetArrayElementAtIndex(i), m_clips, i);
+                    DrawClip(m_clips.GetArrayElementAtIndex(i), m_clips, i, skin, removeButtonColor, labelSize);
                     GUILayout.Space(3);
                 }
 
@@ -272,11 +273,11 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawClip(SerializedProperty property, SerializedProperty list, int index)
+        public static void DrawClip(SerializedProperty property, SerializedProperty list, int index, GUISkin skin, Color removeButtonColor, float labelSize)
         {
             EditorGUILayout.BeginHorizontal();
             var oldSkin = GUI.skin;
-            GUI.skin = m_Skin;
+            GUI.skin = skin;
             EditorGUILayout.BeginVertical(GUI.skin.FindStyle("Box"));
             GUI.skin = oldSkin;
             GUILayout.Space(3);
@@ -285,20 +286,31 @@ namespace VolumeBox.Toolbox.Editor
             var clipId = property.FindPropertyRelative("id");
             EditorGUILayout.BeginVertical();
             GUILayout.FlexibleSpace();
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true, m_Skin.GetStyle("Foldout"));
+            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, clipId.stringValue, true, skin.GetStyle("Foldout"));
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndVertical();
             var clip = property.FindPropertyRelative("clip");
-            
+            var volume = property.FindPropertyRelative("volume");
+            var clipValue = clip.objectReferenceValue as AudioClip;
+
             if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
-                var clipValue = clip.objectReferenceValue as AudioClip;
-
-                if (clipValue != null)
+                if(!AudioPlayer.HasInstance)
                 {
-                    AudioUtils.StopAllPreviewClips();
-                    AudioUtils.PlayPreviewClip(clipValue);
+                    EditorUtility.DisplayDialog("AudioPlayer missing!", "AudioPlayer instance needed for clips preview doesn't exist among currently opened scenes. You can open MAIN scene from 'Toolbox/Open MAIN Scene' that already has AudioPlayer", "OK");
                 }
+                else
+                {
+                    if (clipValue != null)
+                    {
+                        AudioPlayer.Instance.DefaultAudioSource.Stop();
+                        var prevVolume = AudioPlayer.Instance.DefaultAudioSource.volume;
+                        AudioPlayer.Instance.DefaultAudioSource.volume = volume.floatValue;
+                        AudioPlayer.Instance.DefaultAudioSource.PlayOneShot(clipValue);
+                    }
+                }
+
+
             }
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreMatQuad"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
@@ -307,7 +319,7 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = buttonColor;
+            GUI.backgroundColor = removeButtonColor;
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
@@ -335,10 +347,18 @@ namespace VolumeBox.Toolbox.Editor
 
                 //clip id draw
                 EditorGUILayout.BeginHorizontal();
-                
                 EditorGUILayout.LabelField("Clip ID", GUILayout.Width(labelSize));
                 var prevClipId = clipId.stringValue;
                 clipId.stringValue = EditorGUILayout.TextField(clipId.stringValue);
+                
+                if(clipValue != null)
+                {
+                    if(GUILayout.Button("Set As Clip", GUILayout.Width(80)))
+                    {
+                        clipId.stringValue = clipValue.name;
+                    }
+                }
+
                 if(prevClipId != clipId.stringValue)
                 {
                     AudioPlayerClipPropertyDrawer.IsClipsChanged = true;
@@ -348,9 +368,13 @@ namespace VolumeBox.Toolbox.Editor
 
                 //clip reference draw
                 EditorGUILayout.BeginHorizontal();
-                
                 EditorGUILayout.LabelField("Audio Clip", GUILayout.Width(labelSize));
                 EditorGUILayout.PropertyField(clip, GUIContent.none);
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Clip Volume", GUILayout.Width(labelSize));
+                volume.floatValue = EditorGUILayout.Slider(volume.floatValue, 0, 1);
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.EndVertical();

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox
@@ -5,8 +6,9 @@ namespace VolumeBox.Toolbox
     public abstract class SceneHandler<TArgs> : SceneHandlerBase where TArgs : SceneArgs
     {
         protected TArgs Args;
+        private bool _SceneSettedUp = false;
 
-        protected sealed override void OnLoadCallback(SceneArgs args)
+        public sealed override void OnLoadCallback(SceneArgs args)
         {
             Args = args as TArgs;
 
@@ -21,17 +23,29 @@ namespace VolumeBox.Toolbox
             SetupScene(Args);
         }
 
+        public sealed override async UniTask OnLoadCallbackAsync()
+        {
+            await SetupSceneAsync(Args);
+        }
+
+        protected abstract UniTask SetupSceneAsync(TArgs args);
+
         protected abstract void SetupScene(TArgs args);
     }
 
     public class SceneHandlerBase : MonoCached
     {
-        protected virtual void OnLoadCallback(SceneArgs args)
+        public virtual void OnLoadCallback(SceneArgs args)
         {
 
         }
 
-        protected virtual void OnSceneUnload()
+        public virtual void OnUnloadCallback()
+        {
+
+        }
+
+        public virtual async UniTask OnLoadCallbackAsync()
         {
 
         }

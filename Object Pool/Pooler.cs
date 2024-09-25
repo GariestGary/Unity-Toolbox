@@ -115,9 +115,9 @@ namespace VolumeBox.Toolbox
         /// <param name="rotation"></param>
         /// <param name="parent"></param>
         /// <returns>Instantiated GameObject</returns>
-        public static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+        public static GameObject Create(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
-            return Instance.Data.Instantiate(prefab, position, rotation, parent);
+            return Instance.Data.Create(prefab, position, rotation, parent);
         }
         
         /// <summary>
@@ -126,9 +126,9 @@ namespace VolumeBox.Toolbox
         /// <param name="prefab">Prefab to Instantiate</param>
         /// <param name="parent">Parent object to instantiated GameObject</param>
         /// <returns>Instantiated GameObject</returns>
-        public static GameObject Instantiate(GameObject prefab, Transform parent = null)
+        public static GameObject Create(GameObject prefab, Transform parent = null)
         {
-            return Instance.Data.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
+            return Instance.Data.Create(prefab, Vector3.zero, Quaternion.identity, parent);
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace VolumeBox.Toolbox
             Messenger.Subscribe<StopAllAudioMessage>(_ => StopAll());
         }
 
-        public void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public void Play(string source, string id, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var album = GetAlbum(source);
 
@@ -29,18 +29,18 @@ namespace VolumeBox.Toolbox
                 return;
             }
             
-            var clip = GetClip(album.clips, id);
+            var clipInfo = GetClip(album.clips, id);
 
-            if (clip == null)
+            if (clipInfo == null)
             {
                 Debug.LogWarning($"Clip named '{id}' not found");
                 return;
             }
 
-            Play(source, clip, volume, pitch, loop, playType);
+            Play(source, clipInfo.clip, volume < 0 ? clipInfo.volume : volume, pitch, loop, playType);
         }
 
-        public void PlayFormatted(string formattedId, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public void PlayFormatted(string formattedId, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             if (string.IsNullOrEmpty(formattedId))
             {
@@ -58,7 +58,7 @@ namespace VolumeBox.Toolbox
             Play(split[0], split[1], volume, pitch, loop, playType);
         }
 
-        private void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public void Play(string source, AudioClip clip, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var album = GetAlbum(source);
             
@@ -67,38 +67,41 @@ namespace VolumeBox.Toolbox
             Play(album.source, clip, volume, pitch, loop, playType);
         }
 
-        private void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             if (source == null || clip == null)
             {
                 return;
             }
 
+            source.loop = loop;
+            source.clip = clip;
+            source.volume = volume;
+            source.pitch = pitch;
+
             switch (playType)
             {
                 case PlayType.STOP_THEN_PLAY:
                     source.Stop();
-                    source.loop = loop;
-                    source.clip = clip;
-                    source.volume = volume;
-                    source.pitch = pitch;
                     source.Play();
                     break;
+
                 case PlayType.ONE_SHOT:
                     source.PlayOneShot(clip, volume);
                     break;
+
                 case PlayType.NO_INTERRUPT:
-                    if (source.isPlaying) return;
+                    if (source.isPlaying)
+                    {
+                        return;
+                    }
                     else
                     {
                         source.Stop();
-                        source.loop = loop;
-                        source.clip = clip;
-                        source.volume = volume;
-                        source.pitch = pitch;
                         source.Play();
                     }
                     break;
+
                 default:
                     source.PlayOneShot(clip, volume);
                     break;
@@ -122,16 +125,21 @@ namespace VolumeBox.Toolbox
             return albums.All(x => x.albumName != albumName) ? null : albums.FirstOrDefault(a => a.albumName == albumName);
         }
 
-        private AudioClip GetClip(IEnumerable<AudioClipInfo> list, string id)
+        private AudioClipInfo GetClip(IEnumerable<AudioClipInfo> list, string id)
         {
             var clips = list.Where(x => x.id == id).ToArray();
 
             return clips.Length switch
             {
                 0 => null,
-                1 => clips[0].clip,
-                _ => clips[UnityEngine.Random.Range(0, clips.Length)].clip
+                1 => clips[0],
+                _ => clips[UnityEngine.Random.Range(0, clips.Length)]
             };
+        }
+
+        public void AddAlbum(AudioAlbum album)
+        {
+            albums.Add(album);
         }
 
         public void AddAlbum(string albumName, AudioSource defaultSource, AudioMixerGroup mixerGroup = null, AudioSource source = null)
@@ -160,6 +168,14 @@ namespace VolumeBox.Toolbox
             });
         }
 
+        public void TryRemoveAlbum(AudioAlbum album)
+        {
+            if(albums.Contains(album))
+            {
+                albums.Remove(album);
+            }
+        }
+
         public void Clear()
         {
             albums.ForEach(a => a.source = null);
@@ -176,8 +192,7 @@ namespace VolumeBox.Toolbox
     [Serializable]
     public class AudioAlbum
     {
-        [SerializeField]
-        public string albumName;
+        [SerializeField] public string albumName;
         [HideInInspector, SerializeField] public AudioSource source;
         [SerializeField] public bool useSeparateSource;
         [SerializeField] public AudioMixerGroup mixerGroup;
@@ -189,6 +204,7 @@ namespace VolumeBox.Toolbox
     {
         public string id;
         public AudioClip clip;
+        public float volume = 1;
     }
 
     [Serializable]

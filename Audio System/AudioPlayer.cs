@@ -8,6 +8,8 @@ namespace VolumeBox.Toolbox
         [SerializeField] private Transform audioSourcesRoot;
         [SerializeField] private AudioSource defaultAudioSource;
 
+        public AudioSource DefaultAudioSource => defaultAudioSource;
+
         public override string GetDataPath()
         {
             return SettingsData.audioPlayerResourcesDataPath;
@@ -38,14 +40,24 @@ namespace VolumeBox.Toolbox
             Data?.Clear();
         }
 
-        public static void Play(string source, string id, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public static void Play(string source, string id, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             Instance.Data.Play(source, id, volume, pitch, loop, playType);
         }
 
-        public static void Play(string formattedId, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public static void Play(string formattedId, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             Instance.Data.PlayFormatted(formattedId, volume, pitch, loop, playType);
+        }
+
+        public void Play(string source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        {
+            Instance.Play(source, clip, volume, pitch, loop, playType);
+        }
+
+        public void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        {
+            Instance.Play(source, clip, volume, pitch, loop, playType);
         }
 
         public void StopAudio(string source)
@@ -57,15 +69,25 @@ namespace VolumeBox.Toolbox
         {
             Instance.Data.StopAll();
         }
-        
-        public void AddAlbum(string albumName, AudioMixerGroup mixerGroup = null, AudioSource source = null)
+
+        public static void AddAlbum(AudioAlbum album)
         {
-            Instance.Data.AddAlbum(albumName, defaultAudioSource, mixerGroup, source);
+            Instance.Data.AddAlbum(album);
+        }
+        
+        public static void AddAlbum(string albumName, AudioMixerGroup mixerGroup = null, AudioSource source = null)
+        {
+            Instance.Data.AddAlbum(albumName, Instance.defaultAudioSource, mixerGroup, source);
         }
 
-        public void AddClipToAlbum(string clipID, string albumName, AudioClip clip)
+        public static void AddClipToAlbum(string clipID, string albumName, AudioClip clip)
         {
             Instance.Data.AddClipToAlbum(clipID, albumName, clip);
+        }
+
+        public static void TryRemoveAlbum(AudioAlbum album)
+        {
+            Instance.Data.TryRemoveAlbum(album);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace VolumeBox.Toolbox
             InitializePools();
         }
 
-        private void InitializePools()
+        public void InitializePools()
         {
             if (m_Initialized) return;
 

@@ -13,14 +13,10 @@ namespace VolumeBox.Toolbox
         private static AsyncOperation _currentUnloadingSceneOperation;
         private static AsyncOperation _currentLoadingSceneOperation;
         private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
-        private static MethodInfo _onLoadMethod;
-        private static MethodInfo _onUnloadMethod;
-        private static MethodInfo _scenePoolInitMethod;
 
         protected override void Run()
         {
             _openedScenes = new List<OpenedScene>();
-            InitReflectionMethods();
             Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args).Forget(), null, true);
             Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName).Forget(), null, true);
             Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes().Forget(), null, true);
@@ -29,13 +25,6 @@ namespace VolumeBox.Toolbox
         protected override void Clear()
         {
             
-        }
-
-        private static void InitReflectionMethods()
-        {
-            _onLoadMethod = typeof(SceneHandlerBase).GetMethod("OnLoadCallback", BindingFlags.NonPublic | BindingFlags.Instance);
-            _onUnloadMethod = typeof(SceneHandlerBase).GetMethod("OnSceneUnload", BindingFlags.NonPublic | BindingFlags.Instance);
-            _scenePoolInitMethod = typeof(ScenePool).GetMethod("InitializePools", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
@@ -133,12 +122,7 @@ namespace VolumeBox.Toolbox
 
                 foreach(var scenePool in scenePools)
                 {
-                    if(_scenePoolInitMethod == null)
-                    {
-                        InitReflectionMethods();
-                    }
-
-                    _scenePoolInitMethod.Invoke(scenePool, null);
+                    scenePool.InitializePools();
                 }
 
                 if (handler == null)
@@ -152,11 +136,8 @@ namespace VolumeBox.Toolbox
             if (handler != null)
             {
                 Updater.InitializeMono(handler);
-                
-                if (_onLoadMethod != null)
-                {
-                    _onLoadMethod.Invoke(handler, new object[] { args });
-                }
+                handler.OnLoadCallback(args);
+                await handler.OnLoadCallbackAsync();
             }
 
             _openedScenes.Add(newOpenedScene);
@@ -186,9 +167,9 @@ namespace VolumeBox.Toolbox
 
             Messenger.Send(new SceneUnloadingMessage(sceneName));
 
-            if (_onUnloadMethod != null && sceneToUnload.Handler != null)
+            if (sceneToUnload.Handler != null)
             {
-                _onUnloadMethod.Invoke(sceneToUnload.Handler, null);
+                sceneToUnload.Handler.OnUnloadCallback();
             }
 
             Updater.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());

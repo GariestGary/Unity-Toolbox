@@ -262,7 +262,7 @@ namespace VolumeBox.Toolbox
             return objToSpawn.GameObject;
         }
         
-        public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+        public GameObject Create(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             GameObject inst = UnityEngine.Object.Instantiate(prefab, position, rotation, parent);
 
@@ -271,9 +271,9 @@ namespace VolumeBox.Toolbox
             return inst;
         }
         
-        public GameObject Instantiate(GameObject prefab, Transform parent = null)
+        public GameObject Create(GameObject prefab, Transform parent = null)
         {
-            return Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
+            return Create(prefab, Vector3.zero, Quaternion.identity, parent);
         }
         
         private GameObject CreateNewPoolObject(GameObject obj, List<PooledGameObject> poolQueue, bool addToPoolParent = true)
@@ -285,7 +285,7 @@ namespace VolumeBox.Toolbox
                 poolParent = objectPoolParent;
             }
 
-            GameObject poolObj = Instantiate(obj, poolParent);
+            GameObject poolObj = Create(obj, poolParent);
 
             poolObj.name = obj.name;
 

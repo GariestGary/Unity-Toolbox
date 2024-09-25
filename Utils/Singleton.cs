@@ -69,7 +69,15 @@ namespace VolumeBox.Toolbox
         private static bool destroyed = false;
         private static bool reinstantiateIfDestroyed = true;
 
-        public static bool HasInstance => instance != null;
+        public static bool HasInstance
+        {
+            get
+            {
+                return FindObjectOfType<T>() != null;
+            }
+            private set { }
+        }
+
         public static bool ReinstantiateIfDestroyed
         {
             get
