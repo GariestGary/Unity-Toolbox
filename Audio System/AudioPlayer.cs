@@ -73,6 +73,14 @@ namespace VolumeBox.Toolbox
         public static void AddAlbum(AudioAlbum album)
         {
             Instance.Data.AddAlbum(album);
+
+            if(album.useSeparateSource)
+            {
+                var newSourceObj = new GameObject($"{album.albumName} Audio Source");
+                newSourceObj.transform.SetParent(Instance.audioSourcesRoot);
+                album.source = newSourceObj.AddComponent<AudioSource>();
+                album.source.outputAudioMixerGroup = album.mixerGroup;
+            }
         }
         
         public static void AddAlbum(string albumName, AudioMixerGroup mixerGroup = null, AudioSource source = null)
@@ -87,7 +95,14 @@ namespace VolumeBox.Toolbox
 
         public static void TryRemoveAlbum(AudioAlbum album)
         {
-            Instance.Data.TryRemoveAlbum(album);
+            if(Instance.Data.TryRemoveAlbum(album))
+            {
+                if(album.source != null && album.source != Instance.defaultAudioSource)
+                {
+                    Destroy(album.source.gameObject);
+                }
+            }
+            
         }
     }
 }

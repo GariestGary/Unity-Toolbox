@@ -168,12 +168,15 @@ namespace VolumeBox.Toolbox
             });
         }
 
-        public void TryRemoveAlbum(AudioAlbum album)
+        public bool TryRemoveAlbum(AudioAlbum album)
         {
             if(albums.Contains(album))
             {
                 albums.Remove(album);
+                return true;
             }
+
+            return false;
         }
 
         public void Clear()
