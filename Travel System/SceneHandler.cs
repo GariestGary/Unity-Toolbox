@@ -28,7 +28,10 @@ namespace VolumeBox.Toolbox
             await SetupSceneAsync(Args);
         }
 
-        protected abstract UniTask SetupSceneAsync(TArgs args);
+        protected async virtual UniTask SetupSceneAsync(TArgs args)
+        {
+
+        }
 
         protected abstract void SetupScene(TArgs args);
     }
