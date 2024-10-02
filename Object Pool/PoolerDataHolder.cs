@@ -409,6 +409,24 @@ namespace VolumeBox.Toolbox
             }
         }
 
+        public ObjectPooledState IsObjectPooledAndUsed(GameObject obj)
+        {
+            for (int i = 0; i < pools.Count; i++)
+            {
+                for (int j = 0; j < pools[i].objects.Count; j++)
+                {
+                    var objToCheck = pools[i].objects[j];
+
+                    if (objToCheck.GameObject == obj)
+                    {
+                        return new(true, objToCheck.Used);
+                    }
+                }
+            }
+
+            return new ObjectPooledState(false, false);
+        }
+
         private bool TryDespawn(PooledGameObject pgo)
         {
             if (pgo == null || !pgo.Used)
@@ -535,6 +553,18 @@ namespace VolumeBox.Toolbox
     {
         public GameObject Obj;
         public GameObjectRemoveType RemoveType;
+    }
+
+    public struct ObjectPooledState
+    {
+        public bool IsPooled { get; private set; }
+        public bool IsUsed { get; private set; }
+
+        public ObjectPooledState(bool isPooled, bool isUsed)
+        {
+            IsPooled = isPooled;
+            IsUsed = isUsed;
+        }
     }
 
     public enum GameObjectRemoveType

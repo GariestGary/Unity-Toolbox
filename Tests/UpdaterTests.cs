@@ -36,7 +36,7 @@ namespace VolumeBox.Toolbox.Tests
             Assert.AreEqual(true, foo.counter < 1);
 
             yield return new WaitForSeconds(1);
-
+            Debug.Log(foo.counter);
             Assert.AreEqual(true, foo.counter >= 1);
         }
 
@@ -55,17 +55,6 @@ namespace VolumeBox.Toolbox.Tests
             foo.IgnoreTimeScale = false;
             yield return null;
             Assert.AreEqual(true, foo.Delta == 0);
-        }
-
-        private class Foo: MonoCached
-        {
-            public float Delta => delta;
-            public float counter = 0;
-
-            protected override void Tick()
-            {
-                counter += delta;
-            }
         }
     }
 }

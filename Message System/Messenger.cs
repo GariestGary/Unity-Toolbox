@@ -19,7 +19,7 @@ namespace VolumeBox.Toolbox
 		protected override void Run()
         {
             Subscribe<SceneUnloadedMessage>(m => CheckSceneSubscribers(m.SceneName), null, true);
-			Subscribe<GameObjectRemovedMessage>(m => CheckRemovedObject(m.Obj), null, true);
+			Subscribe<GameObjectRemovedMessage>(m => CheckRemovedObject(m), null, true);
         }
 
 		private static void CheckSceneSubscribers(string scene)
@@ -34,9 +34,14 @@ namespace VolumeBox.Toolbox
 			}
 		}
 
-		private static void CheckRemovedObject(GameObject obj)
+		private static void CheckRemovedObject(GameObjectRemovedMessage msg)
 		{
-			var bindedSub = Instance.subscribers.FirstOrDefault(x => x.HasBind && x.BindedObject == obj);
+			if(msg.RemoveType != GameObjectRemoveType.Destroyed)
+			{
+				return;
+			}
+
+			var bindedSub = Instance.subscribers.FirstOrDefault(x => x.HasBind && x.BindedObject == msg.Obj);
 
 			if(bindedSub is not null)
 			{
@@ -149,7 +154,19 @@ namespace VolumeBox.Toolbox
 
 				}
 
-				receiver.Callback.Invoke(message);
+				if(receiver.HasBind)
+				{
+					var receiverState = Pooler.IsObjectPooledAndUsed(receiver.BindedObject);
+					
+					if(!receiverState.IsPooled || (receiverState.IsPooled && receiverState.IsUsed))
+					{
+						receiver.Callback.Invoke(message);
+					}
+				}
+				else
+				{
+					receiver.Callback.Invoke(message);
+				}
 			}
 			
 			foreach (var receiver in receivers)

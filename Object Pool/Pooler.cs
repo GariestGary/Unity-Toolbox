@@ -141,6 +141,11 @@ namespace VolumeBox.Toolbox
             return Instance.Data.TryDespawn(objectToDespawn);
         }
 
+        public static ObjectPooledState IsObjectPooledAndUsed(GameObject obj)
+        {
+            return Instance.Data.IsObjectPooledAndUsed(obj);
+        }
+
         /// <summary>
         /// Decides to despawn GameObject if it in pools list or destroy if not
         /// </summary>
