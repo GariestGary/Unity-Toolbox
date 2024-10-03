@@ -131,6 +131,16 @@ namespace VolumeBox.Toolbox
             return Instance.Data.Create(prefab, Vector3.zero, Quaternion.identity, parent);
         }
 
+        public static T Create<T>(GameObject prefab, Transform parent = null) where T: Component
+        {
+            return Create(prefab, parent).GetComponent<T>();
+        }
+
+        public static T Create<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T: Component
+        {
+            return Create(prefab, position, rotation, parent).GetComponent<T>();
+        }
+
         /// <summary>
         /// Removes GameObject from scene and returns it to pool
         /// </summary>
