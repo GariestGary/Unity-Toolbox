@@ -107,12 +107,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if (album.FindPropertyRelative("albumName").stringValue.ToLower().Contains(_AlbumSearchValue.ToLower()))
                     {
-                        AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, _Skin, AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize);
+                        AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, _Skin, AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize, true);
                     }
                 }
                 else
                 {
-                    AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, _Skin, AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize);
+                    AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, _Skin, AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize, true);
                 }
                 GUILayout.Space(3);
             }

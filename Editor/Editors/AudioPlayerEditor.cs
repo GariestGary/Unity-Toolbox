@@ -92,12 +92,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if(album.FindPropertyRelative("albumName").stringValue.ToLower().Contains(albumSearchValue.ToLower()))
                     {
-                        DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize);
+                        DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize, false);
                     }
                 }
                 else
                 {
-                    DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize);
+                    DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize, false);
                 }
                 GUILayout.Space(3);
             }
@@ -124,7 +124,7 @@ namespace VolumeBox.Toolbox.Editor
             }
         }
 
-        public static void DrawAlbum(SerializedProperty property, SerializedProperty list, int index, GUISkin skin, Color removeButtonColor, float labelSize)
+        public static void DrawAlbum(SerializedProperty property, SerializedProperty list, int index, GUISkin skin, Color removeButtonColor, float labelSize, bool isComponent)
         {
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(3);
@@ -175,6 +175,11 @@ namespace VolumeBox.Toolbox.Editor
                 var m_clips = property.FindPropertyRelative("clips");
 
                 GUILayout.Space(8);
+
+                if(isComponent)
+                {
+                    EditorGUI.indentLevel--;
+                }
 
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Album Name", GUILayout.Width(labelSize));
@@ -249,6 +254,11 @@ namespace VolumeBox.Toolbox.Editor
                             clip.isExpanded = false;
                         }
                     }
+                }
+
+                if(isComponent)
+                {
+                    EditorGUI.indentLevel++;
                 }
 
                 EditorGUILayout.EndHorizontal();
