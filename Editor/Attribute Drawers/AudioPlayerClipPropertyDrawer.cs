@@ -17,6 +17,7 @@ namespace VolumeBox.Toolbox.Editor
         private Dictionary<string, string[]> m_AlbumClipsRelations;
         private string[] m_Albums;
         private AudioPlayerClipAdvancedDropdown m_Dropdown;
+        private bool m_ManualEnabled;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -27,33 +28,47 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.LabelField(labelRect, label);
 
             var dropdownRect = position;
-            dropdownRect.width -= labelRect.width + 2;
             dropdownRect.x += labelRect.width + 2;
+            dropdownRect.width -= labelRect.width + 22;
             
-            if(m_Albums.Length <= 0)
+            if(m_Albums.Length <= 0 && !m_ManualEnabled && !property.stringValue.IsValuable())
             {
                 EditorGUI.LabelField(dropdownRect, "There is no albums", EditorStyles.popup);
-                return;
             }
-
-            ValidateProperty(property);
-
-            EditorGUI.BeginChangeCheck();
-
-            if(m_Dropdown == null)
+            else
             {
-                m_Dropdown = new AudioPlayerClipAdvancedDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), m_AlbumClipsRelations, clip => OnClipSelectedCallback(clip, property));
+                ValidateProperty(property);
+
+                EditorGUI.BeginChangeCheck();
+
+                if(m_Dropdown == null)
+                {
+                    m_Dropdown = new AudioPlayerClipAdvancedDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), m_AlbumClipsRelations, clip => OnClipSelectedCallback(clip, property));
+                }
+
+                if(m_ManualEnabled)
+                {
+                    property.stringValue = EditorGUI.TextField(dropdownRect, property.stringValue);
+                }
+                else
+                {
+                    var splits = property.stringValue.Split("/");
+
+                    var albumName = splits.Length > 0 ? splits[0] : string.Empty;
+                    var clipName = splits.Length > 1 ? splits[1] : string.Empty;
+
+                    if(GUI.Button(dropdownRect, string.Format($"Album: {albumName} | Clip: {clipName}"), EditorStyles.popup))
+                    {
+                        m_Dropdown.Show(dropdownRect);
+                    }
+                }
+
             }
 
-            var splits = property.stringValue.Split("/");
+            dropdownRect.x += dropdownRect.width;
+            dropdownRect.width = 20;
 
-            var albumName = splits.Length > 0 ? splits[0] : string.Empty;
-            var clipName = splits.Length > 1 ? splits[1] : string.Empty;
-
-            if(GUI.Button(dropdownRect, string.Format($"Album: {albumName} | Clip: {clipName}"), EditorStyles.popup))
-            {
-                m_Dropdown.Show(dropdownRect);
-            }
+            m_ManualEnabled = GUI.Toggle(dropdownRect, m_ManualEnabled, EditorGUIUtility.IconContent("d_editicon.sml"), "Button");
 
             EditorGUI.EndChangeCheck();
         }
@@ -86,28 +101,12 @@ namespace VolumeBox.Toolbox.Editor
 
                     case 1:
                         album = splits[0];
-
-                        if (!AlbumExists(album))
-                        {
-                            album = m_Albums[0];
-                        }
-
                         clip = GetDefaultClipOfAlbum(album);
                         break;
 
                     case 2:
                         album = splits[0];
                         clip = splits[1];
-
-                        if (!AlbumExists(album))
-                        {
-                            album = m_Albums[0];
-                        }
-
-                        if (!ClipExistsInAlbum(album, clip))
-                        {
-                            clip = GetDefaultClipOfAlbum(album);
-                        }
 
                         break;
 
@@ -173,9 +172,18 @@ namespace VolumeBox.Toolbox.Editor
                     return;
                 }
 
-                m_Albums = m_AudioPlayerDataHolder.Albums.ConvertAll(c => c.albumName).ToArray();
+                var albums = m_AudioPlayerDataHolder.Albums.ToList();
+                var gameObject = (property.GetValue() as Component).gameObject;
+                var sceneEntries = GetSceneEntries(gameObject);
+                
+                foreach(var entry in sceneEntries)
+                {
+                    albums.Add(entry);
+                }
 
-                foreach(var album in m_AudioPlayerDataHolder.Albums)
+                m_Albums = albums.ConvertAll(a => a.albumName).ToArray();
+
+                foreach (var album in albums)
                 {
                     m_AlbumClipsRelations.Add(album.albumName, album.clips.ConvertAll(c => c.id).ToArray());
                 }
@@ -183,6 +191,26 @@ namespace VolumeBox.Toolbox.Editor
                 m_Dropdown = new AudioPlayerClipAdvancedDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), m_AlbumClipsRelations, clip => OnClipSelectedCallback(clip, property));
                 IsClipsChanged = false;
             }
+        }
+
+        private List<AudioAlbum> GetSceneEntries(GameObject sceneObject)
+        {
+            var sceneAlbums = Resources.FindObjectsOfTypeAll<SceneAlbumsHolder>().Where(x => x.gameObject.scene == sceneObject.scene).ToArray();
+
+            var entries = new List<AudioAlbum>();
+
+            if (sceneAlbums.Length > 0)
+            {
+                for (int i = 0; i < sceneAlbums.Length; i++)
+                {
+                    for (int j = 0; j < sceneAlbums[i].Albums.Count; j++)
+                    {
+                        entries.Add(sceneAlbums[i].Albums[j]);
+                    }
+                }
+            }
+
+            return entries;
         }
     }
 }

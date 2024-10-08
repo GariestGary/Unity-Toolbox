@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Presets;
 using UnityEngine;
 
 namespace VolumeBox.Toolbox.Editor
@@ -12,6 +13,7 @@ namespace VolumeBox.Toolbox.Editor
         private string[] m_PoolerEntries;
         private string[] m_SceneEntries;
         private string m_SceneName;
+        private bool m_ManualEnabled = false;
 
         public static bool IsPoolsChanged { get; set; }
 
@@ -28,26 +30,35 @@ namespace VolumeBox.Toolbox.Editor
 
             var poolRect = position;
             poolRect.x += labelRect.width;
-            poolRect.width -= labelRect.width;
-
-            if(m_PoolerEntries.Length <= 0 && m_SceneEntries.Length <= 0)
+            poolRect.width -= labelRect.width + 20;
+            bool hasPools = m_PoolerEntries.Length > 0 || m_SceneEntries.Length > 0;
+            
+            if(hasPools && !m_ManualEnabled && !property.stringValue.IsValuable())
             {
                 EditorGUI.LabelField(poolRect, "There is no pools available", EditorStyles.popup);
-                return;
             }
-
-            ValidateProperty(property);
-
-            if(m_Dropdown == null)
+            else
             {
                 UpdateDropdown(property);
+
+                if(m_ManualEnabled)
+                {
+                    property.stringValue = EditorGUI.TextField(poolRect, property.stringValue);
+                }
+                else
+                {
+                    if(GUI.Button(poolRect, property.stringValue, EditorStyles.popup))
+                    {
+                        m_Dropdown.Show(poolRect);
+                    }
+                }
             }
 
+            poolRect.x += poolRect.width;
+            poolRect.width = 20;
 
-            if(GUI.Button(poolRect, property.stringValue, EditorStyles.popup))
-            {
-                m_Dropdown.Show(poolRect);
-            }
+            m_ManualEnabled = GUI.Toggle(poolRect, m_ManualEnabled, EditorGUIUtility.IconContent("d_editicon.sml"), "Button");
+
             EditorGUI.EndProperty();
             EditorGUI.EndChangeCheck();
         }
@@ -71,19 +82,6 @@ namespace VolumeBox.Toolbox.Editor
             {
                 m_SceneEntries = new string[0];
             }
-        }
-
-        private void ValidateProperty(SerializedProperty property)
-        {
-            if(property.stringValue.IsValuable())
-            {
-                if(m_PoolerEntries.Contains(property.stringValue) || m_SceneEntries.Contains(property.stringValue))
-                {
-                    return;
-                }
-            }
-
-            property.stringValue = m_PoolerEntries.Length > 0 ? m_PoolerEntries[0] : m_SceneEntries[0];
         }
 
         private void UpdateDropdown(SerializedProperty property)
