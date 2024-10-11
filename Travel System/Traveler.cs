@@ -183,6 +183,7 @@ namespace VolumeBox.Toolbox
 
             _currentUnloadingSceneOperation = null;
             await Resources.UnloadUnusedAssets();
+            _openedScenes.Remove(sceneToUnload);
             Messenger.Send(new SceneUnloadedMessage(sceneName));
         }
 
