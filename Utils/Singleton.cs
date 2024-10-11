@@ -58,6 +58,7 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
+            instance = null;
             destroyed = true;
         }
     }
@@ -127,6 +128,7 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
+            instance = null;
             destroyed = true;
         }
     }
@@ -151,6 +153,11 @@ namespace VolumeBox.Toolbox
                     return instance;
                 }
             }
+        }
+
+        public void ClearInstance()
+        {
+            instance = null;
         }
     }
 }
