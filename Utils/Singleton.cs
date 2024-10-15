@@ -74,7 +74,7 @@ namespace VolumeBox.Toolbox
         {
             get
             {
-                return FindObjectOfType<T>() != null;
+                return instance != null;
             }
             private set { }
         }
@@ -87,11 +87,6 @@ namespace VolumeBox.Toolbox
             }
             set
             {
-                if (value)
-                {
-                    destroyed = false;
-                }
-
                 reinstantiateIfDestroyed = value;
             }
         }

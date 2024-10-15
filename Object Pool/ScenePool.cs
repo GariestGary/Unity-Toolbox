@@ -34,7 +34,10 @@ namespace VolumeBox.Toolbox
 
         protected override void Destroyed()
         {
-            m_CurrentPools.ForEach(p => Pooler.TryRemovePool(p));
+            if(Pooler.HasInstance)
+            {
+                m_CurrentPools.ForEach(p => Pooler.TryRemovePool(p));
+            }
         }
     }
 }
