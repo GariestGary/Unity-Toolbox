@@ -305,11 +305,7 @@ namespace VolumeBox.Toolbox.Editor
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
-                if(!AudioPlayer.HasInstance)
-                {
-                    EditorUtility.DisplayDialog("AudioPlayer missing!", "AudioPlayer instance needed for clips preview doesn't exist among currently opened scenes. You can open MAIN scene from 'Toolbox/Open MAIN Scene' that already has AudioPlayer", "OK");
-                }
-                else
+                if(AudioPlayer.HasInstance)
                 {
                     if (clipValue != null)
                     {
@@ -318,6 +314,10 @@ namespace VolumeBox.Toolbox.Editor
                         AudioPlayer.Instance.DefaultAudioSource.volume = volume.floatValue;
                         AudioPlayer.Instance.DefaultAudioSource.PlayOneShot(clipValue);
                     }
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("AudioPlayer missing!", "AudioPlayer instance needed for clips preview doesn't exist among currently opened scenes. You can open MAIN scene from 'Toolbox/Open MAIN Scene' that already has AudioPlayer", "OK");
                 }
 
 

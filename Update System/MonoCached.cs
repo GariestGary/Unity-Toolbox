@@ -304,8 +304,6 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
-            if(!Updater.HasInstance) return;
-
             Updater.RemoveMonoFromUpdate(this);
 
             if (raised)
