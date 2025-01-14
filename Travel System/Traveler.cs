@@ -8,23 +8,23 @@ using UnityEngine.SceneManagement;
 
 namespace VolumeBox.Toolbox
 {
-    public class Traveler : ToolWrapper<Traveler>
+    public class Traveler : MonoBehaviour
     {
-        private static AsyncOperation _currentUnloadingSceneOperation;
-        private static AsyncOperation _currentLoadingSceneOperation;
-        private static List<OpenedScene> _openedScenes = new List<OpenedScene>();
+        private AsyncOperation _currentUnloadingSceneOperation;
+        private AsyncOperation _currentLoadingSceneOperation;
+        private List<OpenedScene> _openedScenes = new List<OpenedScene>();
 
-        protected override void Run()
+        private Messenger _Msg;
+        private Updater _Upd;
+        
+        public void Initialize(Messenger msg, Updater upd)
         {
+            _Msg = msg;
+            _Upd = upd;
             _openedScenes = new List<OpenedScene>();
-            Messenger.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args).Forget(), null, true);
-            Messenger.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName).Forget(), null, true);
-            Messenger.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes().Forget(), null, true);
-        }
-
-        protected override void Clear()
-        {
-            
+            _Msg.Subscribe<LoadSceneMessage>(m => LoadScene(m.SceneName, m.Args).Forget(), null, true);
+            _Msg.Subscribe<UnloadSceneMessage>(m => UnloadScene(m.SceneName).Forget(), null, true);
+            _Msg.Subscribe<UnloadAllScenesMessage>(_ => UnloadAllScenes().Forget(), null, true);
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace VolumeBox.Toolbox
         /// </summary>
         /// <typeparam name="T">Type of SceneHandler which located in necessary scene hierarchy</typeparam>
         /// <returns>Instance of an requested SceneHandler, or null if it doesn't exist</returns>
-        public static T TryGetSceneHandler<T>() where T: SceneHandlerBase
+        public T TryGetSceneHandler<T>() where T: SceneHandlerBase
         {
             OpenedScene scene = null;
 
@@ -60,7 +60,7 @@ namespace VolumeBox.Toolbox
         /// </summary>
         /// <typeparam name="T">Type of SceneHandlers which located in necessary scene hierarchy</typeparam>
         /// <returns>List of all requested SceneHandlers, or empty list if they doesn't exist</returns>
-        public static List<T> TryGetAllSceneHandlers<T>() where T: SceneHandlerBase
+        public List<T> TryGetAllSceneHandlers<T>() where T: SceneHandlerBase
         {
             List<T> openedScenes = new List<T>();
 
@@ -78,12 +78,12 @@ namespace VolumeBox.Toolbox
         /// <summary>
         /// Returns true if specified scene is opened in hierarchy
         /// </summary>
-        public static bool IsSceneOpened(string sceneName)
+        public bool IsSceneOpened(string sceneName)
         {
             return _openedScenes.Any(s => s.SceneDefinition.name == sceneName);
         }
 
-        public static async UniTask LoadScene(string sceneName, SceneArgs args = null)
+        public async UniTask LoadScene(string sceneName, SceneArgs args = null)
         {
             await LoadScene<SceneHandlerBase>(sceneName, args);
         }
@@ -96,7 +96,7 @@ namespace VolumeBox.Toolbox
         /// </remarks>
         /// <param name="sceneName">scene name other than empty string</param>
         /// <param name="args">custom scene arguments, null by default</param>
-        public static async UniTask<T> LoadScene<T>(string sceneName, SceneArgs args = null) where T: SceneHandlerBase
+        public async UniTask<T> LoadScene<T>(string sceneName, SceneArgs args = null) where T: SceneHandlerBase
         {
             if(!DoesSceneExist(sceneName))
             {
@@ -104,12 +104,12 @@ namespace VolumeBox.Toolbox
                 return null;
             }
 
-            Messenger.Send(new SceneLoadingMessage(sceneName));
+            _Msg.Send(new SceneLoadingMessage(sceneName));
             await WaitForLoadingOperationsEnd(sceneName);
             var loadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
             _currentLoadingSceneOperation = loadingOperation;
             await loadingOperation;
-            Messenger.Send(new SceneLoadedMessage(sceneName));
+            _Msg.Send(new SceneLoadedMessage(sceneName));
             Scene sceneDefinition = SceneManager.GetSceneByName(sceneName);
             await UniTask.DelayFrame(1);
             GameObject[] sceneObjects = sceneDefinition.GetRootGameObjects();
@@ -135,17 +135,17 @@ namespace VolumeBox.Toolbox
 
             if (handler != null)
             {
-                Updater.InitializeMono(handler);
+                _Upd.InitializeMono(handler);
                 handler.OnLoadCallback(args);
                 await handler.OnLoadCallbackAsync();
             }
 
             _openedScenes.Add(newOpenedScene);
-            Updater.InitializeObjects(sceneObjects);
+            _Upd.InitializeObjects(sceneObjects);
             _currentLoadingSceneOperation = null;
             //temp fix for situations when TryGetSceneHandler returns null after receiving SceneOpenedMessage
             await UniTask.DelayFrame(1);
-            Messenger.Send(new SceneOpenedMessage(sceneName));
+            _Msg.Send(new SceneOpenedMessage(sceneName));
             return handler as T;
         }
 
@@ -153,7 +153,7 @@ namespace VolumeBox.Toolbox
         /// Unloads scene if it loaded now. It's recommend to use it with async/await, to prevent errors while loading and unloading scenes at the same time.
         /// </summary>
         /// <param name="sceneName">scene name other than empty string</param>
-        public static async UniTask UnloadScene(string sceneName)
+        public async UniTask UnloadScene(string sceneName)
         {
             OpenedScene sceneToUnload = _openedScenes.FirstOrDefault(x => x.SceneDefinition.name == sceneName);
 
@@ -165,14 +165,14 @@ namespace VolumeBox.Toolbox
 
             await WaitForLoadingOperationsEnd(sceneName);
 
-            Messenger.Send(new SceneUnloadingMessage(sceneName));
+            _Msg.Send(new SceneUnloadingMessage(sceneName));
 
             if (sceneToUnload.Handler != null)
             {
                 sceneToUnload.Handler.OnUnloadCallback();
             }
 
-            Updater.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());
+            _Upd.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());
 
             _currentUnloadingSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
 
@@ -184,10 +184,10 @@ namespace VolumeBox.Toolbox
             _currentUnloadingSceneOperation = null;
             await Resources.UnloadUnusedAssets();
             _openedScenes.Remove(sceneToUnload);
-            Messenger.Send(new SceneUnloadedMessage(sceneName));
+            _Msg.Send(new SceneUnloadedMessage(sceneName));
         }
 
-        private static async UniTask WaitForLoadingOperationsEnd(string sceneName)
+        private async UniTask WaitForLoadingOperationsEnd(string sceneName)
         {
             if(!CanLoadSceneNow(sceneName))
             {
@@ -204,12 +204,12 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private static bool CanLoadSceneNow(string sceneName)
+        private bool CanLoadSceneNow(string sceneName)
         {
             return _currentUnloadingSceneOperation == null && _currentLoadingSceneOperation == null && !string.IsNullOrEmpty(sceneName);
         }
 
-        private static bool DoesSceneExist(string name)
+        private bool DoesSceneExist(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return false;
@@ -230,7 +230,7 @@ namespace VolumeBox.Toolbox
         /// <summary>
         /// Unloads all opened scenes except 'MAIN'
         /// </summary>
-        public static async UniTask UnloadAllScenes()
+        public async UniTask UnloadAllScenes()
         {
             var unloadings = new List<UniTask>();
 

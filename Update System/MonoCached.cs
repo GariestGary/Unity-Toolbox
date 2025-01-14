@@ -18,6 +18,7 @@ namespace VolumeBox.Toolbox
         protected float fixedDelta;
         protected float interval;
         private RectTransform rect;
+        private Updater _Updater;
         private bool pausedByActiveState = false;
         private bool pausedManual = false;
         private bool raised;
@@ -103,6 +104,17 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
+        /// <summary>
+        /// For internal use only!
+        /// </summary>
+        public void SetUpdater(Updater updater)
+        {
+            _Updater = updater;
+        }
+
+        /// <summary>
+        /// For internal use only!
+        /// </summary>
         public void ProcessInternal(int type, float delta)
         {
             if (type == 0)
@@ -304,9 +316,9 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
-            if(Updater.HasInstance)
+            if(_Updater != null)
             {
-                Updater.RemoveMonoFromUpdate(this);
+                _Updater.RemoveMonoFromUpdate(this);
             }
 
             if (raised)

@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
@@ -15,14 +17,8 @@ namespace VolumeBox.Toolbox.Tests
         {
             _PreviousAutoplayResolve = StaticData.Settings.AutoResolveScenesAtPlay;
             StaticData.Settings.AutoResolveScenesAtPlay = false;
-            var msg = Messenger.Instance;
-            var pool = Pooler.Instance;
-            var trvl = Traveler.Instance;
-            var upd = Updater.Instance;
-            upd.RunInternal();
-            msg.RunInternal();
-            pool.RunInternal();
-            trvl.RunInternal();
+            var container = Object.Instantiate(Resources.Load<GameObject>("Toolbox Container"));
+            container.GetComponent<ToolboxEntry>().InitializeComponents();
         }
     }
 }

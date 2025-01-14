@@ -1,0 +1,82 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+using UnityEngine;
+using Cysharp.Threading.Tasks;
+
+namespace VolumeBox.Toolbox
+{
+    public class ToolboxEntry : MonoBehaviour
+    {
+        [SerializeField] private bool _InitializeOnAwake;
+
+        private Messenger _Msg;
+        private Pooler _Pool;
+        private AudioPlayer _Audio;
+        private Traveler _Travel;
+        private Updater _Upd;
+        
+        private SettingsData m_Settings => StaticData.Settings;
+
+        private void Awake()
+        {
+            if (_InitializeOnAwake)
+            {
+                Init().Forget();
+            }
+        }
+
+        public async UniTask Init()
+        {
+#if UNITY_EDITOR
+            while (!EditorLoadUtils.EditorReady)
+            {
+                await UniTask.Yield();
+            }
+#endif
+            InitializeComponents();
+
+            if(StaticData.Settings.AutoResolveScenesAtPlay)
+            {
+                if (!string.IsNullOrEmpty(m_Settings.InitialSceneName) && m_Settings.InitialSceneName != "MAIN")
+                {
+                    await _Travel.LoadScene(m_Settings.InitialSceneName, m_Settings.InitialSceneArgs);
+                }
+            }
+
+            Application.targetFrameRate = m_Settings.TargetFrameRate;
+        }
+
+        public void InitializeComponents()
+        {
+            _Msg = GetComponent<Messenger>();
+            _Pool = GetComponent<Pooler>();
+            _Audio = GetComponent<AudioPlayer>();
+            _Travel = GetComponent<Traveler>();
+            _Upd = GetComponent<Updater>();
+            
+            _Pool.Initialize(_Msg, _Upd);
+            _Msg.Initialize(_Pool);
+            _Audio.Initialize(_Msg);
+            _Travel.Initialize(_Msg, _Upd);
+        }
+
+        public static void UpdateTargetFramerate(int value)
+        {
+            Application.targetFrameRate = value;
+        }
+
+        private void ClearAll()
+        {
+            _Pool.Clear();
+            _Msg.Clear();
+            _Upd.Clear();
+        }
+
+        private void OnApplicationQuit()
+        {
+            ClearAll();
+        }
+    }
+}

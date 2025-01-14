@@ -120,7 +120,7 @@ namespace VolumeBox.Toolbox.Editor
 
             if(oldFramerate != newFramerate)
             {
-                ENTRY.UpdateTargetFramerate(newFramerate);
+                ToolboxEntry.UpdateTargetFramerate(newFramerate);
             }
 
             GUILayout.EndHorizontal();

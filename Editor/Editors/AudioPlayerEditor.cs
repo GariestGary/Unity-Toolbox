@@ -305,14 +305,14 @@ namespace VolumeBox.Toolbox.Editor
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
-                if(AudioPlayer.HasInstance)
+                if(Toolbox.HasInstance)
                 {
                     if (clipValue != null)
                     {
-                        AudioPlayer.Instance.DefaultAudioSource.Stop();
-                        var prevVolume = AudioPlayer.Instance.DefaultAudioSource.volume;
-                        AudioPlayer.Instance.DefaultAudioSource.volume = volume.floatValue;
-                        AudioPlayer.Instance.DefaultAudioSource.PlayOneShot(clipValue);
+                        Toolbox.AudioPlayer.DefaultAudioSource.Stop();
+                        var prevVolume = Toolbox.AudioPlayer.DefaultAudioSource.volume;
+                        Toolbox.AudioPlayer.DefaultAudioSource.volume = volume.floatValue;
+                        Toolbox.AudioPlayer.DefaultAudioSource.PlayOneShot(clipValue);
                     }
                 }
                 else
