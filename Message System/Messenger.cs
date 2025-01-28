@@ -95,6 +95,22 @@ namespace VolumeBox.Toolbox
 			void Callback(object args) => next();
 		}
 
+		public Subscriber Subscribe(Type messageType, Action<Message> next, GameObject bind = null, bool keep = false)
+		{
+			var sub = new Subscriber(messageType, Callback, bind, keep);
+			subscribers.Add(sub);
+			return sub;
+			void Callback(Message args) => next(args);
+		}
+		
+		public Subscriber Subscribe(Type messageType, Action next, GameObject bind = null, bool keep = false)
+		{
+			var sub = new Subscriber(messageType, Callback, bind, keep);
+			subscribers.Add(sub);
+			return sub;
+			void Callback(Message args) => next();
+		}
+
 #if TOOLBOX_DEBUG
 		public bool Send<T>() where T : Message
 #else
