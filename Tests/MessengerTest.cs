@@ -20,6 +20,11 @@ namespace VolumeBox.Toolbox.Tests
             Toolbox.Messenger.Subscribe<MockMessage>(x => React(x.message));
             Toolbox.Messenger.Send<MockMessage>();
             Assert.AreEqual("Reacted", message);
+            message = "null";
+            Toolbox.Messenger.ClearSubscribers();
+            Toolbox.Messenger.Subscribe(typeof(MockMessage), x => React((x as MockMessage).message));
+            Toolbox.Messenger.Send<MockMessage>();
+            Assert.AreEqual("Reacted", message);
 
             yield return null;
         }
