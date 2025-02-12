@@ -140,6 +140,18 @@ namespace VolumeBox.Toolbox
             album?.source.Stop();
         }
 
+        public void PauseAudio(string source)
+        {
+            var album = GetAlbum(source);
+            
+            album?.source.Pause();
+        }
+
+        public void PauseAll()
+        {
+            _Data.Albums.ForEach(a => a.source.Pause());
+        }
+
         public void StopAll()
         {
             _Data.Albums.ForEach(a => a.source.Stop());
