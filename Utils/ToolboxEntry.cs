@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox
 {
     public class ToolboxEntry : MonoBehaviour
     {
-        [SerializeField] private bool _InitializeOnAwake;
+        [SerializeField] private bool _InitializeOnStart;
 
         private Messenger _Msg;
         private Pooler _Pool;
@@ -19,9 +19,9 @@ namespace VolumeBox.Toolbox
         
         private SettingsData m_Settings => StaticData.Settings;
 
-        private void Awake()
+        private void Start()
         {
-            if (_InitializeOnAwake)
+            if (_InitializeOnStart)
             {
                 Init().Forget();
             }

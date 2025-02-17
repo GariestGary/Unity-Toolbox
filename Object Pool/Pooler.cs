@@ -18,6 +18,8 @@ namespace VolumeBox.Toolbox
         private CancellationTokenSource m_GCTokenSource = new CancellationTokenSource();
         private Messenger _Msg;
         private Updater _Upd;
+        private Action<GameObject> _SpawnAction;
+        private Action<GameObject> _InstantiateAction;
         
         public void Initialize(Messenger msg, Updater upd)
         {
@@ -39,6 +41,16 @@ namespace VolumeBox.Toolbox
             _removeMessage = new GameObjectRemovedMessage();
 
             EnableGC();
+        }
+
+        public void SetSpawnAction(Action<GameObject> action)
+        {
+            _SpawnAction = action;
+        }
+        
+        public void SetInstantiateAction(Action<GameObject> action)
+        {
+            _InstantiateAction = action;
         }
         
         public void SetCustomRoot(Transform root)
@@ -272,6 +284,9 @@ namespace VolumeBox.Toolbox
             //Setting initial name
             objToSpawn.GameObject.name = poolToUse.referenceObject.name;
 
+            //Calling spawn action
+            _SpawnAction?.Invoke(objToSpawn.GameObject);
+            
             //Setting transform
             var t = objToSpawn.GameObject.transform;
             t.SetParent(parent);
@@ -341,6 +356,9 @@ namespace VolumeBox.Toolbox
         {
             GameObject inst = Instantiate(prefab, position, rotation, parent);
 
+            //Calling instantiate action
+            _InstantiateAction?.Invoke(inst);
+            
             _Upd.InitializeObject(inst);
 
             return inst;
