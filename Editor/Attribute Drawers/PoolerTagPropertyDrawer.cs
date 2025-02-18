@@ -33,7 +33,7 @@ namespace VolumeBox.Toolbox.Editor
             poolRect.width -= labelRect.width + 20;
             bool hasPools = m_PoolerEntries.Length > 0 || m_SceneEntries.Length > 0;
             
-            if(hasPools && !m_ManualEnabled && !property.stringValue.IsValuable())
+            if(!hasPools && !m_ManualEnabled && !property.stringValue.IsValuable())
             {
                 EditorGUI.LabelField(poolRect, "There is no pools available", EditorStyles.popup);
             }
