@@ -8,9 +8,24 @@ namespace VolumeBox.Toolbox
     /// </summary>
     public class CoroutineStarter : MonoSingleton<CoroutineStarter>
     {
-        public static Coroutine Start(IEnumerator coroutine)
+        public static Coroutine Invoke(IEnumerator coroutine)
         {
             return Instance.StartCoroutine(coroutine);
+        }
+
+        public static Coroutine Invoke(string methodName)
+        {
+            return Instance.StartCoroutine(methodName);
+        }
+
+        public static void Stop(IEnumerator coroutine)
+        {
+            Instance.StopCoroutine(coroutine);
+        }
+
+        public static void Stop(string methodName)
+        {
+            Instance.StopCoroutine(methodName);
         }
     }
 }

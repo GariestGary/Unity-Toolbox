@@ -12,6 +12,7 @@ namespace VolumeBox.Toolbox
         [SerializeField] private AudioSource defaultAudioSource;
 
         private AudioPlayerDataHolder _Data;
+        private List<AudioAlbumController> _AlbumControllers = new();
         
         public AudioSource DefaultAudioSource => defaultAudioSource;
 
@@ -25,6 +26,9 @@ namespace VolumeBox.Toolbox
             
             foreach (var album in _Data.Albums)
             {
+                var controller = new AudioAlbumController(album);
+                _AlbumControllers.Add(controller);
+                
                 if(album.useSeparateSource)
                 {
                     var newSourceObj = new GameObject($"{album.albumName} Audio Source");
@@ -36,6 +40,8 @@ namespace VolumeBox.Toolbox
                 {
                     album.source = defaultAudioSource;
                 }
+                
+                
             }
         }
 
@@ -46,23 +52,15 @@ namespace VolumeBox.Toolbox
 
         public void Play(string source, string id, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
-            var album = GetAlbum(source);
+            var controller = GetAlbumController(source);
 
-            if(album == null)
+            if(controller == null)
             {
                 Debug.LogWarning($"Album named '{source}' not found");
                 return;
             }
             
-            var clipInfo = GetClip(album.clips, id);
-
-            if (clipInfo == null)
-            {
-                Debug.LogWarning($"Clip named '{id}' not found");
-                return;
-            }
-
-            Play(source, clipInfo.clip, volume < 0 ? clipInfo.volume : volume, pitch, loop, playType);
+            controller.Play(id, volume, pitch, loop, playType);
         }
 
         public void PlayFormatted(string formattedId, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
@@ -85,14 +83,14 @@ namespace VolumeBox.Toolbox
 
         public void Play(string source, AudioClip clip, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
-            var album = GetAlbum(source);
+            var controller = GetAlbumController(source);
             
-            if (album == null || clip == null) return;
+            if (controller == null || clip == null) return;
 
-            Play(album.source, clip, volume, pitch, loop, playType);
+            controller.Play(clip, volume, pitch, loop, playType);
         }
 
-        public void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public static void Play(AudioSource source, AudioClip clip, float volume = 1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             if (source == null || clip == null)
             {
@@ -110,6 +108,10 @@ namespace VolumeBox.Toolbox
                     source.Stop();
                     source.Play();
                     break;
+                
+                case PlayType.PLAY_DEFAULT:
+                    source.Play();
+                    break;
 
                 case PlayType.ONE_SHOT:
                     source.PlayOneShot(clip, volume);
@@ -120,11 +122,9 @@ namespace VolumeBox.Toolbox
                     {
                         return;
                     }
-                    else
-                    {
-                        source.Stop();
-                        source.Play();
-                    }
+
+                    source.Stop();
+                    source.Play();
                     break;
 
                 default:
@@ -135,16 +135,16 @@ namespace VolumeBox.Toolbox
 
         public void StopAudio(string source)
         {
-            var album = GetAlbum(source);
+            var controller = GetAlbumController(source);
 
-            album?.source.Stop();
+            controller?.Stop();
         }
 
         public void PauseAudio(string source)
         {
-            var album = GetAlbum(source);
-            
-            album?.source.Pause();
+            var controller = GetAlbumController(source);
+
+            controller?.Pause();
         }
 
         public void PauseAll()
@@ -157,9 +157,9 @@ namespace VolumeBox.Toolbox
             _Data.Albums.ForEach(a => a.source.Stop());
         }
 
-        private AudioAlbum GetAlbum(string albumName)
+        private AudioAlbumController GetAlbumController(string albumName)
         {
-            return _Data.Albums.All(x => x.albumName != albumName) ? null : _Data.Albums.FirstOrDefault(a => a.albumName == albumName);
+            return _AlbumControllers.FirstOrDefault(a => a.Album.albumName == albumName);
         }
 
         private AudioClipInfo GetClip(List<AudioClipInfo> list, string id)
@@ -191,15 +191,15 @@ namespace VolumeBox.Toolbox
 
         public void AddClipToAlbum(string clipID, string albumName, AudioClip clip)
         {
-            var album = GetAlbum(albumName);
+            var controller = GetAlbumController(albumName);
 
-            if (album == null)
+            if (controller == null)
             {
                 Debug.LogError($"There is no album named {albumName} to add {clipID}");
                 return;
             }
             
-            album.clips.Add(new AudioClipInfo()
+            controller.AddClip(new AudioClipInfo()
             {
                 clip = clip, id =  clipID
             });
@@ -221,7 +221,9 @@ namespace VolumeBox.Toolbox
     {
         STOP_THEN_PLAY,
         ONE_SHOT,
-        NO_INTERRUPT
+        NO_INTERRUPT,
+        PLAY_DEFAULT,
+        NONE,
     }
     
     [Serializable]
