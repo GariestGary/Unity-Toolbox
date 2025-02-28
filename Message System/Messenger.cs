@@ -186,11 +186,6 @@ namespace VolumeBox.Toolbox
 					receiver.Callback.Invoke(message);
 				}
 			}
-			
-			foreach (var receiver in receivers)
-			{
-				
-			}
         }
 
 		public int ClearMessageCache()

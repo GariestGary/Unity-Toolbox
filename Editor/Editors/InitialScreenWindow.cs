@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox.Editor
         [SerializeField] private Sprite m_Logo;
 
         private const int WindowWidth = 480;
-        private const int WindowHeight = 420;
+        private const int WindowHeight = 440;
 
         private static Texture2D m_HeaderTex;
 
@@ -53,8 +53,10 @@ namespace VolumeBox.Toolbox.Editor
                 m_HeaderTex = m_Logo.texture;
             }
 
-            Rect headerRect = GUILayoutUtility.GetRect(480, 137.14f);
-            GUI.DrawTexture(headerRect, m_HeaderTex);
+            GUILayout.Space(10);
+            Rect headerRect = GUILayoutUtility.GetRect(480, 140);
+            GUI.DrawTexture(headerRect, m_HeaderTex, ScaleMode.ScaleToFit);
+            GUILayout.Space(10);
 
             var buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.fontSize = 20;
