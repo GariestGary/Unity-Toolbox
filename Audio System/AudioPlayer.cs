@@ -40,8 +40,6 @@ namespace VolumeBox.Toolbox
                 {
                     album.source = defaultAudioSource;
                 }
-                
-                
             }
         }
 
@@ -50,35 +48,48 @@ namespace VolumeBox.Toolbox
             _Data.Albums.ForEach(a => a.source = null);
         }
 
-        public void Play(string source, string id, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public AudioAlbumController Play(string source, string id, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
         {
             var controller = GetAlbumController(source);
 
             if(controller == null)
             {
                 Debug.LogWarning($"Album named '{source}' not found");
-                return;
+                return null;
             }
             
             controller.Play(id, volume, pitch, loop, playType);
+            return controller;
         }
 
-        public void PlayFormatted(string formattedId, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        public AudioAlbumController PlayFormatted(string formattedId, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
+        {
+            var clipInfo = TryParseClipId(formattedId);
+
+            if (clipInfo == null)
+            {
+                return null;
+            }
+
+            return Play(clipInfo.Value.album, clipInfo.Value.clip, volume, pitch, loop, playType);
+        }
+
+        public static (string album, string clip)? TryParseClipId(string formattedId)
         {
             if (string.IsNullOrEmpty(formattedId))
             {
-                return;
+                return null;
             }
             
             var split = formattedId.Split('/');
-
+            
             if(split == null || split.Length < 2)
             {
                 Debug.LogWarning($"Invalid formatted string {formattedId} in Audio Player. Make sure you separated album and clip id with \"\\\" symbol");
-                return;
+                return null;
             }
-
-            Play(split[0], split[1], volume, pitch, loop, playType);
+            
+            return (split[0], split[1]);
         }
 
         public void Play(string source, AudioClip clip, float volume = -1, float pitch = 1, bool loop = false, PlayType playType = PlayType.ONE_SHOT)
@@ -149,36 +160,30 @@ namespace VolumeBox.Toolbox
 
         public void PauseAll()
         {
-            _Data.Albums.ForEach(a => a.source.Pause());
+            _AlbumControllers.ForEach(c => c.Pause());
         }
 
         public void StopAll()
         {
-            _Data.Albums.ForEach(a => a.source.Stop());
+            _AlbumControllers.ForEach(c => c.Stop());
         }
 
-        private AudioAlbumController GetAlbumController(string albumName)
+        public AudioAlbumController GetAlbumController(string albumName)
         {
-            return _AlbumControllers.FirstOrDefault(a => a.Album.albumName == albumName);
+            return _AlbumControllers.FirstOrDefault(a => a.AlbumName == albumName);
         }
 
-        private AudioClipInfo GetClip(List<AudioClipInfo> list, string id)
-        {
-            var clips = list.Where(x => x.id == id).ToArray();
-
-            return clips.Length switch
-            {
-                0 => null,
-                1 => clips[0],
-                _ => clips[UnityEngine.Random.Range(0, clips.Length)]
-            };
-        }
-
+        /// <summary>
+        /// Adds album. Not recommended to use it in playmode
+        /// </summary>
         public void AddAlbum(AudioAlbum album)
         {
             _Data.Albums.Add(album);
         }
 
+        /// <summary>
+        /// Adds album. Not recommended to use it in playmode
+        /// </summary>
         public void AddAlbum(string albumName, AudioSource defaultSource, AudioMixerGroup mixerGroup = null, AudioSource source = null)
         {
             _Data.Albums.Add(new AudioAlbum()
@@ -205,6 +210,9 @@ namespace VolumeBox.Toolbox
             });
         }
 
+        /// <summary>
+        /// Removes album. Not recommended to use it in playmode
+        /// </summary>
         public bool TryRemoveAlbum(AudioAlbum album)
         {
             if(_Data.Albums.Contains(album))
