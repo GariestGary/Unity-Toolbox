@@ -10,6 +10,7 @@ namespace VolumeBox.Toolbox
     public class Pooler: MonoBehaviour, IClear
     {
         [SerializeField] private Transform _PredefinedRoot;
+        [SerializeField] private bool _UseDefaultInstantiating = true;
 
         private PoolerDataHolder _Data;
         private Transform objectPoolParent;
@@ -19,13 +20,19 @@ namespace VolumeBox.Toolbox
         private Messenger _Msg;
         private Updater _Upd;
         private Action<GameObject> _SpawnAction;
-        private Action<GameObject> _InstantiateAction;
+        private Action<GameObject> _PostInstantiateAction;
+        private Func<GameObject, Vector3, Quaternion, Transform, GameObject> _InstantiateFunc;
         
         public void Initialize(Messenger msg, Updater upd)
         {
             _Upd = upd;
             _Msg = msg;
             _Data = ResourcesUtils.ResolveScriptable<PoolerDataHolder>(SettingsData.poolerResourcesDataPath);
+
+            if (_UseDefaultInstantiating)
+            {
+                _InstantiateFunc = InstantiateDefault;
+            }
             
             SetCustomRoot(_PredefinedRoot);
 
@@ -43,14 +50,19 @@ namespace VolumeBox.Toolbox
             EnableGC();
         }
 
+        public void SetInstantiateFunc(Func<GameObject, Vector3, Quaternion, Transform, GameObject> instantiateFunc)
+        {
+            _InstantiateFunc = instantiateFunc;
+        }
+
         public void SetSpawnAction(Action<GameObject> action)
         {
             _SpawnAction = action;
         }
         
-        public void SetInstantiateAction(Action<GameObject> action)
+        public void SetPostInstantiateAction(Action<GameObject> action)
         {
-            _InstantiateAction = action;
+            _PostInstantiateAction = action;
         }
         
         public void SetCustomRoot(Transform root)
@@ -354,14 +366,19 @@ namespace VolumeBox.Toolbox
         /// <returns>Instantiated GameObject</returns>
         public GameObject Create(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
-            GameObject inst = Instantiate(prefab, position, rotation, parent);
+            GameObject inst = _InstantiateFunc.Invoke(prefab, position, rotation, parent);
 
             //Calling instantiate action
-            _InstantiateAction?.Invoke(inst);
+            _PostInstantiateAction?.Invoke(inst);
             
             _Upd.InitializeObject(inst);
 
             return inst;
+        }
+
+        private GameObject InstantiateDefault(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+        {
+            return Instantiate(prefab, position, rotation, parent);
         }
         
         /// <summary>
