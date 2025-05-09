@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,8 +36,47 @@ namespace VolumeBox.Toolbox
         public float Delta => _InternalDelta;
 
         private List<MonoCached> _RunningMonos = new List<MonoCached>();
+        private List<Action<float>> _CustomTicks = new List<Action<float>>();
+        private List<Action<float>> _CustomFixedTicks = new List<Action<float>>();
+        private List<Action<float>> _CustomLateTicks = new List<Action<float>>();
 
+        #region Custom Processes
 
+        public void AddCustomTick(Action<float> tick)
+        {
+            _CustomTicks.Add(tick);
+        }
+
+        public void AddCustomFixedTick(Action<float> tick)
+        {
+            _CustomFixedTicks.Add(tick);
+        }
+
+        public void AddCustomLateTick(Action<float> tick)
+        {
+            _CustomLateTicks.Add(tick);
+        }
+
+        public void RemoveCustomTick(Action<float> tick)
+        {
+            _CustomTicks.Remove(tick);
+        }
+
+        public void RemoveCustomFixedTick(Action<float> tick)
+        {
+            _CustomFixedTicks.Remove(tick);
+        }
+
+        public void RemoveCustomLateTick(Action<float> tick)
+        {
+            if (_CustomLateTicks.Contains(tick))
+            {
+                _CustomLateTicks.Remove(tick);
+            }
+        }
+
+        #endregion
+        
         /// <summary>
         /// Invokes Rise and Ready on given GameObjects, and then adds them to process
         /// </summary>
@@ -60,7 +100,6 @@ namespace VolumeBox.Toolbox
                     continue;
                 }
 
-                mono.SetUpdater(this);
                 InvokeRise(mono);
             }
 
@@ -128,7 +167,6 @@ namespace VolumeBox.Toolbox
                     continue;
                 }
 
-                mono.SetUpdater(this);
                 InvokeRise(mono);
             }
 
@@ -164,7 +202,6 @@ namespace VolumeBox.Toolbox
         {
             if (mono == null && !_RunningMonos.Contains(mono)) return;
 
-            mono.SetUpdater(this);
             InvokeRise(mono);
             InvokeReady(mono);
             _RunningMonos.Add(mono);
@@ -184,12 +221,12 @@ namespace VolumeBox.Toolbox
         
         private void InvokeRise(MonoCached mono)
         {
-            mono.ProcessInternal(3, 0);
+            mono.OnRise();
         }
 
         private void InvokeReady(MonoCached mono)
         {
-            mono.ProcessInternal(4, 0);
+            mono.OnReady();
         }
 
         #region Updates
@@ -200,7 +237,12 @@ namespace VolumeBox.Toolbox
             for (int i = 0; i < _RunningMonos.Count; i++)
             {
                 var deltaToUse = _RunningMonos[i].IgnoreTimeScale ? Time.deltaTime : _InternalDelta;
-                _RunningMonos[i].ProcessInternal(0, deltaToUse);
+                _RunningMonos[i].ProcessControl(deltaToUse);
+            }
+
+            foreach (var tick in _CustomTicks)
+            {
+                tick?.Invoke(_InternalDelta);
             }
         }
 
@@ -211,7 +253,12 @@ namespace VolumeBox.Toolbox
             for (int i = 0; i < _RunningMonos.Count; i++)
             {
                 var deltaToUse = _RunningMonos[i].IgnoreTimeScale ? Time.fixedDeltaTime : fixedDelta;
-                _RunningMonos[i].ProcessInternal(1, deltaToUse);
+                _RunningMonos[i].FixedProcessControl(deltaToUse);
+            }
+
+            foreach (var fixedTick in _CustomFixedTicks)
+            {
+                fixedTick?.Invoke(fixedDelta);
             }
         }
 
@@ -220,7 +267,12 @@ namespace VolumeBox.Toolbox
             for (int i = 0; i < _RunningMonos.Count; i++)
             {
                 var deltaToUse = _RunningMonos[i].IgnoreTimeScale ? Time.deltaTime : _InternalDelta;
-                _RunningMonos[i].ProcessInternal(2, deltaToUse);
+                _RunningMonos[i].LateProcessControl(deltaToUse);
+            }
+
+            foreach (var lateTick in _CustomLateTicks)
+            {
+                lateTick?.Invoke(_InternalDelta);
             }
         }
         #endregion

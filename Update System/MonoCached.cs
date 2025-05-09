@@ -18,7 +18,6 @@ namespace VolumeBox.Toolbox
         protected float fixedDelta;
         protected float interval;
         private RectTransform rect;
-        private Updater _Updater;
         private bool pausedByActiveState = false;
         private bool pausedManual = false;
         private bool raised;
@@ -85,8 +84,8 @@ namespace VolumeBox.Toolbox
             private set { }
         }
         #endregion
-
-        private void OnRise()
+        
+        internal void OnRise()
         {
             if (raised) return;
 
@@ -95,7 +94,7 @@ namespace VolumeBox.Toolbox
             raised = true;
         }
 
-        private void OnReady()
+        internal void OnReady()
         {
             if (ready) return;
 
@@ -104,42 +103,7 @@ namespace VolumeBox.Toolbox
             ready = true;
         }
 
-        /// <summary>
-        /// For internal use only!
-        /// </summary>
-        public void SetUpdater(Updater updater)
-        {
-            _Updater = updater;
-        }
-
-        /// <summary>
-        /// For internal use only!
-        /// </summary>
-        public void ProcessInternal(int type, float delta)
-        {
-            if (type == 0)
-            {
-                ProcessControl(delta);
-            }
-            else if(type == 1)
-            {
-                FixedProcessControl(delta);
-            }
-            else if(type == 2)
-            {
-                LateProcessControl(delta);
-            }
-            else if(type == 3)
-            {
-                OnRise();
-            }
-            else if(type == 4)
-            {
-                OnReady();
-            }
-        }
-
-        private void ProcessControl(float extDelta)
+        internal void ProcessControl(float extDelta)
         {
             if (Interval > 0)
             {
@@ -158,7 +122,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private void FixedProcessControl(float extFixedDelta)
+        internal void FixedProcessControl(float extFixedDelta)
         {
             if (Interval > 0)
             {
@@ -175,7 +139,7 @@ namespace VolumeBox.Toolbox
             }
         }
 
-        private void LateProcessControl(float extDelta)
+        internal void LateProcessControl(float extDelta)
         {
             if (Interval > 0)
             {
@@ -316,9 +280,9 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
-            if(_Updater != null)
+            if(Toolbox.Updater != null)
             {
-                _Updater.RemoveMonoFromUpdate(this);
+                Toolbox.Updater.RemoveMonoFromUpdate(this);
             }
 
             if (raised)
