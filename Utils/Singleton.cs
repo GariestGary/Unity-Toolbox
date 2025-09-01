@@ -87,6 +87,7 @@ namespace VolumeBox.Toolbox
         private static object lockObject = new object();
         private static bool destroyed = false;
         private static bool reinstantiateIfDestroyed = true;
+        private static bool initialized;
 
         public static bool HasInstance => instance != null && Application.isPlaying;
 
@@ -124,6 +125,9 @@ namespace VolumeBox.Toolbox
                             destroyed = false;
                             instance = singleton.AddComponent<T>();
                         }
+                        
+                        Application.quitting += ClearInstance;
+                        initialized = true;
                     }
                     
                     return instance;
@@ -136,10 +140,20 @@ namespace VolumeBox.Toolbox
             DontDestroyOnLoad(instance.gameObject);
         }
 
-        private void OnDestroy()
+        private static void ClearInstance()
         {
+            Application.quitting -= ClearInstance;
             instance = null;
             destroyed = true;
+            initialized = false;
+        }
+        
+        private void OnDestroy()
+        {
+            if (initialized)
+            {
+                ClearInstance();
+            }
         }
     }
 
