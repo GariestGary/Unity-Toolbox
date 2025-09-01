@@ -11,38 +11,53 @@ namespace VolumeBox.Toolbox.Tests
 {
     internal class TravelerTests
     {
+        public static string compare = "null";
+
+        private const string TestOneScene = "Test1";
+        private const string TestTwoScene = "Test2";
+        
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator SceneManagementTest()
         {
-            var test1 = "Test1";
-            var test2 = "Test2";
+            yield return Toolbox.Traveler.LoadScene(TestOneScene).ToCoroutine();
             
-            yield return Toolbox.Traveler.LoadScene(test1).ToCoroutine();
-            
-            Assert.AreEqual(true, Toolbox.Traveler.IsSceneOpened(test1));
-            Assert.AreEqual(true, SceneManager.GetSceneByName(test1).isLoaded);
+            Assert.AreEqual(true, Toolbox.Traveler.IsSceneOpened(TestOneScene));
+            Assert.AreEqual(true, SceneManager.GetSceneByName(TestOneScene).isLoaded);
 
 
-            yield return Toolbox.Traveler.UnloadScene(test1).ToCoroutine();
+            yield return Toolbox.Traveler.UnloadScene(TestOneScene).ToCoroutine();
 
-            Assert.AreEqual(false, SceneManager.GetSceneByName(test1).isLoaded);
-            Assert.AreEqual(false, Toolbox.Traveler.IsSceneOpened(test1));
+            Assert.AreEqual(false, SceneManager.GetSceneByName(TestOneScene).isLoaded);
+            Assert.AreEqual(false, Toolbox.Traveler.IsSceneOpened(TestOneScene));
 
             var list = new List<UniTask>
             {
-                Toolbox.Traveler.LoadScene(test1),
-                Toolbox.Traveler.LoadScene(test2),
-                Toolbox.Traveler.UnloadScene(test1),
-                Toolbox.Traveler.UnloadScene(test2)
+                Toolbox.Traveler.LoadScene(TestOneScene),
+                Toolbox.Traveler.LoadScene(TestTwoScene),
+                Toolbox.Traveler.UnloadScene(TestOneScene),
+                Toolbox.Traveler.UnloadScene(TestTwoScene)
             };
 
             yield return UniTask.WhenAll(list).ToCoroutine();
 
-            Assert.AreEqual(true, SceneManager.GetSceneByName(test1).isLoaded);
-            Assert.AreEqual(true, Toolbox.Traveler.IsSceneOpened(test1));
-            Assert.AreEqual(true, SceneManager.GetSceneByName(test2).isLoaded);
-            Assert.AreEqual(true, Toolbox.Traveler.IsSceneOpened(test2));
+            Assert.AreEqual(true, SceneManager.GetSceneByName(TestOneScene).isLoaded);
+            Assert.AreEqual(true, Toolbox.Traveler.IsSceneOpened(TestOneScene));
+            Assert.AreEqual(true, SceneManager.GetSceneByName(TestTwoScene).isLoaded);
+            Assert.AreEqual(true, Toolbox.Traveler.IsSceneOpened(TestTwoScene));
 
+            yield return null;
+        }
+
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+        public IEnumerator SceneSetupUnloadTest()
+        {
+            var args = ScriptableObject.CreateInstance<TestSceneArgs>();
+            args.TestString = "loaded";
+            yield return Toolbox.Traveler.LoadScene(TestOneScene, args).ToCoroutine();
+            Assert.AreEqual("loaded", compare);
+            yield return Toolbox.Traveler.UnloadScene(TestOneScene).ToCoroutine();
+            Assert.AreEqual("unloaded", compare);
+            
             yield return null;
         }
     }

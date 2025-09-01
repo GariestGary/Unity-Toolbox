@@ -136,8 +136,7 @@ namespace VolumeBox.Toolbox
             if (handler != null)
             {
                 _Upd.InitializeMono(handler);
-                handler.OnLoadCallback(args);
-                await handler.OnLoadCallbackAsync();
+                await handler.OnLoadCallbackAsync(args);
             }
 
             _openedScenes.Add(newOpenedScene);
@@ -169,7 +168,7 @@ namespace VolumeBox.Toolbox
 
             if (sceneToUnload.Handler != null)
             {
-                sceneToUnload.Handler.OnUnloadCallback();
+                await sceneToUnload.Handler.OnUnloadCallbackAsync();
             }
 
             _Upd.RemoveObjectsFromUpdate(sceneToUnload.SceneDefinition.GetRootGameObjects());
