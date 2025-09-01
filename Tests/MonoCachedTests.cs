@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class MonoCachedTests
+    internal class MonoCachedTests
     {
         [UnityTest]
         public IEnumerator MonoCachedActiveStateProcessTest()

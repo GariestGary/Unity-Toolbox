@@ -567,11 +567,20 @@ namespace VolumeBox.Toolbox
                 {
                     var inter = interfaces[j];
 
-                    if (inter.GetInterface("IPooledBase") != null)
+                    if (inter.GetInterface(nameof(IPooledBase)) != null)
                     {
-                        var generic = inter.GetGenericArguments()[0];
+                        var generics = inter.GetGenericArguments();
                         var onSpawnMethod = inter.GetMethod("OnSpawn");
-                        onSpawnMethod.Invoke(mono, new object[] { Convert.ChangeType(data, generic) });
+
+                        if (generics.Length > 0)
+                        {
+                            var generic = generics[0];
+                            onSpawnMethod?.Invoke(mono, new[] { Convert.ChangeType(data, generic) });
+                        }
+                        else
+                        {
+                            onSpawnMethod?.Invoke(mono, new object[]{});
+                        }
                     }
                 }
             }

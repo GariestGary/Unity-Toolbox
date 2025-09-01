@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class MessengerTest
+    internal class MessengerTest
     {
         private string message;
 

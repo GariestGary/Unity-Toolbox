@@ -280,7 +280,7 @@ namespace VolumeBox.Toolbox
 
         private void OnDestroy()
         {
-            if(Toolbox.Updater != null)
+            if(Toolbox.HasInstance)
             {
                 Toolbox.Updater.RemoveMonoFromUpdate(this);
             }

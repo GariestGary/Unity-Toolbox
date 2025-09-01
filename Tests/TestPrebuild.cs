@@ -4,7 +4,7 @@ using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class TestPrebuild: IPrebuildSetup, IPostBuildCleanup
+    internal class TestPrebuild: IPrebuildSetup, IPostBuildCleanup
     {
         private bool _PreviousAutoplayResolve;
 

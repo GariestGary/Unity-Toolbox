@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class PoolerTests
+    internal class PoolerTests
     {
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator PoolerSpawnObjectTest()
@@ -26,6 +26,30 @@ namespace VolumeBox.Toolbox.Tests
                 true,
                 test == obj
             );
+
+            yield return null;
+        }
+
+        [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
+        public IEnumerator SpawnMethodCallTest()
+        {
+            GameObject defaultObj = new GameObject("Default Object");
+            var defaultComp = defaultObj.AddComponent<PooledDefaultObj>();
+            defaultComp.compare = "null";
+            Toolbox.Pooler.TryAddPool("Default", defaultObj, 3);
+            
+            GameObject genericObj = new GameObject("Generic Object");
+            var genericComp = genericObj.AddComponent<PooledGenericObj>();
+            genericComp.compare = "null";
+            Toolbox.Pooler.TryAddPool("Generic", genericObj, 3);
+
+            var testData = new TestData();
+            testData.TestString = "data";
+            var genericSpawned = Toolbox.Pooler.Spawn<PooledGenericObj>("Generic", testData);
+            var defaultSpawned = Toolbox.Pooler.Spawn<PooledDefaultObj>("Default");
+            
+            Assert.AreEqual("data", genericSpawned.compare);
+            Assert.AreEqual("data", defaultSpawned.compare);
 
             yield return null;
         }

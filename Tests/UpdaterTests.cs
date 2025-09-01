@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class UpdaterTests
+    internal class UpdaterTests
     {
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator TimeScaleTest()

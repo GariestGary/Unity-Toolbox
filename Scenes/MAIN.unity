@@ -158,10 +158,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 755302140394858891, guid: 453c3077094721f47b24314fbb91a957, type: 3}
-      propertyPath: _InitializeOnStart
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2604474858067515120, guid: 453c3077094721f47b24314fbb91a957, type: 3}
       propertyPath: audioSourcesRoot
       value: 
@@ -178,6 +174,10 @@ PrefabInstance:
       propertyPath: _PredefinedRoot
       value: 
       objectReference: {fileID: 146890090}
+    - target: {fileID: 6397348277671396579, guid: 453c3077094721f47b24314fbb91a957, type: 3}
+      propertyPath: _UseDefaultInstantiating
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7919333737574102886, guid: 453c3077094721f47b24314fbb91a957, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

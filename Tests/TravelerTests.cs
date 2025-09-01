@@ -9,7 +9,7 @@ using VolumeBox.Toolbox;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class TravelerTests
+    internal class TravelerTests
     {
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator SceneManagementTest()

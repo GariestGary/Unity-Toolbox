@@ -8,8 +8,9 @@ namespace VolumeBox.Toolbox
         private static object lockObject = new object();
         private static bool destroyed = false;
         private static bool reinstantiateIfDestroyed = true;
+        private static bool initialized = false;
 
-        public static bool HasInstance => instance != null;
+        public static bool HasInstance => initialized && instance != null;
         public static bool ReinstantiateIfDestroyed
         {
             get
@@ -37,7 +38,11 @@ namespace VolumeBox.Toolbox
                 {
                     if (instance == null)
                     {
+                        #if UNITY_6000_0_OR_NEWER
+                        instance = FindFirstObjectByType<T>();
+                        #else
                         instance = FindObjectOfType<T>();
+                        #endif
 
                         if (instance == null)
                         {
@@ -45,6 +50,9 @@ namespace VolumeBox.Toolbox
                             destroyed = false;
                             instance = singleton.AddComponent<T>();
                         }
+
+                        Application.quitting += ClearInstance;
+                        initialized = true;
                     }
                     return instance;
                 }
@@ -53,13 +61,23 @@ namespace VolumeBox.Toolbox
 
         public static void DontDestroy()
         {
-            DontDestroyOnLoad(Instance.gameObject);
+            DontDestroyOnLoad(instance.gameObject);
         }
 
-        private void OnDestroy()
+        private static void ClearInstance()
         {
+            Application.quitting -= ClearInstance;
             instance = null;
             destroyed = true;
+            initialized = false;
+        }
+        
+        private void OnDestroy()
+        {
+            if (initialized)
+            {
+                ClearInstance();
+            }
         }
     }
 
@@ -70,14 +88,7 @@ namespace VolumeBox.Toolbox
         private static bool destroyed = false;
         private static bool reinstantiateIfDestroyed = true;
 
-        public static bool HasInstance
-        {
-            get
-            {
-                return instance != null;
-            }
-            private set { }
-        }
+        public static bool HasInstance => instance != null && Application.isPlaying;
 
         public static bool ReinstantiateIfDestroyed
         {
@@ -101,7 +112,11 @@ namespace VolumeBox.Toolbox
                 {
                     if (instance == null)
                     {
+#if UNITY_6000_0_OR_NEWER
+                        instance = FindFirstObjectByType<T>();
+#else
                         instance = FindObjectOfType<T>();
+#endif
 
                         if (instance == null)
                         {
@@ -118,7 +133,7 @@ namespace VolumeBox.Toolbox
 
         public static void DontDestroy()
         {
-            DontDestroyOnLoad(Instance.gameObject);
+            DontDestroyOnLoad(instance.gameObject);
         }
 
         private void OnDestroy()
@@ -128,12 +143,12 @@ namespace VolumeBox.Toolbox
         }
     }
 
-    public class Singleton<T> where T: class
+    public class Singleton<T> where T: class, new()
     {
         private static T instance;
         private static object lockObject = new object();
 
-        public static bool HasInstance => instance != null;
+        public static bool HasInstance => instance != null && Application.isPlaying;
 
         public static T Instance
         {
@@ -143,7 +158,7 @@ namespace VolumeBox.Toolbox
                 {
                     if (instance == null)
                     {
-                        instance = default(T);
+                        instance = new T();
                     }
                     return instance;
                 }
