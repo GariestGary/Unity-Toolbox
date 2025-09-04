@@ -29,12 +29,7 @@ namespace VolumeBox.Toolbox
 
         public async UniTask Init()
         {
-#if UNITY_EDITOR
-            while (!EditorLoadUtils.EditorReady)
-            {
-                await UniTask.Yield();
-            }
-#endif
+            Application.targetFrameRate = m_Settings.TargetFrameRate;
             InitializeComponents();
 
             if(StaticData.Settings.AutoResolveScenesAtPlay)
@@ -44,8 +39,6 @@ namespace VolumeBox.Toolbox
                     await _Travel.LoadScene(m_Settings.InitialSceneName, m_Settings.InitialSceneArgs);
                 }
             }
-
-            Application.targetFrameRate = m_Settings.TargetFrameRate;
         }
 
         public void InitializeComponents()

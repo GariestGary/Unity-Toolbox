@@ -7,19 +7,15 @@ namespace VolumeBox.Toolbox.Editor
 {
     public class ToolboxSettingsEditorWindow: EditorWindow
     {
-        [SerializeField] private Texture2D m_MainSettingsIcon;
-        [SerializeField] private Texture2D m_PoolerIcon;
-        [SerializeField] private Texture2D m_AudioPlayerIcon;
-        [SerializeField] private Texture2D m_DatabaseIcon;
-        [SerializeField] private GUISkin m_TabSkin;
-
+        private Texture2D m_MainSettingsIcon;
+        private Texture2D m_PoolerIcon;
+        private Texture2D m_AudioPlayerIcon;
+        private GUISkin m_TabSkin;
         private PoolerDataHolder poolerDataHolder;
         private AudioPlayerDataHolder audioPlayerDataHolder;
-
         private SettingsDataEditor settingsEditor;
         private PoolerEditor poolerEditor;
         private AudioPlayerEditor audioEditor;
-
         private int selectedTab;
 
         [MenuItem("Toolbox/Settings", priority = 1)]
@@ -105,15 +101,17 @@ namespace VolumeBox.Toolbox.Editor
                 }
 
                 var oldSkin = GUI.skin;
-                GUI.skin = m_TabSkin;
-                selectedTab = GUILayout.Toolbar(selectedTab, new GUIContent[] 
+                GUI.skin = ResourcesUtils.GetOrLoadAsset(m_TabSkin, "toolbox_styles.guiskin");
+                var content = new GUIContent[]
                 {
-                    new GUIContent("Main Settings", m_MainSettingsIcon), 
-                    new GUIContent("Pooler", m_PoolerIcon), 
-                    new GUIContent("Audio Player", m_AudioPlayerIcon), 
-                }, m_TabSkin.GetStyle("Tab"), GUILayout.Height(40));
+                    new("Main Settings", ResourcesUtils.GetOrLoadAsset(m_MainSettingsIcon, "main_settings_icon.png")),
+                    new("Pooler", ResourcesUtils.GetOrLoadAsset(m_PoolerIcon, "pooler_icon.png")),
+                    new("Audio Player", ResourcesUtils.GetOrLoadAsset(m_AudioPlayerIcon, "audio_player_icon.png")),
+                };
+                
+                selectedTab = GUILayout.Toolbar(selectedTab, content, GUI.skin.GetStyle("Tab"), GUILayout.Height(40));
                 GUI.skin = oldSkin;
-//
+
                 return selectedTab;
             }
             else 

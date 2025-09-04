@@ -10,7 +10,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(SceneAlbumsHolder))]
     public class SceneAlbumHolderEditor : UnityEditor.Editor
     {
-        [SerializeField] private GUISkin _Skin;
+        private GUISkin m_Skin;
 
         private SerializedProperty _AlbumsList;
         private string _AlbumSearchValue;
@@ -79,7 +79,7 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.indentLevel++;
             if (_AlbumsList.arraySize > 0)
             {
-                EditorGUILayout.LabelField("Albums:", _Skin.GetStyle("Label"));
+                EditorGUILayout.LabelField("Albums:", ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin").GetStyle("Label"));
 
                 if (GUILayout.Button("Expand All"))
                 {
@@ -107,12 +107,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if (album.FindPropertyRelative("albumName").stringValue.ToLower().Contains(_AlbumSearchValue.ToLower()))
                     {
-                        AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, _Skin, AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize, true);
+                        AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"), AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize, true);
                     }
                 }
                 else
                 {
-                    AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, _Skin, AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize, true);
+                    AudioPlayerEditor.DrawAlbum(album, _AlbumsList, i, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"), AudioPlayerEditor.RedButtonColor, AudioPlayerEditor.LabelSize, true);
                 }
                 GUILayout.Space(3);
             }

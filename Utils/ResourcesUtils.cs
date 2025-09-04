@@ -8,6 +8,28 @@ namespace VolumeBox.Toolbox
 {
     public static class ResourcesUtils
     {
+        private const string PackagePath =
+#if TOOLBOX_DEBUG
+            "Assets/Scripts/Unity Toolbox/Data";
+#else
+            "Packages/com.volumebox.toolbox/Data";
+#endif
+
+        public static T GetOrLoadAsset<T>(T instance, string name) where T: Object
+        {
+            if (instance == null)
+            {
+                instance = GetAsset<T>(name);
+            }
+
+            return instance;
+        }
+        
+        public static T GetAsset<T>(string name) where T: Object
+        {
+            return AssetDatabase.LoadAssetAtPath<T>(PackagePath + "/" + name);
+        }
+        
         public static T ResolveScriptable<T>(string path) where T: ScriptableObject
         {
             int lastDot = path.LastIndexOf('.');
