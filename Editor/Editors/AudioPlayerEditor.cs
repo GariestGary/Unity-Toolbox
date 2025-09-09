@@ -8,7 +8,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(AudioPlayerDataHolder))]
     public class AudioPlayerEditor: UnityEditor.Editor
     {
-        [SerializeField] private GUISkin m_Skin;
+        private GUISkin m_Skin;
 
         private SerializedProperty m_albums;
         private Vector2 currentScrollPosition;
@@ -64,7 +64,7 @@ namespace VolumeBox.Toolbox.Editor
 
             if(m_albums.arraySize > 0)
             {
-                EditorGUILayout.LabelField("Albums:", m_Skin.GetStyle("Label"));
+                EditorGUILayout.LabelField("Albums:", ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin").GetStyle("Label"));
                 
                 if (GUILayout.Button("Expand All"))
                 {
@@ -92,12 +92,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if(album.FindPropertyRelative("albumName").stringValue.ToLower().Contains(albumSearchValue.ToLower()))
                     {
-                        DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize, false);
+                        DrawAlbum(album, m_albums, i, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"), RedButtonColor, LabelSize, false);
                     }
                 }
                 else
                 {
-                    DrawAlbum(album, m_albums, i, m_Skin, RedButtonColor, LabelSize, false);
+                    DrawAlbum(album, m_albums, i, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"), RedButtonColor, LabelSize, false);
                 }
                 GUILayout.Space(3);
             }
@@ -305,14 +305,14 @@ namespace VolumeBox.Toolbox.Editor
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("PlayButton On"), GUILayout.Width(25), GUILayout.ExpandHeight(true)))
             {
-                if(AudioPlayer.HasInstance)
+                if(Toolbox.HasInstance)
                 {
                     if (clipValue != null)
                     {
-                        AudioPlayer.Instance.DefaultAudioSource.Stop();
-                        var prevVolume = AudioPlayer.Instance.DefaultAudioSource.volume;
-                        AudioPlayer.Instance.DefaultAudioSource.volume = volume.floatValue;
-                        AudioPlayer.Instance.DefaultAudioSource.PlayOneShot(clipValue);
+                        Toolbox.AudioPlayer.DefaultAudioSource.Stop();
+                        var prevVolume = Toolbox.AudioPlayer.DefaultAudioSource.volume;
+                        Toolbox.AudioPlayer.DefaultAudioSource.volume = volume.floatValue;
+                        Toolbox.AudioPlayer.DefaultAudioSource.PlayOneShot(clipValue);
                     }
                 }
                 else

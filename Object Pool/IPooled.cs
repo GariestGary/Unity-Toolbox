@@ -5,5 +5,13 @@ namespace VolumeBox.Toolbox
         void OnSpawn(T data);
     }
 
-    public interface IPooledBase { }
+    public interface IPooled: IPooledBase
+    {
+        void OnSpawn();
+    }
+
+    public interface IPooledBase
+    {
+        
+    }
 }

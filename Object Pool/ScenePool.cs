@@ -26,7 +26,7 @@ namespace VolumeBox.Toolbox
 
             foreach (var pool in m_Pools) 
             {
-                m_CurrentPools.Add(Pooler.TryAddPool(pool));
+                m_CurrentPools.Add(Toolbox.Pooler.TryAddPool(pool));
             }
 
             m_Initialized = true;
@@ -34,9 +34,9 @@ namespace VolumeBox.Toolbox
 
         protected override void Destroyed()
         {
-            if(Pooler.HasInstance)
+            if(Toolbox.HasInstance)
             {
-                m_CurrentPools.ForEach(p => Pooler.TryRemovePool(p));
+                m_CurrentPools.ForEach(p => Toolbox.Pooler.TryRemovePool(p));
             }
         }
     }

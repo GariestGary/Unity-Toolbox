@@ -14,7 +14,7 @@ namespace VolumeBox.Toolbox
         {
             foreach(var album in _Albums)
             {
-                AudioPlayer.AddAlbum(album);
+                Toolbox.AudioPlayer.AddAlbum(album);
             }
         }
 
@@ -22,7 +22,7 @@ namespace VolumeBox.Toolbox
         {
             foreach(var album in _Albums)
             {
-                AudioPlayer.TryRemoveAlbum(album);
+                Toolbox.AudioPlayer.TryRemoveAlbum(album);
             }
         }
     }

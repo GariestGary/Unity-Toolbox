@@ -9,7 +9,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(PoolerDataHolder))]
     public class PoolerEditor : UnityEditor.Editor
     {
-        [SerializeField] private GUISkin m_Skin;
+        private GUISkin m_Skin;
 
         private SerializedProperty m_poolsList;
         private SerializedProperty m_poolGCInterval;
@@ -62,7 +62,7 @@ namespace VolumeBox.Toolbox.Editor
             
             if(m_poolsList.arraySize > 0)
             {
-                EditorGUILayout.LabelField("Pools:", m_Skin.GetStyle("Label"));
+                EditorGUILayout.LabelField("Pools:", ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin").GetStyle("Label"));
                 
                 if(GUILayout.Button("Expand All"))
                 {
@@ -91,12 +91,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if (pool.FindPropertyRelative("tag").stringValue.ToLower().Contains(searchValue.ToLower()))
                     {
-                        DrawElement(pool, m_poolsList, i, labelsWidth, m_Skin);
+                        DrawElement(pool, m_poolsList, i, labelsWidth, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"));
                     }
                 }
                 else
                 {
-                    DrawElement(pool, m_poolsList, i, labelsWidth, m_Skin);
+                    DrawElement(pool, m_poolsList, i, labelsWidth, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"));
                 }
                 GUILayout.Space(4);
                 EditorGUILayout.EndHorizontal();

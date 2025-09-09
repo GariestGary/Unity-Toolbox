@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace VolumeBox.Toolbox.Tests
 {
-    public class MessengerTest
+    internal class MessengerTest
     {
         private string message;
 
@@ -15,10 +15,15 @@ namespace VolumeBox.Toolbox.Tests
         {
             message = "null";
 
-            Messenger.ClearSubscribers();
+            Toolbox.Messenger.ClearSubscribers();
             
-            Messenger.Subscribe<MockMessage>(x => React(x.message));
-            Messenger.Send<MockMessage>();
+            Toolbox.Messenger.Subscribe<MockMessage>(x => React(x.message));
+            Toolbox.Messenger.Send<MockMessage>();
+            Assert.AreEqual("Reacted", message);
+            message = "null";
+            Toolbox.Messenger.ClearSubscribers();
+            Toolbox.Messenger.Subscribe(typeof(MockMessage), x => React((x as MockMessage).message));
+            Toolbox.Messenger.Send<MockMessage>();
             Assert.AreEqual("Reacted", message);
 
             yield return null;
@@ -27,27 +32,27 @@ namespace VolumeBox.Toolbox.Tests
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator MessengerSceneHandleTest()
         {
-            Messenger.ClearSubscribers();
+            Toolbox.Messenger.ClearSubscribers();
 
             var obj = new GameObject("A");
 
-            Subscriber subToRemove = Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
+            Subscriber subToRemove = Toolbox.Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
 
             message = "null";
 
-            Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
-            Messenger.Send<MockMessage>();
+            Toolbox.Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
+            Toolbox.Messenger.Send<MockMessage>();
 
             Assert.AreEqual("null", message);
 
-            Messenger.ClearSubscribers();
+            Toolbox.Messenger.ClearSubscribers();
 
             message = "null";
 
-            Subscriber subToStay = Messenger.Subscribe<MockMessage>(m => React(m.message));
+            Subscriber subToStay = Toolbox.Messenger.Subscribe<MockMessage>(m => React(m.message));
 
-            Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
-            Messenger.Send<MockMessage>();
+            Toolbox.Messenger.Send(new SceneUnloadedMessage(obj.scene.name));
+            Toolbox.Messenger.Send<MockMessage>();
 
             Assert.AreEqual("Reacted", message);
 
@@ -57,20 +62,17 @@ namespace VolumeBox.Toolbox.Tests
         [UnityTest, PrebuildSetup(typeof(TestPrebuild))]
         public IEnumerator MessengerObjectBindTest()
         {
-            Messenger.Instance.RunInternal();
-            Pooler.Instance.RunInternal();
-
-            Messenger.ClearSubscribers();
+            Toolbox.Messenger.ClearSubscribers();
 
             var obj = new GameObject("A");
 
             message = "null";
 
-            Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
+            Toolbox.Messenger.Subscribe<MockMessage>(m => React(m.message), obj);
 
-            Pooler.DespawnOrDestroy(obj);
+            Toolbox.Pooler.DespawnOrDestroy(obj);
 
-            Messenger.Send<MockMessage>();
+            Toolbox.Messenger.Send<MockMessage>();
             Assert.AreEqual("null", message);
             yield return null;
 
@@ -82,10 +84,10 @@ namespace VolumeBox.Toolbox.Tests
         {
             StaticData.Settings.UseMessageCaching = true;
 
-            Assert.AreEqual(0, Messenger.ClearMessageCache());
-            Messenger.Send<MockMessage>();
-            Assert.AreEqual(true, Messenger.Send<MockMessage>());
-            Assert.AreEqual(1, Messenger.ClearMessageCache());
+            Assert.AreEqual(0, Toolbox.Messenger.ClearMessageCache());
+            Toolbox.Messenger.Send<MockMessage>();
+            Assert.AreEqual(true, Toolbox.Messenger.Send<MockMessage>());
+            Assert.AreEqual(1, Toolbox.Messenger.ClearMessageCache());
 
             yield return null;
         }

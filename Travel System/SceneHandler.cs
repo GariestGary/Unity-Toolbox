@@ -6,9 +6,8 @@ namespace VolumeBox.Toolbox
     public abstract class SceneHandler<TArgs> : SceneHandlerBase where TArgs : SceneArgs
     {
         protected TArgs Args;
-        private bool _SceneSettedUp = false;
 
-        public sealed override void OnLoadCallback(SceneArgs args)
+        public sealed override async UniTask OnLoadCallbackAsync(SceneArgs args)
         {
             Args = args as TArgs;
 
@@ -19,38 +18,36 @@ namespace VolumeBox.Toolbox
                     Debug.Log($"Current loaded {gameObject.scene.name} scene expected {typeof(TArgs)} args, but provided with {args.GetType()}");
                 }
             }
-
-            SetupScene(Args);
-        }
-
-        public sealed override async UniTask OnLoadCallbackAsync()
-        {
+            
             await SetupSceneAsync(Args);
         }
 
-        protected async virtual UniTask SetupSceneAsync(TArgs args)
+        public override async UniTask OnUnloadCallbackAsync()
         {
-
+            await UnloadSceneAsync();
         }
 
-        protected abstract void SetupScene(TArgs args);
+        protected virtual UniTask UnloadSceneAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        protected virtual UniTask SetupSceneAsync(TArgs args)
+        {
+            return UniTask.CompletedTask;
+        }
     }
 
     public class SceneHandlerBase : MonoCached
     {
-        public virtual void OnLoadCallback(SceneArgs args)
+        public virtual async UniTask OnLoadCallbackAsync(SceneArgs args)
         {
 
         }
 
-        public virtual void OnUnloadCallback()
+        public virtual async UniTask OnUnloadCallbackAsync()
         {
-
-        }
-
-        public virtual async UniTask OnLoadCallbackAsync()
-        {
-
+            
         }
     }
 }

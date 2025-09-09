@@ -7,7 +7,7 @@ namespace VolumeBox.Toolbox.Editor
     [CustomEditor(typeof(ScenePool))]
     public class ScenePoolEditor : UnityEditor.Editor
     {
-        [SerializeField] private GUISkin m_Skin;
+        private GUISkin m_Skin;
 
         private SerializedProperty m_poolsList;
         private string searchValue;
@@ -48,12 +48,12 @@ namespace VolumeBox.Toolbox.Editor
                 {
                     if (pool.FindPropertyRelative("tag").stringValue.ToLower().Contains(searchValue.ToLower()))
                     {
-                        PoolerEditor.DrawElement(pool, m_poolsList, i, labelsWidth, m_Skin);
+                        PoolerEditor.DrawElement(pool, m_poolsList, i, labelsWidth, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"));
                     }
                 }
                 else
                 {
-                    PoolerEditor.DrawElement(pool, m_poolsList, i, labelsWidth, m_Skin);
+                    PoolerEditor.DrawElement(pool, m_poolsList, i, labelsWidth, ResourcesUtils.GetOrLoadAsset(m_Skin, "toolbox_styles.guiskin"));
                 }
 
                 GUILayout.Space(3);

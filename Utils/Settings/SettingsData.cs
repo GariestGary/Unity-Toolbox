@@ -26,7 +26,10 @@ namespace VolumeBox.Toolbox
 
         private void OnValidate()
         {
-            Updater.TimeScale = TimeScale;
+            if (Toolbox.HasInstance)
+            {
+                Toolbox.Updater.TimeScale = TimeScale;
+            }
         }
     }
 }

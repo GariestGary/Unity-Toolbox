@@ -6,10 +6,10 @@ namespace VolumeBox.Toolbox.Editor
 {
     public class InitialScreenWindow : EditorWindow
     {
-        [SerializeField] private Sprite m_Logo;
+        private Texture2D m_Logo;
 
         private const int WindowWidth = 480;
-        private const int WindowHeight = 420;
+        private const int WindowHeight = 440;
 
         private static Texture2D m_HeaderTex;
 
@@ -50,11 +50,13 @@ namespace VolumeBox.Toolbox.Editor
         {
             if(m_HeaderTex == null)
             {
-                m_HeaderTex = m_Logo.texture;
+                m_HeaderTex = ResourcesUtils.GetOrLoadAsset(m_Logo, "toolbox_banner.png");;
             }
 
-            Rect headerRect = GUILayoutUtility.GetRect(480, 137.14f);
-            GUI.DrawTexture(headerRect, m_HeaderTex);
+            GUILayout.Space(10);
+            Rect headerRect = GUILayoutUtility.GetRect(480, 140);
+            GUI.DrawTexture(headerRect, m_HeaderTex, ScaleMode.ScaleToFit);
+            GUILayout.Space(10);
 
             var buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.fontSize = 20;

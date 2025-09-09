@@ -15,113 +15,37 @@ namespace VolumeBox.Toolbox
     [InitializeOnLoad]
     public static class EditorLoadUtils
     {
-        private const string DevelopmentSceneAssetPath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
-        private const string DevelopmentScenePath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
-        
-        private const string ProductionSceneAssetPath = "Assets/Scenes/MAIN.unity";
-        private const string ProductionScenePath = "Scenes/MAIN.unity";
+        // private const string DevelopmentSceneAssetPath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
+        // private const string DevelopmentScenePath = "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
+        // private const string ProductionSceneAssetPath = "Assets/Scenes/MAIN.unity";
+        // private const string ProductionScenePath = "Scenes/MAIN.unity";
+        private const string MainScenePath =
+        #if TOOLBOX_DEBUG
+            "Assets/Scripts/Unity Toolbox/Scenes/MAIN.unity";
+        #else
+            "Assets/Scenes/MAIN.unity";
+        #endif
         
         private const string PackageScenePath = "Packages/com.volumebox.toolbox/Scenes/MAIN.unity";
-        
         private const string PackageName = "com.volumebox.toolbox";
         private const string MainSceneName = "MAIN";
-
-        private static List<string> _scenesOpenedAtStart;
-
-        public static bool EditorReady { get; private set; }
-
-        public static event Action EnteredPlayMode;
-        public static event Action ExitedPlayMode;
-
-        public const string PackageVersion = "0.2.4";
-
+        
         static EditorLoadUtils()
         {
-            EditorApplication.playModeStateChanged += OnStateChanged;
+            ValidateStartScene();
         }
 
-        public static async Task<bool> IsDevelopmentMode()
+        public static void ValidateStartScene()
         {
-            var currentPath = await GetCurrentMainScenePath();
-
-            return currentPath != PackageScenePath;
-        }
-
-        private static async void OnStateChanged(PlayModeStateChange state)
-        {
-            EditorReady = false;
-            
-            if (state == PlayModeStateChange.ExitingPlayMode)
+            if (StaticData.Settings.AutoResolveScenesAtPlay)
             {
-                ExitedPlayMode?.Invoke();
-
-                if (_scenesOpenedAtStart != null && _scenesOpenedAtStart.Count > 0)
-                {
-                    for (int i = 0; i < _scenesOpenedAtStart.Count; i++)
-                    {
-                        EditorSceneManager.LoadScene(_scenesOpenedAtStart[i], LoadSceneMode.Additive);
-                    }
-                }
-
-                return;
+                SceneAsset myWantedStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(MainScenePath);
+                if (myWantedStartScene != null)
+                    EditorSceneManager.playModeStartScene = myWantedStartScene;
             }
-
-            if (state == PlayModeStateChange.EnteredPlayMode)
+            else
             {
-                EnteredPlayMode?.Invoke();
-
-                if (StaticData.Settings.AutoResolveScenesAtPlay)
-                {
-                    await HandleOpenedScenes();
-                }
-            }
-            
-            EditorReady = true;
-        }
-        
-        private static async Task HandleOpenedScenes()
-        {
-            _scenesOpenedAtStart = new List<string>();
-            int scenesCount = SceneManager.sceneCount;
-            bool mainLoaded = false;
-
-            AsyncOperation[] unloads = new AsyncOperation[scenesCount];
-            
-            for (int i = 0; i < scenesCount; i++)
-            {
-                string sceneName = SceneManager.GetSceneAt(i).name;
-
-                if (sceneName == MainSceneName && !mainLoaded)
-                {
-                    mainLoaded = true;
-                }
-                else if(SceneManager.sceneCount > 1)
-                {
-                    _scenesOpenedAtStart.Add(sceneName);
-                    
-                    unloads[i] = SceneManager.UnloadSceneAsync(sceneName);
-                }
-            }
-
-            while (!unloads.All(x =>
-                   {
-                       if (x == null) return true;
-                       return x.isDone;
-                   }))
-            {
-                await Task.Yield();
-            }
-
-            AsyncOperation loading = null;
-            
-            if (!mainLoaded)
-            {
-                loading = SceneManager.LoadSceneAsync(0);
-            }
-
-            while (loading != null && !loading.isDone)
-            {
-                await Task.Yield();
+                EditorSceneManager.playModeStartScene = null;
             }
         }
 
@@ -136,7 +60,7 @@ namespace VolumeBox.Toolbox
 
             var path = EditorBuildSettings.scenes[0].path;
 
-            if(path != DevelopmentSceneAssetPath && path != ProductionSceneAssetPath)
+            if(path != MainScenePath)
             {
                 return false;
             }
@@ -144,23 +68,10 @@ namespace VolumeBox.Toolbox
             return true;
         }
 
-        private static async Task<string> GetCurrentMainScenePath()
-        {
-            var pack = Client.List();
-            while (!pack.IsCompleted) await Task.Yield();
-
-            string path = String.Empty;
-
-            if (pack.Result.Any(x => x.name == PackageName))
-            {
-                return PackageScenePath;
-            }
-
-            return DevelopmentScenePath;
-        }
-
         public static async void InitializeMain()
         {
+#if TOOLBOX_DEBUG
+#else
             var scenes = EditorBuildSettings.scenes.ToList();
             
             for (int i = 0; i < scenes.Count; i++)
@@ -173,32 +84,32 @@ namespace VolumeBox.Toolbox
                 }
             }
 
-            var initialPath = await GetCurrentMainScenePath();
-            var targetPath = string.Empty;
-
-            if (initialPath == PackageScenePath)
+            var parentAssetPath = Directory.GetParent(Application.dataPath);
+            var fullProductionPath = parentAssetPath + "/" + MainScenePath;
+            
+            if (!File.Exists(fullProductionPath))
             {
-                var fullProductionPath = Application.dataPath + "/" + ProductionScenePath;
-                var fullPackagePath = Directory.GetParent(Application.dataPath) + "/" + PackageScenePath;
+                var fullPackagePath = parentAssetPath + "/" + PackageScenePath;
             
                 if (!File.Exists(fullProductionPath))
                 {
-                    Directory.CreateDirectory(Directory.GetParent(ProductionSceneAssetPath).FullName);
+                    var dir = Directory.GetParent(MainScenePath).FullName;
+
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+                    
                     await ToolboxExtensions.CopyFileAsync(fullPackagePath, fullProductionPath);
                 }
-                
-                targetPath = ProductionSceneAssetPath;
-            }
-            else
-            {
-                targetPath = DevelopmentSceneAssetPath;
             }
                 
-            scenes.Insert(0, new EditorBuildSettingsScene(targetPath, true));
+            scenes.Insert(0, new EditorBuildSettingsScene(MainScenePath, true));
 
             EditorBuildSettings.scenes = scenes.ToArray();
 
             AssetDatabase.Refresh();
+#endif
 
             Debug.Log("MAIN scene initialized");
         }
@@ -220,16 +131,7 @@ namespace VolumeBox.Toolbox
                 }
             }
 
-            Debug.Log("Opened MAIN scene");
-
-            if (await GetCurrentMainScenePath() == PackageScenePath)
-            {
-                EditorSceneManager.OpenScene(ProductionSceneAssetPath, OpenSceneMode.Additive);
-            }
-            else
-            {
-                EditorSceneManager.OpenScene(DevelopmentSceneAssetPath, OpenSceneMode.Additive);
-            }
+            EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Additive);
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,63 +9,93 @@ namespace VolumeBox.Toolbox
     /// <summary>
     /// Class that controls lifecycle of <see cref="MonoCached">MonoCached</see> objects
     /// </summary>
-    public class Updater : ToolWrapper<Updater>
+    public class Updater : MonoBehaviour, IClear
     {
-        #pragma warning disable
-        private static float timeScale = 1;
-        private static float delta;
-        #pragma warning restore
+        private float _InternalTimeScale = 1;
+        private float _InternalDelta;
         
-        public static float UnscaledDelta => Time.deltaTime;
-        public static float TimeScale
+        public float UnscaledDelta => Time.deltaTime;
+        public float TimeScale
         {
             get
             {
-                return timeScale;
+                return _InternalTimeScale;
             } 
             set
             {
                 if(value < 0)
                 {
-                    timeScale = 0f;
+                    _InternalTimeScale = 0f;
                 }
                 else
                 {
-                    timeScale = value;
+                    _InternalTimeScale = value;
                 }
             }
         }
-        public static float Delta => delta;
+        public float Delta => _InternalDelta;
 
-        private List<MonoCached> monos = new List<MonoCached>();
+        private List<MonoCached> _RunningMonos = new List<MonoCached>();
+        private List<Action<float>> _CustomTicks = new List<Action<float>>();
+        private List<Action<float>> _CustomFixedTicks = new List<Action<float>>();
+        private List<Action<float>> _CustomLateTicks = new List<Action<float>>();
 
-        protected override void Run()
+        #region Custom Processes
+
+        public void AddCustomTick(Action<float> tick)
         {
-            
+            _CustomTicks.Add(tick);
         }
 
-        protected override void Clear()
+        public void AddCustomFixedTick(Action<float> tick)
         {
-            
+            _CustomFixedTicks.Add(tick);
         }
 
+        public void AddCustomLateTick(Action<float> tick)
+        {
+            _CustomLateTicks.Add(tick);
+        }
+
+        public void RemoveCustomTick(Action<float> tick)
+        {
+            _CustomTicks.Remove(tick);
+        }
+
+        public void RemoveCustomFixedTick(Action<float> tick)
+        {
+            _CustomFixedTicks.Remove(tick);
+        }
+
+        public void RemoveCustomLateTick(Action<float> tick)
+        {
+            if (_CustomLateTicks.Contains(tick))
+            {
+                _CustomLateTicks.Remove(tick);
+            }
+        }
+
+        #endregion
+        
         /// <summary>
         /// Invokes Rise and Ready on given GameObjects, and then adds them to process
         /// </summary>
         /// <param name="objs">Array of GameObjects</param>
-        public static void InitializeObjects(GameObject[] objs)
+        public void InitializeObjects(GameObject[] objs)
         {
             MonoCached[] monos = new MonoCached[0];
 
-            foreach(var obj in objs)
+            for (int i = 0; i < objs.Length; i++)
             {
-                var components = obj.GetComponentsInChildren<MonoCached>(true);
+                var components = objs[i].GetComponentsInChildren<MonoCached>(true);
                 monos = monos.Concat(components).ToArray();
             }
 
-            foreach (var mono in monos)
+            for (int i = 0; i < monos.Length; i++)
             {
-                if (mono == null || Instance.monos.Contains(mono))
+                var mono = monos[i];
+                
+                if (mono == null || _RunningMonos.Contains(mono))
                 {
                     continue;
                 }
@@ -71,9 +103,11 @@ namespace VolumeBox.Toolbox
                 InvokeRise(mono);
             }
 
-            foreach (var mono in monos)
+            for (int i = 0; i < monos.Length; i++)
             {
-                if (mono == null || Instance.monos.Contains(mono))
+                var mono = monos[i];
+                
+                if (mono == null || _RunningMonos.Contains(mono))
                 {
                     continue;
                 }
@@ -81,14 +115,16 @@ namespace VolumeBox.Toolbox
                 InvokeReady(mono);
             }
 
-            foreach (var mono in monos)
+            for (int i = 0; i < monos.Length; i++)
             {
-                if (mono == null || Instance.monos.Contains(mono))
+                var mono = monos[i];
+                
+                if (mono == null || _RunningMonos.Contains(mono))
                 {
                     continue;
                 }
 
-                Instance.monos.Add(mono);
+                _RunningMonos.Add(mono);
             }
         }
 
@@ -96,19 +132,19 @@ namespace VolumeBox.Toolbox
         /// Removes all GameObjects from process
         /// </summary>
         /// <param name="objs">Array of GameObjects</param>
-        public static void RemoveObjectsFromUpdate(GameObject[] objs)
+        public void RemoveObjectsFromUpdate(GameObject[] objs)
         {
             MonoCached[] monos = new MonoCached[0];
 
-            foreach (var obj in objs)
+            for (int i = 0; i < objs.Length; i++)
             {
-                var components = obj.GetComponentsInChildren<MonoCached>(true);
+                var components = objs[i].GetComponentsInChildren<MonoCached>(true);
                 monos = monos.Concat(components).ToArray();
             }
 
-            foreach (var mono in monos)
+            for (int i = 0; i < monos.Length; i++)
             {
-                RemoveMonoFromUpdate(mono);
+                RemoveMonoFromUpdate(monos[i]);
             }
         }
 
@@ -116,15 +152,17 @@ namespace VolumeBox.Toolbox
         /// Invokes Rise and Ready on given GameObject, and then adds it to process
         /// </summary>
         /// <param name="obj"></param>
-        public static void InitializeObject(GameObject obj)
+        public void InitializeObject(GameObject obj)
         {
             if (obj == null) return;
 
             MonoCached[] objMonos = obj.GetComponentsInChildren<MonoCached>(true);
 
-            foreach (var mono in objMonos)
+            for (int i = 0; i < objMonos.Length; i++)
             {
-                if (Instance.monos.Contains(mono))
+                var mono = objMonos[i];
+                
+                if (_RunningMonos.Contains(mono))
                 {
                     continue;
                 }
@@ -132,95 +170,116 @@ namespace VolumeBox.Toolbox
                 InvokeRise(mono);
             }
 
-            foreach (var mono in objMonos)
+            for (int i = 0; i < objMonos.Length; i++)
             {
-                if (Instance.monos.Contains(mono))
+                var mono = objMonos[i];
+                
+                if (_RunningMonos.Contains(mono))
                 {
                     continue;
                 }
 
                 InvokeReady(mono);
             }
-
-            foreach (var mono in objMonos)
+            
+            for (int i = 0; i < objMonos.Length; i++)
             {
-                if (Instance.monos.Contains(mono))
+                var mono = objMonos[i];
+                
+                if (_RunningMonos.Contains(mono))
                 {
                     continue;
                 }
 
-                Instance.monos.Add(mono);
+                _RunningMonos.Add(mono);
             }
         }
 
         /// <summary>
         /// Invokes Rise and Ready on given MonoCached, and then adds it to process
         /// </summary>
-        public static void InitializeMono(MonoCached mono)
+        public void InitializeMono(MonoCached mono)
         {
-            if (mono == null && !Instance.monos.Contains(mono)) return;
+            if (mono == null && !_RunningMonos.Contains(mono)) return;
 
             InvokeRise(mono);
             InvokeReady(mono);
-            Instance.monos.Add(mono);
+            _RunningMonos.Add(mono);
             mono.Resume();
         }
 
         /// <summary>
         /// Removes given MonoCached from process
         /// </summary>
-        public static void RemoveMonoFromUpdate(MonoCached mono)
+        public void RemoveMonoFromUpdate(MonoCached mono)
         {
             if (mono == null) return;
 
             mono.Pause();
-            Instance.monos.Remove(mono);
+            _RunningMonos.Remove(mono);
         }
         
-
-        #region Invoke Reflection Methods
-        private static void InvokeRise(MonoCached mono)
+        private void InvokeRise(MonoCached mono)
         {
-            mono.ProcessInternal(3, 0);
+            mono.OnRise();
         }
 
-        private static void InvokeReady(MonoCached mono)
+        private void InvokeReady(MonoCached mono)
         {
-            mono.ProcessInternal(4, 0);
+            mono.OnReady();
         }
-        #endregion
 
         #region Updates
         private void Update()
         {
-            delta = Time.deltaTime * TimeScale;
+            _InternalDelta = Time.deltaTime * TimeScale;
 
-            for (int i = 0; i < monos.Count; i++)
+            for (int i = 0; i < _RunningMonos.Count; i++)
             {
-                var deltaToUse = monos[i].IgnoreTimeScale ? Time.deltaTime : delta;
-                monos[i].ProcessInternal(0, deltaToUse);
+                var deltaToUse = _RunningMonos[i].IgnoreTimeScale ? Time.deltaTime : _InternalDelta;
+                _RunningMonos[i].ProcessControl(deltaToUse);
+            }
+
+            foreach (var tick in _CustomTicks)
+            {
+                tick?.Invoke(_InternalDelta);
             }
         }
 
         private void FixedUpdate()
         {
-            float fixedDelta = Time.fixedDeltaTime * timeScale;
+            float fixedDelta = Time.fixedDeltaTime * _InternalTimeScale;
 
-            for (int i = 0; i < monos.Count; i++)
+            for (int i = 0; i < _RunningMonos.Count; i++)
             {
-                var deltaToUse = monos[i].IgnoreTimeScale ? Time.fixedDeltaTime : fixedDelta;
-                monos[i].ProcessInternal(1, deltaToUse);
+                var deltaToUse = _RunningMonos[i].IgnoreTimeScale ? Time.fixedDeltaTime : fixedDelta;
+                _RunningMonos[i].FixedProcessControl(deltaToUse);
+            }
+
+            foreach (var fixedTick in _CustomFixedTicks)
+            {
+                fixedTick?.Invoke(fixedDelta);
             }
         }
 
         private void LateUpdate()
         {
-            for (int i = 0; i < monos.Count; i++)
+            for (int i = 0; i < _RunningMonos.Count; i++)
             {
-                var deltaToUse = monos[i].IgnoreTimeScale ? Time.deltaTime : delta;
-                monos[i].ProcessInternal(2, deltaToUse);
+                var deltaToUse = _RunningMonos[i].IgnoreTimeScale ? Time.deltaTime : _InternalDelta;
+                _RunningMonos[i].LateProcessControl(deltaToUse);
+            }
+
+            foreach (var lateTick in _CustomLateTicks)
+            {
+                lateTick?.Invoke(_InternalDelta);
             }
         }
         #endregion
+
+        public void Clear()
+        {
+            
+        }
     }
 }
