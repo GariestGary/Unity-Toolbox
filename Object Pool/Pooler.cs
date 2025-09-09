@@ -574,8 +574,7 @@ namespace VolumeBox.Toolbox
 
                         if (generics.Length > 0)
                         {
-                            var generic = generics[0];
-                            onSpawnMethod?.Invoke(mono, new[] { Convert.ChangeType(data, generic) });
+                            onSpawnMethod?.Invoke(mono, new[] { data });
                         }
                         else
                         {

@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace VolumeBox.Toolbox.Tests
 {
@@ -6,7 +7,14 @@ namespace VolumeBox.Toolbox.Tests
     {
         protected override async UniTask SetupSceneAsync(TestSceneArgs args)
         {
-            TravelerTests.compare = args.TestString;
+            if (args == null)
+            {
+                Debug.Log("null args");
+            }
+            else
+            {
+                TravelerTests.compare = args.TestString;
+            }
         }
 
         protected override async UniTask UnloadSceneAsync()
