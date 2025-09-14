@@ -15,6 +15,7 @@ namespace VolumeBox.Toolbox
             "Packages/com.volumebox.toolbox/Data";
 #endif
 
+#if UNITY_EDITOR
         public static T GetOrLoadAsset<T>(T instance, string name) where T: Object
         {
             if (instance == null)
@@ -29,6 +30,7 @@ namespace VolumeBox.Toolbox
         {
             return AssetDatabase.LoadAssetAtPath<T>(PackagePath + "/" + name);
         }
+#endif
         
         public static T ResolveScriptable<T>(string path) where T: ScriptableObject
         {
