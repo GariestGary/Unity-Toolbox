@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,9 +11,17 @@ namespace VolumeBox.Toolbox.Editor
         private GUISkin m_Skin;
 
         private SerializedProperty m_poolsList;
+        private SerializedProperty m_RunType;
         private string searchValue;
         private Vector2 currentScrollPos;
         private float labelsWidth = 110;
+
+        private Dictionary<int, string> m_RunTypes = new Dictionary<int, string>()
+        {
+            {0, "On Rise"},
+            {1, "On Ready"},
+            {2, "Manual"}
+        };
 
         private void OnEnable()
         {
@@ -22,6 +31,7 @@ namespace VolumeBox.Toolbox.Editor
             }
 
             m_poolsList = serializedObject.FindProperty("m_Pools");
+            m_RunType = serializedObject.FindProperty("m_RunType");
         }
 
         public override void OnInspectorGUI()
@@ -31,6 +41,18 @@ namespace VolumeBox.Toolbox.Editor
             EditorGUI.BeginChangeCheck();
 
             EditorGUI.indentLevel--;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Initialization type");
+            if(EditorGUILayout.DropdownButton(new GUIContent(m_RunTypes[m_RunType.intValue]), FocusType.Keyboard))
+            {
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent("On Rise"), m_RunType.intValue == 0, OnRunTypeSelected, 0);
+                menu.AddItem(new GUIContent("On Ready"), m_RunType.intValue == 1, OnRunTypeSelected, 1);
+                menu.AddItem(new GUIContent("On Manual"), m_RunType.intValue == 2, OnRunTypeSelected, 2);
+                menu.ShowAsContext();
+            }
+            EditorGUILayout.EndHorizontal();
+
             PoolerEditor.DrawSearchHeader(ref searchValue, m_poolsList, ref currentScrollPos.y);
             EditorGUI.indentLevel++;
 
@@ -65,6 +87,17 @@ namespace VolumeBox.Toolbox.Editor
 
             serializedObject.ApplyModifiedProperties();
 
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(target);
+            }
+        }
+
+        private void OnRunTypeSelected(object userdata)
+        {
+            EditorGUI.BeginChangeCheck();
+            m_RunType.intValue = (int)userdata;
+            serializedObject.ApplyModifiedProperties();
             if (EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(target);
