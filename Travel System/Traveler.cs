@@ -118,13 +118,6 @@ namespace VolumeBox.Toolbox
             //traverse all objects
             foreach (var obj in sceneObjects)
             {
-                var scenePools = obj.GetComponentsInChildren<ScenePool>(true);
-
-                foreach(var scenePool in scenePools)
-                {
-                    scenePool.InitializePools();
-                }
-
                 if (handler == null)
                 {
                     handler = obj.GetComponent<SceneHandlerBase>();
