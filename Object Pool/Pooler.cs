@@ -263,8 +263,9 @@ namespace VolumeBox.Toolbox
         /// <param name="rotation">initial rotation</param>
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
+        /// <param name="traverseHierarchy">should pooler traverse all gameobject hierarchy to call OnSpawn method</param>
         /// <returns>GameObject from pool</returns>
-        public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
+        public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, bool traverseHierarchy = false)
         {
             //Returns null if object pool with specified tag doesn't exists
             var poolsToUse = pools.Where(p => p.tag == poolTag).ToArray();
@@ -309,7 +310,14 @@ namespace VolumeBox.Toolbox
             objToSpawn.GameObject.Enable();
 
             //Call all spawn methods in gameobject
-            CallSpawns(objToSpawn.GameObject, data);
+            if (traverseHierarchy)
+            {
+                CallSpawns(objToSpawn.GameObject, data);
+            }
+            else
+            {
+                CallSpawn(objToSpawn.GameObject, data);    
+            }
 
             objToSpawn.Used = true;
             
@@ -322,10 +330,11 @@ namespace VolumeBox.Toolbox
         /// <param name="poolTag">pool tag with necessary object</param>
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
+        /// <param name="traverseHierarchy">should pooler traverse all gameobject hierarchy to call OnSpawn method</param>
         /// <returns>GameObject from pool</returns>
-        public GameObject Spawn(string poolTag, object data = null, Transform parent = null)
+        public GameObject Spawn(string poolTag, object data = null, Transform parent = null, bool traverseHierarchy = false)
         {
-            return Spawn(poolTag, Vector3.zero, Quaternion.identity, parent, data);
+            return Spawn(poolTag, Vector3.zero, Quaternion.identity, parent, data, traverseHierarchy);
         }
 
         /// <summary>
@@ -337,10 +346,11 @@ namespace VolumeBox.Toolbox
         /// <param name="rotation">initial rotation</param>
         /// <param name="parent">parent transform for GameObject</param>
         /// <param name="data">data to provide in GameObject</param>
+        /// <param name="traverseHierarchy">should pooler traverse all gameobject hierarchy to call OnSpawn method</param>
         /// <returns>Component from spawned GameObject</returns>
-        public T Spawn<T>(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null) where T: Component
+        public T Spawn<T>(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null, bool traverseHierarchy = false) where T: Component
         {
-            return Spawn(poolTag, position, rotation, parent, data).GetComponent<T>();
+            return Spawn(poolTag, position, rotation, parent, data, traverseHierarchy).GetComponent<T>();
         }
 
         /// <summary>
@@ -350,8 +360,9 @@ namespace VolumeBox.Toolbox
         /// <param name="poolTag"></param>
         /// <param name="data"></param>
         /// <param name="parent"></param>
+        /// <param name="traverseHierarchy">should pooler traverse all gameobject hierarchy to call OnSpawn method</param>
         /// <returns></returns>
-        public T Spawn<T>(string poolTag, object data = null, Transform parent = null)
+        public T Spawn<T>(string poolTag, object data = null, Transform parent = null, bool traverseHierarchy = false)
         {
             return Spawn(poolTag, data, parent).GetComponent<T>();
         }
@@ -546,6 +557,12 @@ namespace VolumeBox.Toolbox
 
             return new ObjectPooledState(false, false);
         }
+
+        private void CallSpawn(GameObject obj, object data)
+        {
+            MonoCached mono = obj.GetComponentsInChildren<MonoCached>(true).FirstOrDefault(o => o is IPooledBase);
+            CallPooledInterface(data, mono);
+        }
         
         private void CallSpawns(GameObject obj, object data) 
         {
@@ -554,37 +571,41 @@ namespace VolumeBox.Toolbox
             for (int i = 0; i < pooledMono.Length; i++)
             {
                 var mono = pooledMono[i];
+                CallPooledInterface(data, mono);
+            }
+        }
 
-                if (mono == null)
+        private void CallPooledInterface(object data, MonoCached mono)
+        {
+            if (mono == null)
+            {
+                return;
+            }
+
+            var type = mono.GetType();
+            var interfaces = type.GetInterfaces();
+
+            for (int j = 0; j < interfaces.Length; j++)
+            {
+                var inter = interfaces[j];
+
+                if (inter.GetInterface(nameof(IPooledBase)) != null)
                 {
-                    continue;
-                }
+                    var generics = inter.GetGenericArguments();
+                    var onSpawnMethod = inter.GetMethod("OnSpawn");
 
-                var type = mono.GetType();
-                var interfaces = type.GetInterfaces();
-
-                for (int j = 0; j < interfaces.Length; j++)
-                {
-                    var inter = interfaces[j];
-
-                    if (inter.GetInterface(nameof(IPooledBase)) != null)
+                    if (generics.Length > 0)
                     {
-                        var generics = inter.GetGenericArguments();
-                        var onSpawnMethod = inter.GetMethod("OnSpawn");
-
-                        if (generics.Length > 0)
-                        {
-                            onSpawnMethod?.Invoke(mono, new[] { data });
-                        }
-                        else
-                        {
-                            onSpawnMethod?.Invoke(mono, new object[]{});
-                        }
+                        onSpawnMethod?.Invoke(mono, new[] { data });
+                    }
+                    else
+                    {
+                        onSpawnMethod?.Invoke(mono, new object[]{});
                     }
                 }
             }
         }
-        
+
         private void CallDespawns(GameObject obj)
         {
             IDespawn[] despawns = obj.GetComponentsInChildren<IDespawn>(true);
